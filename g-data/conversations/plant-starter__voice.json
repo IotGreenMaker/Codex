@@ -1,7 +1,7 @@
 {
   "plantId": "plant-starter",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-26T19:13:53.770Z",
+  "updatedAt": "2026-03-26T20:19:59.217Z",
   "messages": [
     {
       "id": "user-1774550574188",
@@ -253,6 +253,142 @@
       "createdAt": "2026-03-26T19:13:53.766Z",
       "role": "assistant",
       "content": "Humidity is at 60%. Let me know if you need any adjustments.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774556246817",
+      "createdAt": "2026-03-26T20:17:26.817Z",
+      "role": "user",
+      "content": "hello do you listen",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774556247820",
+      "createdAt": "2026-03-26T20:17:28.716Z",
+      "role": "assistant",
+      "content": "Hello. Yes, I'm listening and ready to help with your plant care needs. Your currently selected plant, My First Plant, is a seedling. How can I assist you today?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774556267307",
+      "createdAt": "2026-03-26T20:17:47.307Z",
+      "role": "user",
+      "content": "select the sour diesel blend",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774556268308",
+      "createdAt": "2026-03-26T20:17:49.198Z",
+      "role": "assistant",
+      "content": "No Sour Diesel Blend available. Currently monitoring My First Plant.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774556277122",
+      "createdAt": "2026-03-26T20:17:57.122Z",
+      "role": "user",
+      "content": "select the sour diesel",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774556278123",
+      "createdAt": "2026-03-26T20:17:59.330Z",
+      "role": "assistant",
+      "content": "No Sour Diesel available. Currently selected plant is My First Plant.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774556287704",
+      "createdAt": "2026-03-26T20:18:07.704Z",
+      "role": "user",
+      "content": "select my second plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774556288708",
+      "createdAt": "2026-03-26T20:18:09.392Z",
+      "role": "assistant",
+      "content": "You only have one plant available, which is \"My First Plant\". There is no second plant to switch to. Would you like to monitor or make adjustments to \"My First Plant\"?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774556304617",
+      "createdAt": "2026-03-26T20:18:24.617Z",
+      "role": "user",
+      "content": "what is the name of the blend in the screen",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774556305624",
+      "createdAt": "2026-03-26T20:18:26.321Z",
+      "role": "assistant",
+      "content": "The current plant selected is \"My First Plant\", which is in the Seedling stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774556324267",
+      "createdAt": "2026-03-26T20:18:44.267Z",
+      "role": "user",
+      "content": "what is the last weather update",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774556325272",
+      "createdAt": "2026-03-26T20:18:46.131Z",
+      "role": "assistant",
+      "content": "The last climate reading in the grow room was at 2026-03-26T20:18:45.272Z, with a temperature of 24°C and humidity of 60%.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774556374987",
+      "createdAt": "2026-03-26T20:19:34.987Z",
+      "role": "user",
+      "content": "register it on the table",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774556375989",
+      "createdAt": "2026-03-26T20:19:36.931Z",
+      "role": "assistant",
+      "content": "Current plant data registered.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774556396986",
+      "createdAt": "2026-03-26T20:19:56.986Z",
+      "role": "user",
+      "content": "new environmental date now it's 44° Celsius and 60% humidity",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774556397990",
+      "createdAt": "2026-03-26T20:19:59.213Z",
+      "role": "assistant",
+      "content": "I've logged the new environmental data. Consider adjusting the temperature for optimal growth.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"

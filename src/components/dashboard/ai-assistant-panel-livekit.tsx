@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Mic, Volume2, Send } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { translations } from "@/lib/i18n";
-import { speakWithElevenLabs } from "@/lib/elevenlabs-tts";
+import { speak } from "@/lib/tts";
+import { buildGrowContext } from "@/lib/buildGrowContext";
 import { getPreviousContext } from "@/lib/supabase-client";
 import type { PlantProfile } from "@/lib/types";
 
@@ -174,48 +175,7 @@ export function AiAssistantPanel({
       const latestClimate = plant.climateData?.[plant.climateData.length - 1];
       const latestWatering = plant.wateringData?.[plant.wateringData.length - 1];
       
-      const stageKey = plant.stage.toLowerCase() as "seedling" | "veg" | "bloom";
-      const daysInStage = plant.stageDays?.[stageKey] || 0;
-      
-      // Build available plants list for context
-      const availablePlantsInfo = plants.length > 0 
-        ? plants.map(p => `- ${p.strainName} (Stage: ${p.stage})`).join("\n")
-        : "- None available";
-      
-      const plantContext = `AVAILABLE PLANTS:
-${availablePlantsInfo}
-
-## CURRENTLY SELECTED PLANT:
-- ID: ${plant.id}
-- Name: ${plant.strainName}
-- Growth Stage: ${plant.stage}
-- Days in Stage: ${daysInStage} days
-
-CURRENT ENVIRONMENT:
-- Grow Room Temp: ${plant.growTempC}°C
-- Grow Room Humidity: ${plant.growHumidity}%
-- Light Type: ${plant.lightType || "unknown"}
-- Light Dimmer: ${plant.lightDimmerPercent || 0}%
-- Lights Schedule: ${plant.lightsOn} - ${plant.lightsOff}
-
-LATEST CLIMATE READING:
-- Temperature: ${latestClimate?.tempC || plant.growTempC}°C
-- Humidity: ${latestClimate?.humidity || plant.growHumidity}%
-- Timestamp: ${latestClimate?.timestamp || new Date().toISOString()}
-
-WATERING INFO:
-- Last Watered: ${plant.lastWateredAt}
-- Amount: ${plant.waterInputMl || latestWatering?.amountMl || 0}ml
-- Water pH: ${plant.waterPh || latestWatering?.ph || "N/A"}
-- Water EC: ${plant.waterEc || latestWatering?.ec || "N/A"}
-- Watering Interval: Every ${plant.wateringIntervalDays} days
-
-OUTDOOR WEATHER (Reference):
-- Location: ${weather?.location || "Not available"}
-- Temperature: ${weather?.temperatureC || "N/A"}°C
-- Humidity: ${weather?.humidity || "N/A"}%
-
-IMPORTANT: Only reference the GROW ROOM environment data when giving advice about the plant's current conditions. The outdoor weather is just for reference context.`;
+      const plantContext = buildGrowContext(plant, plants);
 
       // Use Groq API for AI response
       const response = await fetch("/api/groq", {
@@ -339,10 +299,13 @@ IMPORTANT: Only reference the GROW ROOM environment data when giving advice abou
         }
       ]);
 
-      // Read AI response with ElevenLabs voice
-      await speakWithElevenLabs(assistantMessage, setIsPlaying);
+      // Read AI response with voice
+      setIsPlaying(true);
+      await speak(assistantMessage);
+      setIsPlaying(false);
     } catch (error) {
       setConnectionState("failed");
+      setIsPlaying(false);
       const errorMessage =
         error instanceof Error ? error.message : "Assistant request failed.";
 
