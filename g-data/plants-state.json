@@ -6,9 +6,9 @@
       "startedAt": "2026-01-15T09:00:00.000Z",
       "stage": "Bloom",
       "bloomStartedAt": "",
-      "lightSchedule": "12/12",
-      "lightsOn": "05:00",
-      "lightsOff": "17:00",
+      "lightSchedule": "18 / 6",
+      "lightsOn": "06:00",
+      "lightsOff": "00:00",
       "lightType": "panel_100w",
       "lightDimmerPercent": 75,
       "lightLampName": "Phlizon PL1000",
@@ -18,151 +18,86 @@
       "mediaType": "Light Mix",
       "outsideTempC": 16.7,
       "outsideHumidity": 60,
-      "growTempC": 23,
-      "growHumidity": 55,
+      "growTempC": 25,
+      "growHumidity": 49,
       "waterInputMl": 1000,
       "waterPh": 5.9,
-      "waterEc": 0.96,
-      "lastWateredAt": "2026-03-24T15:56:23.324Z",
-      "wateringIntervalDays": 1,
+      "waterEc": 1.45,
+      "lastWateredAt": "2026-03-22T08:30:00.000Z",
+      "wateringIntervalDays": 2,
       "stageDays": {
-        "seedling": 5,
-        "veg": 36,
-        "bloom": 26
+        "seedling": 21,
+        "veg": 21,
+        "bloom": 27
       },
       "wateringData": [
         {
           "id": "w-1",
           "timestamp": "2026-03-16T08:30:00.000Z",
           "amountMl": 800,
-          "ph": 5.2,
-          "ec": 0.9,
-          "runoffPh": 5.8,
-          "runoffEc": 1.5
+          "ph": 5.9,
+          "ec": 1.2,
+          "runoffPh": 6.1,
+          "runoffEc": 1.4
         },
         {
           "id": "w-2",
           "timestamp": "2026-03-18T08:30:00.000Z",
           "amountMl": 900,
-          "ph": 5.2,
-          "ec": 0.3,
-          "runoffPh": 5.8,
-          "runoffEc": 0.5
+          "ph": 5.8,
+          "ec": 1.35,
+          "runoffPh": 6.1,
+          "runoffEc": 1.45
         },
         {
           "id": "w-3",
           "timestamp": "2026-03-20T08:30:00.000Z",
           "amountMl": 950,
-          "ph": 5.8,
-          "ec": 0.9
+          "ph": 5.9,
+          "ec": 1.4,
+          "runoffPh": 6.2,
+          "runoffEc": 1.48
         },
         {
           "id": "w-4",
           "timestamp": "2026-03-22T08:30:00.000Z",
           "amountMl": 1000,
           "ph": 5.9,
-          "ec": 0.89
-        },
-        {
-          "id": "water-1774367783324",
-          "timestamp": "2026-03-24T15:56:23.324Z",
-          "amountMl": 1000,
-          "ph": 5.9,
-          "ec": 0.96,
-          "runoffPh": 6.2,
-          "runoffEc": 1.26
+          "ec": 1.45,
+          "runoffPh": 6.1,
+          "runoffEc": 1.46
         }
       ],
       "climateData": [
         {
-          "id": "c-6",
-          "timestamp": "2026-03-21T08:30:00.000Z",
-          "tempC": 25.6,
-          "humidity": 58
+          "id": "climate-1774547589603",
+          "timestamp": "2026-03-26T17:53:09.603Z",
+          "tempC": 25,
+          "humidity": 49
         },
         {
-          "id": "c-7",
-          "timestamp": "2026-03-22T08:30:00.000Z",
-          "tempC": 25.3,
-          "humidity": 60
-        },
-        {
-          "id": "climate-1774301226132",
-          "timestamp": "2026-03-23T21:27:06.132Z",
-          "tempC": 21.5,
-          "humidity": 61
-        },
-        {
-          "id": "climate-1774349264995",
-          "timestamp": "2026-03-24T10:47:44.995Z",
-          "tempC": 24.9,
-          "humidity": 45
-        },
-        {
-          "id": "climate-1774352569737",
-          "timestamp": "2026-03-24T11:42:49.737Z",
-          "tempC": 23.5,
-          "humidity": 50
-        },
-        {
-          "id": "climate-1774387185267",
-          "timestamp": "2026-03-24T21:19:45.267Z",
-          "tempC": 20.1,
-          "humidity": 74
-        },
-        {
-          "id": "climate-1774436816548",
-          "timestamp": "2026-03-25T11:06:56.548Z",
-          "tempC": 23.9,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774440287896",
-          "timestamp": "2026-03-25T12:04:47.896Z",
-          "tempC": 24.7,
-          "humidity": 52
-        },
-        {
-          "id": "climate-1774447093110",
-          "timestamp": "2026-03-25T13:58:13.110Z",
-          "tempC": 22.9,
-          "humidity": 61
-        },
-        {
-          "id": "climate-1774462496016",
-          "timestamp": "2026-03-25T18:14:56.016Z",
-          "tempC": 22.7,
-          "humidity": 60
-        },
-        {
-          "id": "climate-1774474983434",
-          "timestamp": "2026-03-25T21:43:03.434Z",
-          "tempC": 23,
-          "humidity": 55
+          "id": "climate-1774550002304",
+          "timestamp": "2026-03-26T18:33:22.304Z",
+          "tempC": 25,
+          "humidity": 49
         }
       ],
       "feedRecipe": {
-        "title": "Canna Nutrients",
-        "baseAMl": 2,
-        "baseBMl": 2,
-        "calMagMl": 1,
-        "targetEc": 900,
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
         "targetPhLow": 5.8,
         "targetPhHigh": 6.1,
         "additives": [
           {
             "id": "add-1",
-            "label": "CannaZym",
-            "amountMl": 1.5
-          },
-          {
-            "id": "add-1774289543623",
-            "label": "Additive 2",
-            "amountMl": 1
+            "label": "Silica",
+            "amountMl": 5
           }
         ]
-      },
-      "totalDaysOverride": 67
+      }
     },
     {
       "id": "plant-2",
@@ -256,10 +191,10 @@
       "lightSchedule": "18/6",
       "lightsOn": "06:00",
       "lightsOff": "01:00",
-      "lightType": "panel_100w",
+      "lightType": "blurple_40w",
       "lightDimmerPercent": 80,
-      "lightLampName": "Main panel",
-      "lightLampWatts": 100,
+      "lightLampName": "Vegging Panel",
+      "lightLampWatts": 40,
       "containerVolumeL": 0.2,
       "mediaVolumeL": 0.2,
       "mediaType": "Light Mix",

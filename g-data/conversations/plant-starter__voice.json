@@ -1,0 +1,92 @@
+{
+  "plantId": "plant-starter",
+  "assistantKey": "voice",
+  "updatedAt": "2026-03-26T18:46:03.142Z",
+  "messages": [
+    {
+      "id": "user-1774550574188",
+      "createdAt": "2026-03-26T18:42:54.188Z",
+      "role": "user",
+      "content": "what's the name of the current plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774550575190",
+      "createdAt": "2026-03-26T18:42:55.927Z",
+      "role": "assistant",
+      "content": "The current plant is \"My First Plant\" with the ID \"plant-starter\" and it's currently in the Seedling stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774550599666",
+      "createdAt": "2026-03-26T18:43:19.666Z",
+      "role": "user",
+      "content": "show me the special Queen number one",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774550600672",
+      "createdAt": "2026-03-26T18:43:21.325Z",
+      "role": "assistant",
+      "content": "I'm not aware of any information about a \"special Queen number one.\" Could you please provide more context or clarify what you are referring to? I'd be happy to try and help if I can.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774550621857",
+      "createdAt": "2026-03-26T18:43:41.858Z",
+      "role": "user",
+      "content": "select the next Plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774550622866",
+      "createdAt": "2026-03-26T18:43:44.059Z",
+      "role": "assistant",
+      "content": "To proceed, I need to access a different plant profile. Since I don't have a list of available plants, could you please provide me with the ID or details of the next plant you'd like to select? This will allow me to retrieve and display the relevant plant data.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774550717801",
+      "createdAt": "2026-03-26T18:45:17.801Z",
+      "role": "user",
+      "content": "what is happening to your voice",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774550718803",
+      "createdAt": "2026-03-26T18:45:20.348Z",
+      "role": "assistant",
+      "content": "It seems like I'm functioning within normal parameters, but my responses might sound a bit different due to the plant care expert AI assistant persona I'm adopting, referred to as G-Buddy. I'll provide advice and updates related to the plant's current conditions, based on the provided data. \n\nCurrently, your seedling is in a grow room with a temperature of 24°C and humidity of 60%. The lights are set to 75% dimmer, and the schedule is from 06:00 to 00:00. Considering the seedling stage, you might want to monitor the VPD (Vapor Pressure Deficit) to ensure it's within the optimal range for healthy growth. \n\nIf you need any adjustments or have questions, feel free to ask.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774550761120",
+      "createdAt": "2026-03-26T18:46:01.120Z",
+      "role": "user",
+      "content": "what should I do to raise humidity",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774550762125",
+      "createdAt": "2026-03-26T18:46:03.137Z",
+      "role": "assistant",
+      "content": "To raise the humidity in your grow room, you can consider a few options. Since the current humidity is 60%, you might want to increase it to a range of 60-80% for optimal seedling growth. You could use a humidifier, group plants together to create a microclimate, or cover the plants with a clear plastic bag to trap moisture. \n\nNo changes have been made to the plant data.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
+import { useState, useMemo } from "react";
 import {
   Area,
   Bar,
@@ -16,6 +17,8 @@ import {
 } from "recharts";
 import type { ClimateEntry, GrowLogEntry, GrowStage, WateringEntry } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
+
+type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
 
 type GrowChartProps = {
   logs: GrowLogEntry[];
@@ -44,7 +47,31 @@ export function GrowChart({
   onClimateDataChange,
   labels
 }: GrowChartProps) {
-  const sortedClimate = [...climateData].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("WEEK");
+
+  const filteredClimate = useMemo(() => {
+    const now = Date.now();
+    let cutoffTime = now;
+
+    switch (filterPeriod) {
+      case "DAY":
+        cutoffTime = now - 24 * 60 * 60 * 1000;
+        break;
+      case "WEEK":
+        cutoffTime = now - 7 * 24 * 60 * 60 * 1000;
+        break;
+      case "MONTH":
+        cutoffTime = now - 30 * 24 * 60 * 60 * 1000;
+        break;
+      case "ALL":
+        cutoffTime = 0;
+        break;
+    }
+
+    return climateData.filter((entry) => new Date(entry.timestamp).getTime() >= cutoffTime);
+  }, [climateData, filterPeriod]);
+
+  const sortedClimate = [...filteredClimate].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   const climateChartData = sortedClimate.map((entry) => ({
     tick: formatShortDate(entry.timestamp, locale),
     temp: entry.tempC,
@@ -90,24 +117,39 @@ export function GrowChart({
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-lime-300/80">{labels.progression}</p>
             <h3 className="mt-2 text-lg font-semibold text-white">{labels.climateDrift}</h3>
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              onClimateDataChange([
-                ...climateData,
-                {
-                  id: `climate-${Date.now()}`,
-                  timestamp: new Date().toISOString(),
-                  tempC: climateData[0]?.tempC ?? 25,
-                  humidity: climateData[0]?.humidity ?? 60
-                }
-              ])
-            }
-            className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1.5 text-lime-100"
-            title="Add climate datapoint"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {(["DAY", "WEEK", "MONTH", "ALL"] as const).map((period) => (
+              <button
+                key={period}
+                onClick={() => setFilterPeriod(period)}
+                className={`rounded px-2 py-1 text-xs font-semibold transition ${
+                  filterPeriod === period
+                    ? "bg-lime-300/30 text-lime-200"
+                    : "bg-lime-300/10 text-lime-100/50 hover:bg-lime-300/15"
+                }`}
+              >
+                {period}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() =>
+                onClimateDataChange([
+                  ...climateData,
+                  {
+                    id: `climate-${Date.now()}`,
+                    timestamp: new Date().toISOString(),
+                    tempC: climateData[0]?.tempC ?? 25,
+                    humidity: climateData[0]?.humidity ?? 60
+                  }
+                ])
+              }
+              className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1.5 text-lime-100"
+              title="Add climate datapoint"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         <p className="mb-3 text-xs text-lime-100/70">{labels.tempHumidityVpd}</p>
         <div className="h-52">
@@ -146,11 +188,11 @@ export function GrowChart({
           <table className="w-full border-collapse text-xs text-lime-100">
             <thead className="bg-black/25">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
-                <th className="px-3 py-2">When</th>
+                <th className="px-3 py-2">Weather</th>
                 <th className="px-3 py-2">Temp C</th>
                 <th className="px-3 py-2">Humidity %</th>
                 <th className="px-3 py-2">VPD</th>
-                <th className="px-3 py-2 text-right">Del</th>
+                <th className="px-3 py-2 text-right">x</th>
               </tr>
             </thead>
             <tbody>

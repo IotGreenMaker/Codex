@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Droplets, Leaf, Lightbulb, Minus, Plus, RotateCcw, Thermometer, Waves } from "lucide-react";
 import { GrowChart } from "@/components/charts/grow-chart";
 import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel-livekit";
+import { VPDChart } from "@/components/dashboard/vpd-chart";
 import { calculateVpd, getCycleSummary, getDetailedCycleSummary, getVpdBand } from "@/lib/grow-math";
 import { Locale, translations } from "@/lib/i18n";
 import { dailyLogs, plantProfiles } from "@/lib/mock-data";
@@ -585,10 +586,30 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
             </div>
           </div>
 
-          <AiAssistantPanel locale={locale} plant={activePlant} onPlantUpdate={onPlantUpdate} />
+          <AiAssistantPanel 
+            locale={locale} 
+            plant={activePlant}
+            plants={plants}
+            weather={weather} 
+            onPlantUpdate={onPlantUpdate}
+            onPatchPlant={patchActivePlant}
+            onSelectPlant={setActivePlantId}
+            onUpdateWateringData={patchWateringData}
+            onUpdateClimateData={patchClimateData}
+          />
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-4">
+          {/* VPD Chart */}
+          <VPDChart
+            currentVpd={liveVpd}
+            currentTemp={activePlant.growTempC}
+            currentHumidity={activePlant.growHumidity}
+            currentStage={activePlant.stage}
+            onStageChange={(newStage) => patchActivePlant({ stage: newStage })}
+          />
+
+          {/* Growth Progression Chart */}
           <GrowChart
             logs={dailyLogs}
             wateringData={activePlant.wateringData}
@@ -641,20 +662,6 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   }
                 />
               </div>
-              <div className="mt-4 rounded-2xl border border-white/8 bg-black/20 p-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Cycle timeline</p>
-                <div className="mt-2 space-y-1 text-xs text-lime-100/80">
-                  <p>
-                    Seedling: <span className="text-lime-100">{daysSeedling}d</span>
-                  </p>
-                  <p>
-                    Veg: <span className="text-lime-100">{cycleDetailed.daysInVeg}d</span>
-                  </p>
-                  <p>
-                    Bloom: <span className="text-lime-100">{cycleDetailed.daysInBloom}d</span>
-                  </p>
-                </div>
-              </div>
             </div>
 
             <div className="glass-panel rounded-3xl p-4">
@@ -704,67 +711,6 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 <MiniInfo
                   label="Average PPM"
                   value={<span className="text-sm font-semibold text-lime-100">{formatAvgPpm(activePlant.wateringData)}</span>}
-                />
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <MiniInfo
-                  label="Base A"
-                  value={
-                    <EditableNumber
-                      suffix=" ml"
-                      value={activePlant.feedRecipe.baseAMl}
-                      onSave={(value) => patchActivePlant({ feedRecipe: { ...activePlant.feedRecipe, baseAMl: value } })}
-                    />
-                  }
-                />
-                <MiniInfo
-                  label="Base B"
-                  value={
-                    <EditableNumber
-                      suffix=" ml"
-                      value={activePlant.feedRecipe.baseBMl}
-                      onSave={(value) => patchActivePlant({ feedRecipe: { ...activePlant.feedRecipe, baseBMl: value } })}
-                    />
-                  }
-                />
-                <MiniInfo
-                  label="Cal-Mag"
-                  value={
-                    <EditableNumber
-                      suffix=" ml"
-                      value={activePlant.feedRecipe.calMagMl}
-                      onSave={(value) => patchActivePlant({ feedRecipe: { ...activePlant.feedRecipe, calMagMl: value } })}
-                    />
-                  }
-                />
-                <MiniInfo
-                  label={t.targetEc}
-                  value={
-                    <EditableNumber
-                      value={activePlant.feedRecipe.targetEc}
-                      onSave={(value) => patchActivePlant({ feedRecipe: { ...activePlant.feedRecipe, targetEc: value } })}
-                    />
-                  }
-                />
-                <MiniInfo
-                  label={t.targetPh}
-                  value={
-                    <EditableText
-                      value={`${activePlant.feedRecipe.targetPhLow}-${activePlant.feedRecipe.targetPhHigh}`}
-                      className="text-sm font-semibold text-lime-100"
-                      onSave={(value) => {
-                        const match = value.match(/([0-9]+(?:\.[0-9]+)?)\s*-\s*([0-9]+(?:\.[0-9]+)?)/);
-                        if (!match) return;
-                        patchActivePlant({
-                          feedRecipe: {
-                            ...activePlant.feedRecipe,
-                            targetPhLow: Number(match[1]),
-                            targetPhHigh: Number(match[2])
-                          }
-                        });
-                      }}
-                    />
-                  }
                 />
               </div>
 

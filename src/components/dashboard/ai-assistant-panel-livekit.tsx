@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Mic, Volume2 } from "lucide-react";
+import { Mic, Volume2, Send } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { translations } from "@/lib/i18n";
-import { applyGrowCommand } from "@/lib/local-llm";
 import { speakWithElevenLabs } from "@/lib/elevenlabs-tts";
-import type { GrowCommand, PlantProfile } from "@/lib/types";
+import { getPreviousContext } from "@/lib/supabase-client";
+import type { PlantProfile } from "@/lib/types";
 
 type ChatMessage = {
   id: string;
@@ -20,11 +20,23 @@ type ChatMessage = {
 export function AiAssistantPanel({
   locale,
   plant,
-  onPlantUpdate
+  plants = [],
+  weather,
+  onPlantUpdate,
+  onPatchPlant,
+  onSelectPlant,
+  onUpdateWateringData,
+  onUpdateClimateData
 }: {
   locale: Locale;
   plant: PlantProfile;
+  plants?: PlantProfile[];
+  weather?: { temperatureC: number | null; humidity: number | null; location: string } | null;
   onPlantUpdate: (next: PlantProfile) => void;
+  onPatchPlant?: (patch: Partial<PlantProfile>) => void;
+  onSelectPlant?: (plantId: string) => void;
+  onUpdateWateringData?: (data: PlantProfile["wateringData"]) => void;
+  onUpdateClimateData?: (data: PlantProfile["climateData"]) => void;
 }) {
   const t = translations[locale];
   const [isConnected, setIsConnected] = useState(false);
@@ -116,8 +128,15 @@ export function AiAssistantPanel({
     };
   }, [locale]);
 
+  const voiceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleUserSpeech = async (text: string) => {
     if (!text.trim()) return;
+
+    // Clear any existing timeout
+    if (voiceTimeoutRef.current) {
+      clearTimeout(voiceTimeoutRef.current);
+    }
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -140,7 +159,10 @@ export function AiAssistantPanel({
       }
     ]);
 
-    await getAIResponse(text);
+    // Add 1 second delay before sending to AI
+    voiceTimeoutRef.current = setTimeout(() => {
+      void getAIResponse(text);
+    }, 1000);
   };
 
   const getAIResponse = async (userMessage: string) => {
@@ -148,16 +170,61 @@ export function AiAssistantPanel({
     const assistantId = `assistant-${Date.now()}`;
 
     try {
-      const response = await fetch("/api/local-llm", {
+      // Build comprehensive plant context with real-time data
+      const latestClimate = plant.climateData?.[plant.climateData.length - 1];
+      const latestWatering = plant.wateringData?.[plant.wateringData.length - 1];
+      
+      const stageKey = plant.stage.toLowerCase() as "seedling" | "veg" | "bloom";
+      const daysInStage = plant.stageDays?.[stageKey] || 0;
+      
+      // Build available plants list for context
+      const availablePlantsInfo = plants.length > 0 
+        ? plants.map(p => `- ${p.strainName} (Stage: ${p.stage})`).join("\n")
+        : "- None available";
+      
+      const plantContext = `AVAILABLE PLANTS:
+${availablePlantsInfo}
+
+## CURRENTLY SELECTED PLANT:
+- ID: ${plant.id}
+- Name: ${plant.strainName}
+- Growth Stage: ${plant.stage}
+- Days in Stage: ${daysInStage} days
+
+CURRENT ENVIRONMENT:
+- Grow Room Temp: ${plant.growTempC}°C
+- Grow Room Humidity: ${plant.growHumidity}%
+- Light Type: ${plant.lightType || "unknown"}
+- Light Dimmer: ${plant.lightDimmerPercent || 0}%
+- Lights Schedule: ${plant.lightsOn} - ${plant.lightsOff}
+
+LATEST CLIMATE READING:
+- Temperature: ${latestClimate?.tempC || plant.growTempC}°C
+- Humidity: ${latestClimate?.humidity || plant.growHumidity}%
+- Timestamp: ${latestClimate?.timestamp || new Date().toISOString()}
+
+WATERING INFO:
+- Last Watered: ${plant.lastWateredAt}
+- Amount: ${plant.waterInputMl || latestWatering?.amountMl || 0}ml
+- Water pH: ${plant.waterPh || latestWatering?.ph || "N/A"}
+- Water EC: ${plant.waterEc || latestWatering?.ec || "N/A"}
+- Watering Interval: Every ${plant.wateringIntervalDays} days
+
+OUTDOOR WEATHER (Reference):
+- Location: ${weather?.location || "Not available"}
+- Temperature: ${weather?.temperatureC || "N/A"}°C
+- Humidity: ${weather?.humidity || "N/A"}%
+
+IMPORTANT: Only reference the GROW ROOM environment data when giving advice about the plant's current conditions. The outdoor weather is just for reference context.`;
+
+      // Use Groq API for AI response
+      const response = await fetch("/api/groq", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mode: "chat",
-          provider: "xai",
-          baseUrl: "",
-          model: "",
           message: userMessage,
-          plant,
+          plantContext: plantContext,
+          plantId: plant.id,
           history: messages.map((m) => ({
             role: m.role,
             content: m.content
@@ -167,28 +234,95 @@ export function AiAssistantPanel({
 
       const data = (await response.json()) as {
         ok: boolean;
-        assistantMessage?: string;
-        command?: GrowCommand;
+        response?: string;
         error?: string;
       };
 
       setConnectionState(data.ok ? "connected" : "failed");
 
-      if (data.command && data.command.action !== "none") {
-        onPlantUpdate(applyGrowCommand(plant, data.command));
+      let assistantMessage = data.ok && data.response
+        ? data.response
+        : data.error ?? "Assistant request failed.";
+
+      // Try to parse structured response with data commands
+      let parsedData: any = null;
+      try {
+        // Look for JSON block in response
+        const jsonMatch = assistantMessage.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch) {
+          parsedData = JSON.parse(jsonMatch[1]);
+          // Extract just the message text if available
+          if (parsedData.message) {
+            assistantMessage = parsedData.message;
+          }
+        }
+      } catch {
+        // Not structured JSON, continue with plain text
       }
 
-      const assistantMessage =
-        data.ok && data.assistantMessage
-          ? data.assistantMessage
-          : data.error ?? "Assistant request failed.";
+      // Apply data updates from AI
+      if (parsedData) {
+        // Update watering data
+        if (parsedData.watering && onUpdateWateringData) {
+          const newWatering = {
+            id: `water-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            amountMl: parsedData.watering.amountMl ?? 0,
+            ph: parsedData.watering.ph ?? 6.0,
+            ec: parsedData.watering.ec ?? 1.4,
+            runoffPh: parsedData.watering.runoffPh,
+            runoffEc: parsedData.watering.runoffEc
+          };
+          onUpdateWateringData([...(plant.wateringData ?? []), newWatering]);
+        }
+
+        // Update climate data
+        if (parsedData.climate && onUpdateClimateData) {
+          const newClimate = {
+            id: `climate-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            tempC: parsedData.climate.tempC ?? plant.growTempC,
+            humidity: parsedData.climate.humidity ?? plant.growHumidity
+          };
+          onUpdateClimateData([...(plant.climateData ?? []), newClimate]);
+        }
+
+        // Update plant profile (stage, strain, light settings, etc.)
+        if (parsedData.plant && onPatchPlant) {
+          const plantUpdate: Partial<PlantProfile> = {};
+          
+          if (parsedData.plant.stage) plantUpdate.stage = parsedData.plant.stage;
+          if (parsedData.plant.strainName) plantUpdate.strainName = parsedData.plant.strainName;
+          if (parsedData.plant.lightType) plantUpdate.lightType = parsedData.plant.lightType;
+          if (typeof parsedData.plant.lightDimmerPercent === "number") plantUpdate.lightDimmerPercent = parsedData.plant.lightDimmerPercent;
+          if (parsedData.plant.lightsOn) plantUpdate.lightsOn = parsedData.plant.lightsOn;
+          if (parsedData.plant.lightsOff) plantUpdate.lightsOff = parsedData.plant.lightsOff;
+          if (typeof parsedData.plant.wateringIntervalDays === "number") plantUpdate.wateringIntervalDays = parsedData.plant.wateringIntervalDays;
+          if (typeof parsedData.plant.growTempC === "number") plantUpdate.growTempC = parsedData.plant.growTempC;
+          if (typeof parsedData.plant.growHumidity === "number") plantUpdate.growHumidity = parsedData.plant.growHumidity;
+          
+          if (Object.keys(plantUpdate).length > 0) {
+            onPatchPlant(plantUpdate);
+          }
+        }
+
+        // Handle plant selection by name
+        if (parsedData.selectPlant && onSelectPlant && plants.length > 0) {
+          const selectedPlant = plants.find(
+            p => p.strainName.toLowerCase() === parsedData.selectPlant.toLowerCase()
+          );
+          if (selectedPlant) {
+            onSelectPlant(selectedPlant.id);
+          }
+        }
+      }
 
       const aiMessage: ChatMessage = {
         id: assistantId,
         role: "assistant",
         content: assistantMessage,
         source: "voice",
-        model: "grok-4-1-fast / gemini-2.5-flash",
+        model: "llama-3.3-70b-versatile (Groq)",
         createdAt: new Date().toISOString()
       };
 
@@ -201,7 +335,7 @@ export function AiAssistantPanel({
           role: "assistant",
           content: assistantMessage,
           source: "voice",
-          meta: { model: "grok-4-1-fast / gemini-2.5-flash" }
+          meta: { model: "llama-3.3-70b-versatile (Groq)" }
         }
       ]);
 
@@ -247,6 +381,25 @@ export function AiAssistantPanel({
 
   async function loadConversation() {
     try {
+      // Try to load from Supabase first
+      try {
+        const supabaseHistory = await getPreviousContext(plant.id, 50);
+        if (supabaseHistory && supabaseHistory.length > 0) {
+          const restored = supabaseHistory.map((msg: any) => ({
+            id: `${msg.role}-${msg.created_at}`,
+            role: msg.role as "user" | "assistant",
+            content: msg.content,
+            source: "voice" as const,
+            createdAt: msg.created_at
+          })) satisfies ChatMessage[];
+          setMessages(restored);
+          return;
+        }
+      } catch (supabaseError) {
+        console.log("Supabase not available, falling back to local API");
+      }
+
+      // Fallback to local API
       const response = await fetch(
         `/api/conversations?plantId=${encodeURIComponent(plant.id)}&assistantKey=voice`,
         { cache: "no-store" }
@@ -307,43 +460,11 @@ export function AiAssistantPanel({
   return (
     <div className="rounded-2xl border border-lime-300/14 bg-black/20 p-5">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">
-            {t.aiConversation}
-          </p>
-          <p className="mt-1 text-[11px] text-lime-100/65">Voice Assistant with ElevenLabs Natural Speech</p>
-        </div>
+        <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">
+          {t.aiConversation}
+        </p>
 
         <div className="flex items-center gap-2">
-          {/* Voice button */}
-          <button
-            type="button"
-            onClick={toggleMicrophone}
-            title={isListening ? "Stop listening" : "Start listening"}
-            className={`group relative grid h-16 w-16 place-items-center rounded-full border transition focus:outline-none ${
-              isListening
-                ? "border-lime-200/80 bg-gradient-to-br from-lime-300/35 via-fuchsia-400/25 to-emerald-300/25 text-lime-100 shadow-[0_0_30px_8px_rgba(178,107,255,0.18),0_0_60px_16px_rgba(158,255,102,0.18)]"
-                : "border-lime-300/35 bg-gradient-to-br from-lime-300/18 via-fuchsia-400/10 to-emerald-300/10 text-lime-100 hover:from-lime-300/30 hover:via-fuchsia-400/20 hover:to-emerald-300/20"
-            }`}
-          >
-            {isListening ? (
-              <>
-                <span
-                  className="absolute h-16 w-16 animate-pulse rounded-full"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 60% 40%, rgba(158,255,102,0.22) 40%, rgba(178,107,255,0.18) 100%)",
-                    boxShadow:
-                      "0 0 40px 12px rgba(178,107,255,0.18), 0 0 80px 24px rgba(158,255,102,0.18)"
-                  }}
-                />
-                <Mic className="relative h-6 w-6 scale-110" />
-              </>
-            ) : (
-              <Mic className="relative h-6 w-6" />
-            )}
-          </button>
-
           {/* Speaker indicator */}
           {isPlaying && (
             <div className="animate-pulse">
@@ -375,11 +496,6 @@ export function AiAssistantPanel({
           </p>
         </div>
 
-        {/* Live transcription */}
-        {interimTranscript && (
-          <p className="mb-2 text-xs text-lime-300/75 animate-pulse italic">{interimTranscript}</p>
-        )}
-
         {/* Error message */}
         {micError && <p className="mb-2 text-xs text-amber-300">{micError}</p>}
 
@@ -400,10 +516,7 @@ export function AiAssistantPanel({
                 }`}
               >
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
-                  {message.role === "assistant" ? "🤖 Assistant" : "🎤 You"}{" "}
-                  <span className="text-[10px] text-slate-500">
-                    {message.source === "voice" ? "Voice" : "Text"}
-                  </span>
+                  {message.role === "assistant" ? "🤖 Assistant" : "🎤 You"}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-100">{message.content}</p>
               </div>
@@ -412,34 +525,67 @@ export function AiAssistantPanel({
         </div>
       </div>
 
-      {/* Quick text input (optional) */}
+      {/* Quick text input with integrated voice */}
       <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-3">
         <div className="flex gap-2">
           <input
             type="text"
-            placeholder="Or type a message..."
+            placeholder={isListening ? "Listening..." : interimTranscript || "Type or speak..."}
+            value={interimTranscript}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 const target = e.currentTarget;
                 sendMessage(target.value);
                 target.value = "";
+                setInterimTranscript("");
               }
             }}
             className="flex-1 rounded-lg border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 placeholder-slate-500 outline-none focus:border-lime-300/50"
           />
+
+          {/* Mic button - small, integrated with Send */}
+          <button
+            type="button"
+            onClick={toggleMicrophone}
+            title={isListening ? "Stop listening" : "Start listening"}
+            className={`group relative grid h-10 w-10 place-items-center rounded-lg border transition focus:outline-none ${
+              isListening
+                ? "border-lime-200/80 bg-gradient-to-br from-lime-300/35 via-fuchsia-400/25 to-emerald-300/25 text-lime-100 shadow-[0_0_20px_6px_rgba(178,107,255,0.12),0_0_40px_12px_rgba(158,255,102,0.12)]"
+                : "border-lime-300/35 bg-gradient-to-br from-lime-300/18 via-fuchsia-400/10 to-emerald-300/10 text-lime-100 hover:from-lime-300/30 hover:via-fuchsia-400/20 hover:to-emerald-300/20"
+            }`}
+          >
+            {isListening ? (
+              <>
+                <span
+                  className="absolute h-10 w-10 animate-pulse rounded-lg"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 60% 40%, rgba(158,255,102,0.22) 40%, rgba(178,107,255,0.18) 100%)",
+                    boxShadow:
+                      "0 0 30px 8px rgba(178,107,255,0.12), 0 0 60px 16px rgba(158,255,102,0.12)"
+                  }}
+                />
+                <Mic className="relative h-4 w-4" />
+              </>
+            ) : (
+              <Mic className="relative h-4 w-4" />
+            )}
+          </button>
+
+          {/* Send button */}
           <button
             type="button"
             onClick={(e) => {
-              const input = e.currentTarget
-                .previousElementSibling as HTMLInputElement;
+              const input = e.currentTarget.previousElementSibling?.previousElementSibling as HTMLInputElement;
               if (input) {
                 sendMessage(input.value);
                 input.value = "";
+                setInterimTranscript("");
               }
             }}
-            className="rounded-lg border border-lime-300/20 bg-lime-300/12 px-4 py-2 text-sm font-semibold text-lime-100 transition hover:bg-lime-300/20"
+            className="rounded-lg border border-lime-300/20 bg-lime-300/12 px-4 py-2 text-sm font-semibold text-lime-100 transition hover:bg-lime-300/20 flex items-center gap-2"
           >
-            Send
+            <Send className="h-4 w-4" />
           </button>
         </div>
       </div>
