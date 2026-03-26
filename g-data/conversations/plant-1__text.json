@@ -1,0 +1,449 @@
+{
+  "plantId": "plant-1",
+  "assistantKey": "text",
+  "updatedAt": "2026-03-25T22:57:03.200Z",
+  "messages": [
+    {
+      "id": "user-1774462435565",
+      "createdAt": "2026-03-25T18:13:55.565Z",
+      "role": "user",
+      "content": "what's up do you hear me",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774462435565",
+      "createdAt": "2026-03-25T18:13:57.146Z",
+      "role": "assistant",
+      "content": "Yes, I hear you! How can I help you with your plant today?",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774462494789",
+      "createdAt": "2026-03-25T18:14:54.789Z",
+      "role": "user",
+      "content": "new environment update 60% humidity and 22.7°c",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774462494789",
+      "createdAt": "2026-03-25T18:14:56.016Z",
+      "role": "assistant",
+      "content": "Okay, I've logged the new environment update.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774463287206",
+      "createdAt": "2026-03-25T18:28:07.206Z",
+      "role": "user",
+      "content": "what can you tell me about the current PPD",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774463287206",
+      "createdAt": "2026-03-25T18:28:08.600Z",
+      "role": "assistant",
+      "content": "I'm sorry, I don't have any information about \"PPD\" in the current plant data. Could you please clarify what you mean by PPD?",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774463309116",
+      "createdAt": "2026-03-25T18:28:29.116Z",
+      "role": "user",
+      "content": "what can you tell me about the VPD vapor pressure deficit",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774463309116",
+      "createdAt": "2026-03-25T18:28:30.827Z",
+      "role": "assistant",
+      "content": "VPD, or Vapor Pressure Deficit, is the difference between the amount of moisture in the air and how much moisture the air can hold when it's saturated. It's a crucial metric for plant growth because it influences transpiration rates. A high VPD means the air is dry and the plant will transpire more, which can be good for nutrient uptake but can also lead to stress if too high. A low VPD means the air is humid, reducing transpiration and potentially leading to issues like mold or nutrient lockout. Maintaining an optimal VPD range is key for healthy plant development.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774463330599",
+      "createdAt": "2026-03-25T18:28:50.599Z",
+      "role": "user",
+      "content": "yeah but tell me about the range I am right now",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774463330599",
+      "createdAt": "2026-03-25T18:28:53.106Z",
+      "role": "assistant",
+      "content": "Currently, your grow environment is at 22.7°C and 60% humidity.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774463361815",
+      "createdAt": "2026-03-25T18:29:21.815Z",
+      "role": "user",
+      "content": "is it a good VPD according to the blue stage",
+      "source": "text"
+    },
+    {
+      "id": "user-1774463363210",
+      "createdAt": "2026-03-25T18:29:23.210Z",
+      "role": "user",
+      "content": "bloom",
+      "source": "text"
+    },
+    {
+      "id": "user-1774463364606",
+      "createdAt": "2026-03-25T18:29:24.606Z",
+      "role": "user",
+      "content": "stage",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774463363210",
+      "createdAt": "2026-03-25T18:29:25.527Z",
+      "role": "assistant",
+      "content": "Okay, I've updated the plant's stage to Bloom.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "assistant-1774463364606",
+      "createdAt": "2026-03-25T18:29:25.801Z",
+      "role": "assistant",
+      "content": "Your plant is currently in the Bloom stage.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "assistant-1774463361815",
+      "createdAt": "2026-03-25T18:29:27.163Z",
+      "role": "assistant",
+      "content": "Based on your current grow environment of 22.7°C and 60% humidity, your Vapor Pressure Deficit (VPD) is approximately 1.1 kPa. For the bloom stage, a VPD range of 1.0 to 1.5 kPa is generally considered good. So, your current VPD of 1.1 kPa is within a healthy range for your plant in bloom.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774463441896",
+      "createdAt": "2026-03-25T18:30:41.896Z",
+      "role": "user",
+      "content": "what is my name",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774463441896",
+      "createdAt": "2026-03-25T18:30:44.744Z",
+      "role": "assistant",
+      "content": "I do not store any personal information about you, including your name.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774473751374",
+      "createdAt": "2026-03-25T21:22:31.374Z",
+      "role": "user",
+      "content": "new updates today environment it is now",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774473751374",
+      "createdAt": "2026-03-25T21:22:32.239Z",
+      "role": "assistant",
+      "content": "What is the current temperature and humidity?",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774473757476",
+      "createdAt": "2026-03-25T21:22:37.476Z",
+      "role": "user",
+      "content": "55% humidity",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774473757476",
+      "createdAt": "2026-03-25T21:22:38.792Z",
+      "role": "assistant",
+      "content": "Okay, I've noted the humidity. Is there anything else I can help you with regarding the climate or your plant?",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774473762774",
+      "createdAt": "2026-03-25T21:22:42.774Z",
+      "role": "user",
+      "content": "it is now 55% humidity",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774473762774",
+      "createdAt": "2026-03-25T21:22:44.210Z",
+      "role": "assistant",
+      "content": "Okay, I've noted the current humidity is 55%.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774473776378",
+      "createdAt": "2026-03-25T21:22:56.378Z",
+      "role": "user",
+      "content": "and now it's 23.1° c",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774473776378",
+      "createdAt": "2026-03-25T21:22:57.465Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774473807595",
+      "createdAt": "2026-03-25T21:23:27.595Z",
+      "role": "user",
+      "content": "environments update 23° Celsius and 55% you needed",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774473807595",
+      "createdAt": "2026-03-25T21:23:28.713Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774474088976",
+      "createdAt": "2026-03-25T21:28:08.976Z",
+      "role": "user",
+      "content": "are you there",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774474088976",
+      "createdAt": "2026-03-25T21:28:11.251Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774474113281",
+      "createdAt": "2026-03-25T21:28:33.281Z",
+      "role": "user",
+      "content": "testing call are you there",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774474113281",
+      "createdAt": "2026-03-25T21:28:34.887Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774475024156",
+      "createdAt": "2026-03-25T21:43:44.156Z",
+      "role": "user",
+      "content": "do you hear me",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774475024157",
+      "createdAt": "2026-03-25T21:43:45.851Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774475052732",
+      "createdAt": "2026-03-25T21:44:12.732Z",
+      "role": "user",
+      "content": "new weather update",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774475052732",
+      "createdAt": "2026-03-25T21:44:14.263Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774476644788",
+      "createdAt": "2026-03-25T22:10:44.788Z",
+      "role": "user",
+      "content": "hi what's the date today",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774476644788",
+      "createdAt": "2026-03-25T22:10:46.433Z",
+      "role": "assistant",
+      "content": "Today is March 26, 2026.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774476657176",
+      "createdAt": "2026-03-25T22:10:57.176Z",
+      "role": "user",
+      "content": "what's the date of today",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774476657176",
+      "createdAt": "2026-03-25T22:10:58.712Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774476727645",
+      "createdAt": "2026-03-25T22:12:07.646Z",
+      "role": "user",
+      "content": "hi texting",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774476727646",
+      "createdAt": "2026-03-25T22:12:09.313Z",
+      "role": "assistant",
+      "content": "Hi there! How can I help you with your plant today?",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774476796389",
+      "createdAt": "2026-03-25T22:13:16.389Z",
+      "role": "user",
+      "content": "what is the weather of the 10th right now",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774476796389",
+      "createdAt": "2026-03-25T22:13:18.073Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774477581773",
+      "createdAt": "2026-03-25T22:26:21.773Z",
+      "role": "user",
+      "content": "hello do you hear me",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774477581773",
+      "createdAt": "2026-03-25T22:26:23.488Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774477611902",
+      "createdAt": "2026-03-25T22:26:51.902Z",
+      "role": "user",
+      "content": "new weather update",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774477611902",
+      "createdAt": "2026-03-25T22:26:53.459Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774478815297",
+      "createdAt": "2026-03-25T22:46:55.297Z",
+      "role": "user",
+      "content": "what's the VPD right now",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774478815297",
+      "createdAt": "2026-03-25T22:46:57.037Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774479421575",
+      "createdAt": "2026-03-25T22:57:01.575Z",
+      "role": "user",
+      "content": "do you hear me",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774479421575",
+      "createdAt": "2026-03-25T22:57:03.194Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "plantId": "plant-2",
+  "assistantKey": "text",
+  "updatedAt": "2026-03-25T19:17:26.773Z",
+  "messages": [
+    {
+      "id": "user-1774463221072",
+      "createdAt": "2026-03-25T18:27:01.072Z",
+      "role": "user",
+      "content": "what is the context you have about me",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774463221072",
+      "createdAt": "2026-03-25T18:27:03.362Z",
+      "role": "assistant",
+      "content": "I remember our previous conversation, including your last environment update. I also have the current active plant's data, which includes its strain, stage, watering history, and climate data. I don't store any personal information about you beyond our current interaction.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774465471490",
+      "createdAt": "2026-03-25T19:04:31.490Z",
+      "role": "user",
+      "content": "I'm doing the new watering with",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774465471490",
+      "createdAt": "2026-03-25T19:04:32.991Z",
+      "role": "assistant",
+      "content": "Okay, what was the amount in ml, the pH, and the EC of the water you used for this watering?",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774465477395",
+      "createdAt": "2026-03-25T19:04:37.395Z",
+      "role": "user",
+      "content": "a pH of 5.8 and 500 BPM",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774465477395",
+      "createdAt": "2026-03-25T19:04:39.634Z",
+      "role": "assistant",
+      "content": "Cloud fallback failed: Gemini fallback failed with 503.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774466245849",
+      "createdAt": "2026-03-25T19:17:25.849Z",
+      "role": "user",
+      "content": "do you hear me do you copy",
+      "source": "text"
+    },
+    {
+      "id": "assistant-1774466245849",
+      "createdAt": "2026-03-25T19:17:26.755Z",
+      "role": "assistant",
+      "content": "Cloud fallback failed: Gemini fallback failed with 503.",
+      "source": "text",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(158, 255, 102, 0.14), transparent 28%),
+    radial-gradient(circle at 86% 18%, rgba(178, 107, 255, 0.18), transparent 26%),
+    radial-gradient(circle at 70% 88%, rgba(250, 149, 76, 0.12), transparent 24%),
+    linear-gradient(180deg, #07060c 0%, #0b0911 36%, #05040a 100%);
+  color: #f4ffe7;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Brutal style: near-square corners globally */
+[class*="rounded-"] {
+  border-radius: 4px !important;
+}
+
+/* Replace white-ish borders with lime borders */
+[class*="border-white"] {
+  border-color: rgba(158, 255, 102, 0.28) !important;
+}
+
+/* Keep red warning/danger borders untouched */
+[class*="border-red"] {
+  border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
+/* Section labels and table headers default to lime */
+.font-mono.text-\[11px\].uppercase,
+.font-mono.text-\[10px\].uppercase,
+.font-mono.text-xs.uppercase,
+th,
+.table-label,
+.table-header {
+  color: rgba(190, 255, 130, 0.92) !important;
+}
+
+.glass-panel {
+  border: 1px solid rgba(158, 255, 102, 0.18);
+  background:
+    linear-gradient(180deg, rgba(16, 14, 24, 0.92), rgba(7, 6, 12, 0.92)),
+    radial-gradient(circle at 18% 12%, rgba(158, 255, 102, 0.08), transparent 34%);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+}
+
+.spectral-bar {
+  width: 100%;
+  max-width: 10px;
+  min-width: 6px;
+  border-radius: 999px 999px 0 0;
+  transition: height 120ms linear, opacity 120ms linear;
+}
+
+.spectral-bar-idle {
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.4), rgba(51, 65, 85, 0.2));
+  opacity: 0.45;
+}
+
+.spectral-bar-live {
+  background:
+    linear-gradient(180deg, rgba(244, 235, 255, 0.95) 0%, rgba(178, 107, 255, 0.88) 32%, rgba(139, 61, 255, 0.58) 72%, rgba(139, 61, 255, 0.16) 100%);
+  box-shadow: 0 0 18px rgba(178, 107, 255, 0.18);
+  opacity: 1;
+}

@@ -1,0 +1,537 @@
+{
+  "plants": [
+    {
+      "id": "plant-1",
+      "strainName": "Sour Diesel",
+      "startedAt": "2026-01-15T09:00:00.000Z",
+      "stage": "Bloom",
+      "bloomStartedAt": "",
+      "lightSchedule": "12/12",
+      "lightsOn": "05:00",
+      "lightsOff": "17:00",
+      "lightType": "panel_100w",
+      "lightDimmerPercent": 75,
+      "lightLampName": "Phlizon PL1000",
+      "lightLampWatts": 100,
+      "containerVolumeL": 10,
+      "mediaVolumeL": 10,
+      "mediaType": "Light Mix",
+      "outsideTempC": 16.7,
+      "outsideHumidity": 60,
+      "growTempC": 23,
+      "growHumidity": 55,
+      "waterInputMl": 1000,
+      "waterPh": 5.9,
+      "waterEc": 0.96,
+      "lastWateredAt": "2026-03-24T15:56:23.324Z",
+      "wateringIntervalDays": 1,
+      "stageDays": {
+        "seedling": 5,
+        "veg": 36,
+        "bloom": 26
+      },
+      "wateringData": [
+        {
+          "id": "w-1",
+          "timestamp": "2026-03-16T08:30:00.000Z",
+          "amountMl": 800,
+          "ph": 5.2,
+          "ec": 0.9,
+          "runoffPh": 5.8,
+          "runoffEc": 1.5
+        },
+        {
+          "id": "w-2",
+          "timestamp": "2026-03-18T08:30:00.000Z",
+          "amountMl": 900,
+          "ph": 5.2,
+          "ec": 0.3,
+          "runoffPh": 5.8,
+          "runoffEc": 0.5
+        },
+        {
+          "id": "w-3",
+          "timestamp": "2026-03-20T08:30:00.000Z",
+          "amountMl": 950,
+          "ph": 5.8,
+          "ec": 0.9
+        },
+        {
+          "id": "w-4",
+          "timestamp": "2026-03-22T08:30:00.000Z",
+          "amountMl": 1000,
+          "ph": 5.9,
+          "ec": 0.89
+        },
+        {
+          "id": "water-1774367783324",
+          "timestamp": "2026-03-24T15:56:23.324Z",
+          "amountMl": 1000,
+          "ph": 5.9,
+          "ec": 0.96,
+          "runoffPh": 6.2,
+          "runoffEc": 1.26
+        }
+      ],
+      "climateData": [
+        {
+          "id": "c-6",
+          "timestamp": "2026-03-21T08:30:00.000Z",
+          "tempC": 25.6,
+          "humidity": 58
+        },
+        {
+          "id": "c-7",
+          "timestamp": "2026-03-22T08:30:00.000Z",
+          "tempC": 25.3,
+          "humidity": 60
+        },
+        {
+          "id": "climate-1774301226132",
+          "timestamp": "2026-03-23T21:27:06.132Z",
+          "tempC": 21.5,
+          "humidity": 61
+        },
+        {
+          "id": "climate-1774349264995",
+          "timestamp": "2026-03-24T10:47:44.995Z",
+          "tempC": 24.9,
+          "humidity": 45
+        },
+        {
+          "id": "climate-1774352569737",
+          "timestamp": "2026-03-24T11:42:49.737Z",
+          "tempC": 23.5,
+          "humidity": 50
+        },
+        {
+          "id": "climate-1774387185267",
+          "timestamp": "2026-03-24T21:19:45.267Z",
+          "tempC": 20.1,
+          "humidity": 74
+        },
+        {
+          "id": "climate-1774436816548",
+          "timestamp": "2026-03-25T11:06:56.548Z",
+          "tempC": 23.9,
+          "humidity": 54
+        },
+        {
+          "id": "climate-1774440287896",
+          "timestamp": "2026-03-25T12:04:47.896Z",
+          "tempC": 24.7,
+          "humidity": 52
+        },
+        {
+          "id": "climate-1774447093110",
+          "timestamp": "2026-03-25T13:58:13.110Z",
+          "tempC": 22.9,
+          "humidity": 61
+        },
+        {
+          "id": "climate-1774462496016",
+          "timestamp": "2026-03-25T18:14:56.016Z",
+          "tempC": 22.7,
+          "humidity": 60
+        },
+        {
+          "id": "climate-1774474983434",
+          "timestamp": "2026-03-25T21:43:03.434Z",
+          "tempC": 23,
+          "humidity": 55
+        }
+      ],
+      "feedRecipe": {
+        "title": "Canna Nutrients",
+        "baseAMl": 2,
+        "baseBMl": 2,
+        "calMagMl": 1,
+        "targetEc": 900,
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "CannaZym",
+            "amountMl": 1.5
+          },
+          {
+            "id": "add-1774289543623",
+            "label": "Additive 2",
+            "amountMl": 1
+          }
+        ]
+      },
+      "totalDaysOverride": 67
+    },
+    {
+      "id": "plant-2",
+      "strainName": "Special Queen N1",
+      "startedAt": "2026-03-20T09:00:00.000Z",
+      "stage": "Seedling",
+      "bloomStartedAt": "",
+      "lightSchedule": "18 / 6",
+      "lightsOn": "03:00",
+      "lightsOff": "22:00",
+      "lightType": "blurple_40w",
+      "lightDimmerPercent": 100,
+      "lightLampName": "Veg blurple",
+      "lightLampWatts": 40,
+      "containerVolumeL": 0.2,
+      "mediaVolumeL": 0.2,
+      "mediaType": "Other",
+      "outsideTempC": 15.1,
+      "outsideHumidity": 66,
+      "growTempC": 24.1,
+      "growHumidity": 68,
+      "waterInputMl": 50,
+      "waterPh": 5.8,
+      "waterEc": 0.5,
+      "lastWateredAt": "2026-03-25T19:04:54.670Z",
+      "wateringIntervalDays": 3,
+      "stageDays": {
+        "seedling": 3,
+        "veg": 0,
+        "bloom": 0
+      },
+      "wateringData": [
+        {
+          "id": "w-b-1",
+          "timestamp": "2026-03-23T18:34:20.027Z",
+          "amountMl": 300,
+          "ph": 5.8,
+          "ec": 0.3
+        },
+        {
+          "id": "water-1774465494670",
+          "timestamp": "2026-03-25T19:04:54.670Z",
+          "amountMl": 50,
+          "ph": 5.8,
+          "ec": 0.5
+        }
+      ],
+      "climateData": [
+        {
+          "id": "c-b-1",
+          "timestamp": "2026-03-20T09:10:00.000Z",
+          "tempC": 23.8,
+          "humidity": 70
+        },
+        {
+          "id": "c-b-2",
+          "timestamp": "2026-03-21T09:10:00.000Z",
+          "tempC": 24.1,
+          "humidity": 68
+        },
+        {
+          "id": "c-b-3",
+          "timestamp": "2026-03-22T09:10:00.000Z",
+          "tempC": 24.1,
+          "humidity": 68
+        }
+      ],
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 12,
+        "baseBMl": 10,
+        "calMagMl": 3,
+        "targetEc": 0.5,
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "plant-3",
+      "strainName": "Special Kush N1",
+      "startedAt": "2026-03-20T09:00:00.000Z",
+      "stage": "Seedling",
+      "bloomStartedAt": "2026-02-10T09:00:00.000Z",
+      "lightSchedule": "18/6",
+      "lightsOn": "06:00",
+      "lightsOff": "01:00",
+      "lightType": "panel_100w",
+      "lightDimmerPercent": 80,
+      "lightLampName": "Main panel",
+      "lightLampWatts": 100,
+      "containerVolumeL": 0.2,
+      "mediaVolumeL": 0.2,
+      "mediaType": "Light Mix",
+      "outsideTempC": 14.2,
+      "outsideHumidity": 58,
+      "growTempC": 22.9,
+      "growHumidity": 61,
+      "waterInputMl": 49,
+      "waterPh": 5.8,
+      "waterEc": 0.5,
+      "lastWateredAt": "2026-03-21T12:00:00.000Z",
+      "wateringIntervalDays": 6,
+      "stageDays": {
+        "seedling": 3,
+        "veg": 0,
+        "bloom": 0
+      },
+      "wateringData": [
+        {
+          "id": "w-c-2",
+          "timestamp": "2026-03-18T12:00:00.000Z",
+          "amountMl": 20,
+          "ph": 5.8,
+          "ec": 0.3
+        },
+        {
+          "id": "w-c-3",
+          "timestamp": "2026-03-21T12:00:00.000Z",
+          "amountMl": 49,
+          "ph": 5.8,
+          "ec": 0.5
+        }
+      ],
+      "climateData": [
+        {
+          "id": "c-c-1",
+          "timestamp": "2026-03-15T12:00:00.000Z",
+          "tempC": 24.5,
+          "humidity": 54
+        },
+        {
+          "id": "c-c-2",
+          "timestamp": "2026-03-18T12:00:00.000Z",
+          "tempC": 24.8,
+          "humidity": 52
+        },
+        {
+          "id": "c-c-3",
+          "timestamp": "2026-03-21T12:00:00.000Z",
+          "tempC": 25,
+          "humidity": 51
+        },
+        {
+          "id": "climate-1774447055229",
+          "timestamp": "2026-03-25T13:57:35.229Z",
+          "tempC": 22.9,
+          "humidity": 61
+        }
+      ],
+      "feedRecipe": {
+        "title": "Canna Nutrients",
+        "baseAMl": 0,
+        "baseBMl": 0,
+        "calMagMl": 0,
+        "targetEc": 450,
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.2,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Ryzothonic",
+            "amountMl": 1
+          },
+          {
+            "id": "add-1774450868081",
+            "label": "CannaZym",
+            "amountMl": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "plant-1774284802244",
+      "strainName": "Sour Diesel Clone",
+      "startedAt": "2026-02-15T09:00:00.000Z",
+      "stage": "Veg",
+      "bloomStartedAt": "",
+      "lightSchedule": "18 / 6",
+      "lightsOn": "06:00",
+      "lightsOff": "00:00",
+      "lightType": "panel_100w",
+      "lightDimmerPercent": 75,
+      "lightLampName": "Phlizon PL1000",
+      "lightLampWatts": 100,
+      "containerVolumeL": 15,
+      "mediaVolumeL": 13,
+      "mediaType": "Soil",
+      "outsideTempC": 16.7,
+      "outsideHumidity": 60,
+      "growTempC": 21.4,
+      "growHumidity": 62,
+      "waterInputMl": 50,
+      "waterPh": 5.9,
+      "waterEc": 0.4,
+      "lastWateredAt": "2026-03-22T08:30:00.000Z",
+      "wateringIntervalDays": 3,
+      "stageDays": {
+        "seedling": 14,
+        "veg": 41,
+        "bloom": 0
+      },
+      "wateringData": [
+        {
+          "id": "w-1",
+          "timestamp": "2026-03-16T08:30:00.000Z",
+          "amountMl": 50,
+          "ph": 5.9,
+          "ec": 0.2
+        },
+        {
+          "id": "w-2",
+          "timestamp": "2026-03-18T08:30:00.000Z",
+          "amountMl": 50,
+          "ph": 5.8,
+          "ec": 0.2
+        },
+        {
+          "id": "w-3",
+          "timestamp": "2026-03-20T08:30:00.000Z",
+          "amountMl": 50,
+          "ph": 5.9,
+          "ec": 0.2
+        },
+        {
+          "id": "w-4",
+          "timestamp": "2026-03-22T08:30:00.000Z",
+          "amountMl": 50,
+          "ph": 5.9,
+          "ec": 0.4
+        }
+      ],
+      "climateData": [
+        {
+          "id": "c-1",
+          "timestamp": "2026-03-16T08:30:00.000Z",
+          "tempC": 24.4,
+          "humidity": 64
+        },
+        {
+          "id": "c-2",
+          "timestamp": "2026-03-17T08:30:00.000Z",
+          "tempC": 24.9,
+          "humidity": 63
+        },
+        {
+          "id": "c-3",
+          "timestamp": "2026-03-18T08:30:00.000Z",
+          "tempC": 25.4,
+          "humidity": 61
+        },
+        {
+          "id": "c-4",
+          "timestamp": "2026-03-19T08:30:00.000Z",
+          "tempC": 24.7,
+          "humidity": 60
+        },
+        {
+          "id": "c-5",
+          "timestamp": "2026-03-20T08:30:00.000Z",
+          "tempC": 25.1,
+          "humidity": 59
+        },
+        {
+          "id": "c-6",
+          "timestamp": "2026-03-21T08:30:00.000Z",
+          "tempC": 25.6,
+          "humidity": 58
+        },
+        {
+          "id": "c-7",
+          "timestamp": "2026-03-22T08:30:00.000Z",
+          "tempC": 25.3,
+          "humidity": 60
+        },
+        {
+          "id": "climate-1774301077975",
+          "timestamp": "2026-03-23T21:24:37.975Z",
+          "tempC": 21.4,
+          "humidity": 62
+        }
+      ],
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "plant-1774386568351",
+      "strainName": "Sour Diesel Hydro Clone",
+      "startedAt": "2026-03-24T21:09:28.351Z",
+      "stage": "Seedling",
+      "bloomStartedAt": "",
+      "lightSchedule": "18 / 6",
+      "lightsOn": "06:00",
+      "lightsOff": "00:00",
+      "lightType": "panel_100w",
+      "lightDimmerPercent": 75,
+      "lightLampName": "Phlizon PL1000",
+      "lightLampWatts": 100,
+      "containerVolumeL": 15,
+      "mediaVolumeL": 13,
+      "mediaType": "Soil",
+      "outsideTempC": 16.7,
+      "outsideHumidity": 60,
+      "growTempC": 21.4,
+      "growHumidity": 62,
+      "waterInputMl": 300,
+      "waterPh": 6,
+      "waterEc": 0.45,
+      "lastWateredAt": "2026-03-24T21:09:28.351Z",
+      "wateringIntervalDays": 3,
+      "stageDays": {
+        "seedling": 1,
+        "veg": 0,
+        "bloom": 0
+      },
+      "wateringData": [
+        {
+          "id": "water-1774386568351",
+          "timestamp": "2026-03-24T21:09:28.351Z",
+          "amountMl": 300,
+          "ph": 6,
+          "ec": 0.45
+        }
+      ],
+      "climateData": [
+        {
+          "id": "climate-1774386568351",
+          "timestamp": "2026-03-24T21:09:28.351Z",
+          "tempC": 25,
+          "humidity": 60
+        }
+      ],
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ]
+      }
+    }
+  ],
+  "activePlantId": "plant-1"
+}

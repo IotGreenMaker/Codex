@@ -1,0 +1,313 @@
+{
+  "plantId": "plant-1",
+  "assistantKey": "voice",
+  "updatedAt": "2026-03-25T23:38:52.047Z",
+  "messages": [
+    {
+      "id": "user-1774479496527",
+      "createdAt": "2026-03-25T22:58:16.527Z",
+      "role": "user",
+      "content": "hi do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774479496528",
+      "createdAt": "2026-03-25T22:58:18.214Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774479519161",
+      "createdAt": "2026-03-25T22:58:39.161Z",
+      "role": "user",
+      "content": "hello do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774479519161",
+      "createdAt": "2026-03-25T22:58:40.677Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774479533551",
+      "createdAt": "2026-03-25T22:58:53.552Z",
+      "role": "user",
+      "content": "test",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774479533552",
+      "createdAt": "2026-03-25T22:58:54.858Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481022311",
+      "createdAt": "2026-03-25T23:23:42.311Z",
+      "role": "user",
+      "content": "hello but do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481022311",
+      "createdAt": "2026-03-25T23:23:43.540Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481050885",
+      "createdAt": "2026-03-25T23:24:10.885Z",
+      "role": "user",
+      "content": "hello do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481050886",
+      "createdAt": "2026-03-25T23:24:12.055Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481090401",
+      "createdAt": "2026-03-25T23:24:50.401Z",
+      "role": "user",
+      "content": "hello do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481090401",
+      "createdAt": "2026-03-25T23:24:51.643Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481144384",
+      "createdAt": "2026-03-25T23:25:44.384Z",
+      "role": "user",
+      "content": "hi testing",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481144384",
+      "createdAt": "2026-03-25T23:25:45.950Z",
+      "role": "assistant",
+      "content": "Hello! How can I help you with your plant today?",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481456004",
+      "createdAt": "2026-03-25T23:30:56.004Z",
+      "role": "user",
+      "content": "hello do you copy",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481456004",
+      "createdAt": "2026-03-25T23:30:57.387Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481501755",
+      "createdAt": "2026-03-25T23:31:41.755Z",
+      "role": "user",
+      "content": "testing AI",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481501755",
+      "createdAt": "2026-03-25T23:31:42.992Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481513346",
+      "createdAt": "2026-03-25T23:31:53.346Z",
+      "role": "user",
+      "content": "do you hear me now",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481513346",
+      "createdAt": "2026-03-25T23:31:57.638Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481546422",
+      "createdAt": "2026-03-25T23:32:26.422Z",
+      "role": "user",
+      "content": "hello do you copy now",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481546423",
+      "createdAt": "2026-03-25T23:32:27.672Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481559924",
+      "createdAt": "2026-03-25T23:32:39.924Z",
+      "role": "user",
+      "content": "okay",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481559924",
+      "createdAt": "2026-03-25T23:32:42.248Z",
+      "role": "assistant",
+      "content": "Okay! Let me know if you need anything.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481574515",
+      "createdAt": "2026-03-25T23:32:54.515Z",
+      "role": "user",
+      "content": "what's the current VPD",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481574516",
+      "createdAt": "2026-03-25T23:32:56.275Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481588219",
+      "createdAt": "2026-03-25T23:33:08.219Z",
+      "role": "user",
+      "content": "what's my current VPD",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481588220",
+      "createdAt": "2026-03-25T23:33:09.290Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481615197",
+      "createdAt": "2026-03-25T23:33:35.197Z",
+      "role": "user",
+      "content": "what's my current VPD",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481615197",
+      "createdAt": "2026-03-25T23:33:37.030Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481845398",
+      "createdAt": "2026-03-25T23:37:25.398Z",
+      "role": "user",
+      "content": "new environment update 51% humidity and 31 celcius",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481845398",
+      "createdAt": "2026-03-25T23:37:26.685Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481879352",
+      "createdAt": "2026-03-25T23:37:59.352Z",
+      "role": "user",
+      "content": "new environment update 51% humidity and 21 celcius",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481879353",
+      "createdAt": "2026-03-25T23:38:00.694Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    },
+    {
+      "id": "user-1774481930975",
+      "createdAt": "2026-03-25T23:38:50.975Z",
+      "role": "user",
+      "content": "when was my last speech my last watering",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774481930976",
+      "createdAt": "2026-03-25T23:38:52.046Z",
+      "role": "assistant",
+      "content": "Cloud AI is temporarily unavailable, so I switched to local command fallback for this message.",
+      "source": "voice",
+      "meta": {
+        "model": "grok-4-1-fast / gemini-2.5-flash"
+      }
+    }
+  ]
+}
