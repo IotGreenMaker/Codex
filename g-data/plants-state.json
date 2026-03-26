@@ -18,13 +18,13 @@
       "mediaType": "Light Mix",
       "outsideTempC": 16.7,
       "outsideHumidity": 60,
-      "growTempC": 24,
-      "growHumidity": 44,
+      "growTempC": 23.7,
+      "growHumidity": 46,
       "waterInputMl": 1000,
       "waterPh": 5.9,
       "waterEc": 1.45,
-      "lastWateredAt": "2026-03-22T08:30:00.000Z",
-      "wateringIntervalDays": 2,
+      "lastWateredAt": "2026-03-26T20:35:52.031Z",
+      "wateringIntervalDays": 1,
       "stageDays": {
         "seedling": 21,
         "veg": 21,
@@ -66,6 +66,27 @@
           "ec": 1.45,
           "runoffPh": 6.1,
           "runoffEc": 1.46
+        },
+        {
+          "id": "water-1774557345012",
+          "timestamp": "2026-03-26T20:35:45.012Z",
+          "amountMl": 1000,
+          "ph": 5.9,
+          "ec": 1.45
+        },
+        {
+          "id": "water-1774557348474",
+          "timestamp": "2026-03-26T20:35:48.474Z",
+          "amountMl": 1000,
+          "ph": 5.9,
+          "ec": 1.45
+        },
+        {
+          "id": "water-1774557352031",
+          "timestamp": "2026-03-26T20:35:52.031Z",
+          "amountMl": 1000,
+          "ph": 5.9,
+          "ec": 1.45
         }
       ],
       "climateData": [
@@ -86,6 +107,18 @@
           "timestamp": "2026-03-26T19:13:19.879Z",
           "tempC": 24,
           "humidity": 44
+        },
+        {
+          "id": "climate-1774558898411",
+          "timestamp": "2026-03-26T21:01:38.411Z",
+          "tempC": 23.7,
+          "humidity": 44
+        },
+        {
+          "id": "climate-1774562560492",
+          "timestamp": "2026-03-26T22:02:40.492Z",
+          "tempC": 23.7,
+          "humidity": 46
         }
       ],
       "feedRecipe": {
@@ -474,5 +507,5 @@
       }
     }
   ],
-  "activePlantId": "plant-starter"
+  "activePlantId": "plant-1"
 }

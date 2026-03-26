@@ -1,7 +1,7 @@
 {
   "plantId": "plant-starter",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-26T20:19:59.217Z",
+  "updatedAt": "2026-03-26T20:58:28.674Z",
   "messages": [
     {
       "id": "user-1774550574188",
@@ -389,6 +389,142 @@
       "createdAt": "2026-03-26T20:19:59.213Z",
       "role": "assistant",
       "content": "I've logged the new environmental data. Consider adjusting the temperature for optimal growth.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774557252319",
+      "createdAt": "2026-03-26T20:34:12.319Z",
+      "role": "user",
+      "content": "hello do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774557253324",
+      "createdAt": "2026-03-26T20:34:14.214Z",
+      "role": "assistant",
+      "content": "Hello. Yes, I can hear you. I see you have a plant, \"My First Plant\", which is currently in the Seedling stage. The grow room conditions are 24°C and 60% humidity. How can I assist you with your plant today?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774557280922",
+      "createdAt": "2026-03-26T20:34:40.922Z",
+      "role": "user",
+      "content": "what's the name of the current plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774557281922",
+      "createdAt": "2026-03-26T20:34:42.736Z",
+      "role": "assistant",
+      "content": "The current plant is \"My First Plant\". It's currently in the Seedling stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774557316466",
+      "createdAt": "2026-03-26T20:35:16.466Z",
+      "role": "user",
+      "content": "what's the current humidity",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774557317470",
+      "createdAt": "2026-03-26T20:35:18.419Z",
+      "role": "assistant",
+      "content": "The current humidity in the grow room is 60%. This is a good starting point for your seedling, but keep in mind that seedlings often prefer a humid environment, typically between 60-80% relative humidity. You may want to consider adjusting the humidity levels as your plant grows and matures.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774557437400",
+      "createdAt": "2026-03-26T20:37:17.400Z",
+      "role": "user",
+      "content": "where is your voice",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774557438407",
+      "createdAt": "2026-03-26T20:37:19.283Z",
+      "role": "assistant",
+      "content": "I'm here to help with your plant care questions. Your Grow Room is currently set to 24°C and 60% humidity, with the lights on at 75% dimmer. How's your My First Plant doing today?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774557462685",
+      "createdAt": "2026-03-26T20:37:42.685Z",
+      "role": "user",
+      "content": "what is better to put the seedlings in a heat matter or just to leave then in the Box",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774557463697",
+      "createdAt": "2026-03-26T20:37:45.145Z",
+      "role": "assistant",
+      "content": "For seedlings like your My First Plant, which is currently in the Seedling stage, a warm environment can be beneficial for growth. A heat mat can provide a consistent and gentle heat that can promote healthy root development and seedling establishment.\n\nConsidering your grow room temperature is already at 24°C, which is a good temperature for seedlings, adding a heat mat might not be necessary. However, if you live in a cooler climate or your grow room temperature tends to drop at night, a heat mat could be a good option to maintain a stable temperature.\n\nLeaving the seedlings in the box might not provide the best conditions for growth, as it could be too dark and potentially too cool. Seedlings need adequate light to undergo photosynthesis and develop properly.\n\nIf you decide to use a heat mat, make sure to monitor the temperature and adjust it according to your seedlings' needs. A temperature range of 22-25°C is ideal for most seedlings.\n\nWould you like to log any climate readings or update your plant's settings?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774557887942",
+      "createdAt": "2026-03-26T20:44:47.942Z",
+      "role": "user",
+      "content": "what plants do I have",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774557888945",
+      "createdAt": "2026-03-26T20:44:49.765Z",
+      "role": "assistant",
+      "content": "You have one plant available, which is \"My First Plant\" and it's currently in the Seedling stage. This is the plant that's currently selected.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558675256",
+      "createdAt": "2026-03-26T20:57:55.256Z",
+      "role": "user",
+      "content": "hello do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558676260",
+      "createdAt": "2026-03-26T20:57:57.173Z",
+      "role": "assistant",
+      "content": "Hello. Yes, I can hear you. I'm G-Buddy, your plant care expert AI assistant. I'm currently monitoring \"My First Plant\", which is in the Seedling stage. The grow room conditions are 24°C and 60% humidity, with the lights set to 75% dimmer. How can I assist you with your plant today?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558706766",
+      "createdAt": "2026-03-26T20:58:26.766Z",
+      "role": "user",
+      "content": "what plant do you see now",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558707768",
+      "createdAt": "2026-03-26T20:58:28.668Z",
+      "role": "assistant",
+      "content": "I currently see \"My First Plant\", which is in the Seedling stage. It's been 0 days since it reached this stage. The current environment for this plant is a grow room with a temperature of 24°C and humidity of 60%, with a 100w panel light dimmed to 75% and a lighting schedule of 06:00 to 00:00.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"

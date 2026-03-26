@@ -1,7 +1,7 @@
 {
   "plantId": "plant-1",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-26T17:56:47.004Z",
+  "updatedAt": "2026-03-26T23:45:05.928Z",
   "messages": [
     {
       "id": "user-1774479496527",
@@ -1171,6 +1171,261 @@
       "createdAt": "2026-03-26T17:56:46.999Z",
       "role": "assistant",
       "content": "Plant profile updated to Sour Diesel. Keep an eye on temperature, ideally between 22-25°C for optimal growth in veg stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558780688",
+      "createdAt": "2026-03-26T20:59:40.688Z",
+      "role": "user",
+      "content": "hello do you see my plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558781692",
+      "createdAt": "2026-03-26T20:59:42.473Z",
+      "role": "assistant",
+      "content": "I see your Sour Diesel plant, which is currently in the Bloom stage. I notice the VPD is at 1.67 kPa, which is a bit high, so you may want to consider adjusting the temperature or humidity to bring it back into a more optimal range.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558799879",
+      "createdAt": "2026-03-26T20:59:59.879Z",
+      "role": "user",
+      "content": "what's the current temperature",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558800886",
+      "createdAt": "2026-03-26T21:00:01.883Z",
+      "role": "assistant",
+      "content": "The current temperature is 24°C. Considering the high VPD of 1.67 kPa, you may want to adjust the humidity to a more optimal range for the bloom stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558810080",
+      "createdAt": "2026-03-26T21:00:10.080Z",
+      "role": "user",
+      "content": "what's the current to humidity",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558811090",
+      "createdAt": "2026-03-26T21:00:12.139Z",
+      "role": "assistant",
+      "content": "The current temperature is 24°C and the relative humidity (RH) is 44%. I recommend increasing the humidity to a more suitable range for the bloom stage, as the current VPD of 1.67 kPa is dangerously high.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558824159",
+      "createdAt": "2026-03-26T21:00:24.159Z",
+      "role": "user",
+      "content": "new weather update",
+      "source": "voice"
+    },
+    {
+      "id": "user-1774558826470",
+      "createdAt": "2026-03-26T21:00:26.470Z",
+      "role": "user",
+      "content": "52",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558825167",
+      "createdAt": "2026-03-26T21:00:26.521Z",
+      "role": "assistant",
+      "content": "Growing room conditions recorded: no change.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "assistant-1774558827472",
+      "createdAt": "2026-03-26T21:00:28.411Z",
+      "role": "assistant",
+      "content": "It seems like you've provided a number, but I'm not sure how it relates to the current plant, Sour Diesel. Could you please provide more context or clarify what you'd like to do with this number, such as updating the days in bloom stage or adjusting the watering schedule?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558858035",
+      "createdAt": "2026-03-26T21:00:58.035Z",
+      "role": "user",
+      "content": "new weather update",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558859038",
+      "createdAt": "2026-03-26T21:01:00.074Z",
+      "role": "assistant",
+      "content": "Growing room conditions updated.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558862731",
+      "createdAt": "2026-03-26T21:01:02.731Z",
+      "role": "user",
+      "content": "24° C is in 55 humidity",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558863739",
+      "createdAt": "2026-03-26T21:01:05.439Z",
+      "role": "assistant",
+      "content": "Climate readings updated, considering adjusting humidity to 50% for optimal VPD.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774558896532",
+      "createdAt": "2026-03-26T21:01:36.532Z",
+      "role": "user",
+      "content": "new weather update 44% of your humidity in 23.7° C",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774558897539",
+      "createdAt": "2026-03-26T21:01:38.412Z",
+      "role": "assistant",
+      "content": "Thanks for the update! I've recorded the new climate data: 23.7°C and 44% humidity.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774560513801",
+      "createdAt": "2026-03-26T21:28:33.801Z",
+      "role": "user",
+      "content": "when was the last watering",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774560514806",
+      "createdAt": "2026-03-26T21:28:35.545Z",
+      "role": "assistant",
+      "content": "The last watering was 0 days ago, with 1000ml of water, pH 5.9, and EC 1.45.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774560636966",
+      "createdAt": "2026-03-26T21:30:36.966Z",
+      "role": "user",
+      "content": "select a special Queen",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774560637970",
+      "createdAt": "2026-03-26T21:30:39.076Z",
+      "role": "assistant",
+      "content": "Switched to Special Queen N1. This plant is currently in Seedling stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774560648373",
+      "createdAt": "2026-03-26T21:30:48.373Z",
+      "role": "user",
+      "content": "select the sour diesel",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774560649386",
+      "createdAt": "2026-03-26T21:30:50.371Z",
+      "role": "assistant",
+      "content": "I've switched to the Sour Diesel plant. This plant is currently in Bloom stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774562461480",
+      "createdAt": "2026-03-26T22:01:01.480Z",
+      "role": "user",
+      "content": "who sing thank you for La Portuguese",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774562462490",
+      "createdAt": "2026-03-26T22:01:03.826Z",
+      "role": "assistant",
+      "content": "The song \"Thank You\" in Portuguese is likely \"Obrigado\" or \"Obrigada\", but I think I can help with that. \n\nThe song \"Thank U\" or \"Obrigado\" in Portuguese is often translated from the original \"Thank U\" by Alanis Morissette. However, another popular version is by a Portuguese singer, and one possible match is the song \"Obrigado\" by Mickael Carreira.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774562558328",
+      "createdAt": "2026-03-26T22:02:38.328Z",
+      "role": "user",
+      "content": "so I want to make you aware that I have a hitmat marking 25° C is on the bottom of my grow space",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774562559338",
+      "createdAt": "2026-03-26T22:02:40.492Z",
+      "role": "assistant",
+      "content": "I've recorded the temperature reading from the hitmat.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774562680199",
+      "createdAt": "2026-03-26T22:04:40.199Z",
+      "role": "user",
+      "content": "what's the current temperature",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774562681202",
+      "createdAt": "2026-03-26T22:04:42.128Z",
+      "role": "assistant",
+      "content": "The current temperature is 23.7°C. Considering the high VPD of 1.64 kPa, you may want to adjust the humidity to a more optimal range for your Sour Diesel plant in the Bloom stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774568703892",
+      "createdAt": "2026-03-26T23:45:03.892Z",
+      "role": "user",
+      "content": "what's your name",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774568704904",
+      "createdAt": "2026-03-26T23:45:05.921Z",
+      "role": "assistant",
+      "content": "I'm G-Buddy, your plant care expert AI assistant. I'm here to help with your plant, Sour Diesel, which is currently in the Bloom stage.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"

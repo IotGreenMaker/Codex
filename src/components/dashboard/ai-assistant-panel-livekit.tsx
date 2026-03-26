@@ -463,7 +463,7 @@ export function AiAssistantPanel({
         {micError && <p className="mb-2 text-xs text-amber-300">{micError}</p>}
 
         {/* Chat messages */}
-        <div className="mt-3 max-h-80 space-y-3 overflow-y-auto pr-1" ref={chatContainerRef}>
+        <div className="mt-3 max-h-96 space-y-3 overflow-y-auto pr-1" ref={chatContainerRef}>
           {messages.length === 0 ? (
             <p className="text-xs text-slate-400 italic">
               Click the microphone to start a natural conversation...
@@ -479,7 +479,7 @@ export function AiAssistantPanel({
                 }`}
               >
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
-                  {message.role === "assistant" ? "🤖 Assistant" : "🎤 You"}
+                  {message.role === "assistant" ? "🤖 Assistant - " : "You:"}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-100">{message.content}</p>
               </div>

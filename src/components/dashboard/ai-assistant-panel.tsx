@@ -441,7 +441,7 @@ export function AiAssistantPanel({
         ) : null}
         {micError ? <p className="mt-2 text-xs text-amber-300">{micError}</p> : null}
 
-        <div className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1" ref={chatContainerRef}>
+        <div className="mt-3 max-h-96 space-y-2 overflow-y-auto pr-1" ref={chatContainerRef}>
           {messages.map((message) => (
             <div
               key={message.id}

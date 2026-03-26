@@ -7,7 +7,7 @@ import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel-live
 import { VPDChart } from "@/components/dashboard/vpd-chart";
 import { calculateVpd, getCycleSummary, getDetailedCycleSummary, getVpdBand } from "@/lib/grow-math";
 import { Locale, translations } from "@/lib/i18n";
-import { dailyLogs, plantProfiles } from "@/lib/mock-data";
+import { dailyLogs } from "@/lib/mock-data";
 import type { GrowStage, PlantProfile } from "@/lib/types";
 
 type DashboardShellProps = {
@@ -18,8 +18,8 @@ type DashboardShellProps = {
 
 export function DashboardShell({ heading: _heading, subheading: _subheading, showHero: _showHero = false }: DashboardShellProps) {
   const locale: Locale = "en";
-  const [plants, setPlants] = useState<PlantProfile[]>(plantProfiles);
-  const [activePlantId, setActivePlantId] = useState<string>(plantProfiles[0]?.id ?? "");
+  const [plants, setPlants] = useState<PlantProfile[]>([]);
+  const [activePlantId, setActivePlantId] = useState<string>("");
   const [loadedFromServer, setLoadedFromServer] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [weather, setWeather] = useState<{ temperatureC: number | null; humidity: number | null; location: string } | null>(null);
