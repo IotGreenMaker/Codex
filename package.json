@@ -12,9 +12,6 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.100.0",
     "groq-sdk": "^1.1.2",
-    "livekit": "^0.0.1",
-    "livekit-client": "^2.18.0",
-    "livekit-server-sdk": "^2.15.0",
     "lucide-react": "^0.511.0",
     "next": "^15.3.0",
     "react": "^19.0.0",

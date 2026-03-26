@@ -27,6 +27,34 @@ if errorlevel 1 (
   exit /b 1
 )
 
-start "" http://localhost:3000/dashboard
 echo Starting G-Buddy on http://localhost:3000
-call npm.cmd run start
+echo Waiting for server to start...
+
+start "" npm.cmd run start
+
+:: Poll until server is ready, then open browser
+setlocal enabledelayedexpansion
+set /a attempts=0
+set /a max_attempts=60
+
+:poll_loop
+if !attempts! geq !max_attempts! (
+  echo Server failed to start after 2 minutes.
+  pause
+  exit /b 1
+)
+
+echo Checking if server is ready... (attempt !attempts!)
+curl -s -o nul http://localhost:3000/dashboard
+if errorlevel 0 (
+  echo Server is ready! Opening browser...
+  start "" http://localhost:3000/dashboard
+  goto :done
+)
+
+set /a attempts=!attempts!+1
+timeout /t 2 /nobreak
+goto poll_loop
+
+:done
+echo G-Buddy is running!

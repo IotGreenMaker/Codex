@@ -1,7 +1,7 @@
 {
   "plantId": "plant-starter",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-26T18:46:03.142Z",
+  "updatedAt": "2026-03-26T19:13:53.770Z",
   "messages": [
     {
       "id": "user-1774550574188",
@@ -83,6 +83,176 @@
       "createdAt": "2026-03-26T18:46:03.137Z",
       "role": "assistant",
       "content": "To raise the humidity in your grow room, you can consider a few options. Since the current humidity is 60%, you might want to increase it to a range of 60-80% for optimal seedling growth. You could use a humidifier, group plants together to create a microclimate, or cover the plants with a clear plastic bag to trap moisture. \n\nNo changes have been made to the plant data.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774551926332",
+      "createdAt": "2026-03-26T19:05:26.332Z",
+      "role": "user",
+      "content": "change to the plants just special question number one",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774551927342",
+      "createdAt": "2026-03-26T19:05:28.441Z",
+      "role": "assistant",
+      "content": "We're still viewing My First Plant, currently in Seedling stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774551938729",
+      "createdAt": "2026-03-26T19:05:38.729Z",
+      "role": "user",
+      "content": "what is my current plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774551939745",
+      "createdAt": "2026-03-26T19:05:40.320Z",
+      "role": "assistant",
+      "content": "Your current plant is \"My First Plant\", and it's currently in the Seedling stage. It has been in this stage for 0 days.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774552011336",
+      "createdAt": "2026-03-26T19:06:51.336Z",
+      "role": "user",
+      "content": "what is the current temperature outside",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774552012344",
+      "createdAt": "2026-03-26T19:06:53.095Z",
+      "role": "assistant",
+      "content": "The current temperature outside is not available, as the location data is not provided. However, I can tell you that the current temperature in the grow room is 24°C, which is the environment where your plant, My First Plant, is growing.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774552026094",
+      "createdAt": "2026-03-26T19:07:06.094Z",
+      "role": "user",
+      "content": "where is the current temperature outside in Lisbon",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774552027097",
+      "createdAt": "2026-03-26T19:07:08.099Z",
+      "role": "assistant",
+      "content": "The current outdoor weather data is not available, as the location is listed as \"Not available\" and the temperature and humidity are \"N/A\". However, I can tell you that the current temperature in the grow room is 24°C, which is the environment where your plant, \"My First Plant\", is growing. If you need to know the outdoor temperature in Lisbon, I recommend checking a weather website or app for the most up-to-date information.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774552051624",
+      "createdAt": "2026-03-26T19:07:31.624Z",
+      "role": "user",
+      "content": "select the plant sour diesel clone",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774552052626",
+      "createdAt": "2026-03-26T19:07:33.605Z",
+      "role": "assistant",
+      "content": "No plant found with that name. Available plants are: My First Plant",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774552338613",
+      "createdAt": "2026-03-26T19:12:18.613Z",
+      "role": "user",
+      "content": "no other update it's currently now 44% humidity and 24° Celsius",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774552339618",
+      "createdAt": "2026-03-26T19:12:20.878Z",
+      "role": "assistant",
+      "content": "Grow room conditions recorded: 24°C and 44% humidity.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774552423802",
+      "createdAt": "2026-03-26T19:13:43.802Z",
+      "role": "user",
+      "content": "register a new weather",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774552424812",
+      "createdAt": "2026-03-26T19:13:45.891Z",
+      "role": "assistant",
+      "content": "Grow room conditions recorded: 24°C and 60% humidity.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774552426391",
+      "createdAt": "2026-03-26T19:13:46.391Z",
+      "role": "user",
+      "content": "it's now currently",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774552427401",
+      "createdAt": "2026-03-26T19:13:48.063Z",
+      "role": "assistant",
+      "content": "It's now currently 24°C and 60% humidity in the grow room. Your plant, My First Plant, is still in the Seedling stage. How would you like to proceed with its care?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774552429996",
+      "createdAt": "2026-03-26T19:13:49.996Z",
+      "role": "user",
+      "content": "24 degrees Celsius and 44",
+      "source": "voice"
+    },
+    {
+      "id": "user-1774552431599",
+      "createdAt": "2026-03-26T19:13:51.599Z",
+      "role": "user",
+      "content": "humidity",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774552430997",
+      "createdAt": "2026-03-26T19:13:52.170Z",
+      "role": "assistant",
+      "content": "I've recorded the new climate reading. The humidity is a bit lower than the current setting, let's keep an eye on it.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "assistant-1774552432602",
+      "createdAt": "2026-03-26T19:13:53.766Z",
+      "role": "assistant",
+      "content": "Humidity is at 60%. Let me know if you need any adjustments.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"

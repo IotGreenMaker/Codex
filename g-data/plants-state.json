@@ -6,7 +6,7 @@
       "startedAt": "2026-01-15T09:00:00.000Z",
       "stage": "Bloom",
       "bloomStartedAt": "",
-      "lightSchedule": "18 / 6",
+      "lightSchedule": "12 /12",
       "lightsOn": "06:00",
       "lightsOff": "00:00",
       "lightType": "panel_100w",
@@ -18,8 +18,8 @@
       "mediaType": "Light Mix",
       "outsideTempC": 16.7,
       "outsideHumidity": 60,
-      "growTempC": 25,
-      "growHumidity": 49,
+      "growTempC": 24,
+      "growHumidity": 44,
       "waterInputMl": 1000,
       "waterPh": 5.9,
       "waterEc": 1.45,
@@ -80,6 +80,12 @@
           "timestamp": "2026-03-26T18:33:22.304Z",
           "tempC": 25,
           "humidity": 49
+        },
+        {
+          "id": "climate-1774552399879",
+          "timestamp": "2026-03-26T19:13:19.879Z",
+          "tempC": 24,
+          "humidity": 44
         }
       ],
       "feedRecipe": {
