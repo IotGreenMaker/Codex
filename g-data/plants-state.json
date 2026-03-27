@@ -18,111 +18,182 @@
       "mediaType": "Light Mix",
       "outsideTempC": 16.7,
       "outsideHumidity": 60,
-      "growTempC": 23.7,
-      "growHumidity": 46,
+      "growTempC": 25,
+      "growHumidity": 55,
       "waterInputMl": 1000,
       "waterPh": 5.9,
-      "waterEc": 1.45,
-      "lastWateredAt": "2026-03-26T20:35:52.031Z",
+      "waterEc": 0.95,
+      "lastWateredAt": "2026-03-24T10:11:00.000Z",
       "wateringIntervalDays": 1,
       "stageDays": {
         "seedling": 21,
         "veg": 21,
-        "bloom": 27
+        "bloom": 30
       },
       "wateringData": [
         {
           "id": "w-1",
-          "timestamp": "2026-03-16T08:30:00.000Z",
-          "amountMl": 800,
+          "timestamp": "2026-03-04T08:30:00.000Z",
+          "amountMl": 700,
           "ph": 5.9,
-          "ec": 1.2,
-          "runoffPh": 6.1,
-          "runoffEc": 1.4
+          "ec": 0.906
         },
         {
           "id": "w-2",
-          "timestamp": "2026-03-18T08:30:00.000Z",
-          "amountMl": 900,
+          "timestamp": "2026-03-05T08:30:00.000Z",
+          "amountMl": 800,
           "ph": 5.8,
-          "ec": 1.35,
-          "runoffPh": 6.1,
+          "ec": 0.238,
+          "runoffPh": 6.7,
           "runoffEc": 1.45
         },
         {
           "id": "w-3",
-          "timestamp": "2026-03-20T08:30:00.000Z",
-          "amountMl": 950,
+          "timestamp": "2026-03-09T08:30:00.000Z",
+          "amountMl": 900,
           "ph": 5.9,
-          "ec": 1.4,
-          "runoffPh": 6.2,
-          "runoffEc": 1.48
+          "ec": 0.857,
+          "runoffPh": 6.7,
+          "runoffEc": 1.2
+        },
+        {
+          "id": "water-1774606083256",
+          "timestamp": "2026-03-12T10:08:00.000Z",
+          "amountMl": 1000,
+          "ph": 5.9,
+          "ec": 0.238
+        },
+        {
+          "id": "water-1774606082415",
+          "timestamp": "2026-03-17T10:08:00.000Z",
+          "amountMl": 1000,
+          "ph": 5.9,
+          "ec": 0.84
         },
         {
           "id": "w-4",
-          "timestamp": "2026-03-22T08:30:00.000Z",
+          "timestamp": "2026-03-20T08:30:00.000Z",
           "amountMl": 1000,
           "ph": 5.9,
-          "ec": 1.45,
-          "runoffPh": 6.1,
-          "runoffEc": 1.46
+          "ec": 0.915
         },
         {
-          "id": "water-1774557345012",
-          "timestamp": "2026-03-26T20:35:45.012Z",
+          "id": "water-1774570082405",
+          "timestamp": "2026-03-23T00:08:00.000Z",
           "amountMl": 1000,
           "ph": 5.9,
-          "ec": 1.45
+          "ec": 0.98,
+          "runoffPh": 6.2,
+          "runoffEc": 1.26
         },
         {
-          "id": "water-1774557348474",
-          "timestamp": "2026-03-26T20:35:48.474Z",
+          "id": "water-1774606303960",
+          "timestamp": "2026-03-24T10:11:00.000Z",
           "amountMl": 1000,
           "ph": 5.9,
-          "ec": 1.45
-        },
-        {
-          "id": "water-1774557352031",
-          "timestamp": "2026-03-26T20:35:52.031Z",
-          "amountMl": 1000,
-          "ph": 5.9,
-          "ec": 1.45
+          "ec": 0.95
         }
       ],
       "climateData": [
         {
           "id": "climate-1774547589603",
-          "timestamp": "2026-03-26T17:53:09.603Z",
-          "tempC": 25,
-          "humidity": 49
+          "timestamp": "2026-02-26T17:53:00.000Z",
+          "tempC": 23,
+          "humidity": 58
         },
         {
           "id": "climate-1774550002304",
-          "timestamp": "2026-03-26T18:33:22.304Z",
-          "tempC": 25,
-          "humidity": 49
+          "timestamp": "2026-03-05T18:33:00.000Z",
+          "tempC": 21.5,
+          "humidity": 54
         },
         {
           "id": "climate-1774552399879",
-          "timestamp": "2026-03-26T19:13:19.879Z",
-          "tempC": 24,
-          "humidity": 44
+          "timestamp": "2026-03-08T19:13:00.000Z",
+          "tempC": 22.4,
+          "humidity": 54
         },
         {
           "id": "climate-1774558898411",
-          "timestamp": "2026-03-26T21:01:38.411Z",
-          "tempC": 23.7,
-          "humidity": 44
+          "timestamp": "2026-03-09T21:01:00.000Z",
+          "tempC": 23.6,
+          "humidity": 55
         },
         {
           "id": "climate-1774562560492",
-          "timestamp": "2026-03-26T22:02:40.492Z",
-          "tempC": 23.7,
-          "humidity": 46
+          "timestamp": "2026-03-12T22:02:00.000Z",
+          "tempC": 21.5,
+          "humidity": 54
+        },
+        {
+          "id": "climate-1774602817368",
+          "timestamp": "2026-03-17T09:13:00.000Z",
+          "tempC": 20.7,
+          "humidity": 61
+        },
+        {
+          "id": "climate-1774605830781",
+          "timestamp": "2026-03-20T10:03:00.000Z",
+          "tempC": 22.5,
+          "humidity": 54
+        },
+        {
+          "id": "climate-1774605830304",
+          "timestamp": "2026-03-23T10:03:00.000Z",
+          "tempC": 24,
+          "humidity": 49
+        },
+        {
+          "id": "climate-1774605829784",
+          "timestamp": "2026-03-23T15:03:00.000Z",
+          "tempC": 22,
+          "humidity": 54
+        },
+        {
+          "id": "climate-1774604814326",
+          "timestamp": "2026-03-27T09:46:54.326Z",
+          "tempC": 24,
+          "humidity": 34
+        },
+        {
+          "id": "climate-1774605369971",
+          "timestamp": "2026-03-27T09:56:09.971Z",
+          "tempC": 24,
+          "humidity": 40
+        },
+        {
+          "id": "climate-1774606356429",
+          "timestamp": "2026-03-27T10:12:36.429Z",
+          "tempC": 23,
+          "humidity": 38
+        },
+        {
+          "id": "climate-1774611068487",
+          "timestamp": "2026-03-27T11:31:08.487Z",
+          "tempC": 25.2,
+          "humidity": 40
+        },
+        {
+          "id": "climate-1774615711437",
+          "timestamp": "2026-03-27T12:48:31.437Z",
+          "tempC": 24.3,
+          "humidity": 40
+        },
+        {
+          "id": "climate-1774618952651",
+          "timestamp": "2026-03-27T13:42:32.651Z",
+          "tempC": 24,
+          "humidity": 55
+        },
+        {
+          "id": "climate-1774621767049",
+          "timestamp": "2026-03-27T14:29:27.049Z",
+          "tempC": 25,
+          "humidity": 55
         }
       ],
       "feedRecipe": {
-        "title": "10 L veg mix",
+        "title": "Canna Nutrients",
         "baseAMl": 24,
         "baseBMl": 21,
         "calMagMl": 6,

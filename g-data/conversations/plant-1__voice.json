@@ -1,7 +1,7 @@
 {
   "plantId": "plant-1",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-26T23:45:05.928Z",
+  "updatedAt": "2026-03-27T09:56:09.979Z",
   "messages": [
     {
       "id": "user-1774479496527",
@@ -1426,6 +1426,210 @@
       "createdAt": "2026-03-26T23:45:05.921Z",
       "role": "assistant",
       "content": "I'm G-Buddy, your plant care expert AI assistant. I'm here to help with your plant, Sour Diesel, which is currently in the Bloom stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774569774997",
+      "createdAt": "2026-03-27T00:02:54.997Z",
+      "role": "user",
+      "content": "hello do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774569776000",
+      "createdAt": "2026-03-27T00:02:56.810Z",
+      "role": "assistant",
+      "content": "Hello. I hear you and I'm ready to help with your Sour Diesel plant, which is currently in the Bloom stage. The high VPD of 1.58 kPa might require some adjustments to optimize growth.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774569914162",
+      "createdAt": "2026-03-27T00:05:14.162Z",
+      "role": "user",
+      "content": "hello do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774569915163",
+      "createdAt": "2026-03-27T00:05:15.884Z",
+      "role": "assistant",
+      "content": "I'm here to help. Your Sour Diesel plant is currently in the bloom stage with a high VPD of 1.58 kPa, so you may want to consider adjusting the humidity to optimize its growth. What would you like to know or do regarding your plant?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774569976718",
+      "createdAt": "2026-03-27T00:06:16.718Z",
+      "role": "user",
+      "content": "testing voice API",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774569977728",
+      "createdAt": "2026-03-27T00:06:18.373Z",
+      "role": "assistant",
+      "content": "You're using voice commands to interact with me. Please go ahead and give a command or ask a question about your Sour Diesel plant, such as watering, climate, or stage adjustments.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774570187801",
+      "createdAt": "2026-03-27T00:09:47.801Z",
+      "role": "user",
+      "content": "switch plans to Saturdays Oklahoma",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774570188807",
+      "createdAt": "2026-03-27T00:09:49.731Z",
+      "role": "assistant",
+      "content": "I don't see a plant named \"Saturdays Oklahoma\" in the list of available plants. The available plants are: Sour Diesel, Special Queen N1, Special Kush N1, Sour Diesel Clone, and Sour Diesel Hydro Clone. If you'd like to switch to one of these plants, please let me know the exact name.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774570197507",
+      "createdAt": "2026-03-27T00:09:57.507Z",
+      "role": "user",
+      "content": "switch plans to sour diesel clone",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774570198508",
+      "createdAt": "2026-03-27T00:09:59.329Z",
+      "role": "assistant",
+      "content": "Switched to Sour Diesel Clone. This plant is in Veg stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774570286659",
+      "createdAt": "2026-03-27T00:11:26.659Z",
+      "role": "user",
+      "content": "I still don't hear your voice",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774570287672",
+      "createdAt": "2026-03-27T00:11:28.268Z",
+      "role": "assistant",
+      "content": "Your Sour Diesel is in bloom stage, and with the current VPD at 1.58 kPa, you may want to consider increasing the humidity slightly to prevent moisture stress.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774602815270",
+      "createdAt": "2026-03-27T09:13:35.270Z",
+      "role": "user",
+      "content": "hello new environmental updates 37% humidity and 26.1",
+      "source": "voice"
+    },
+    {
+      "id": "user-1774602817077",
+      "createdAt": "2026-03-27T09:13:37.077Z",
+      "role": "user",
+      "content": "° C",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774602816271",
+      "createdAt": "2026-03-27T09:13:37.368Z",
+      "role": "assistant",
+      "content": "Environmental conditions updated. Consider adjusting to maintain optimal VPD for bloom stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "assistant-1774602818090",
+      "createdAt": "2026-03-27T09:13:38.705Z",
+      "role": "assistant",
+      "content": "The current temperature is 23.7°C. Considering the high VPD of 1.58 kPa, you may want to slightly increase the humidity to optimize the growing conditions for your Sour Diesel in the bloom stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774604794230",
+      "createdAt": "2026-03-27T09:46:34.230Z",
+      "role": "user",
+      "content": "what's the current VPD",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774604795232",
+      "createdAt": "2026-03-27T09:46:36.065Z",
+      "role": "assistant",
+      "content": "The current VPD is 2.12 kPa, which is considered dangerously high. I recommend adjusting the temperature and humidity to bring the VPD within a safer range for your Sour Diesel plant.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774605321553",
+      "createdAt": "2026-03-27T09:55:21.553Z",
+      "role": "user",
+      "content": "I'm working on the humidity do you have any tips online among the",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774605322556",
+      "createdAt": "2026-03-27T09:55:23.586Z",
+      "role": "assistant",
+      "content": "Consider increasing the humidity to balance out the high VPD.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774605325752",
+      "createdAt": "2026-03-27T09:55:25.752Z",
+      "role": "user",
+      "content": "wet towel I have hanging inside the grill",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774605326756",
+      "createdAt": "2026-03-27T09:55:27.636Z",
+      "role": "assistant",
+      "content": "That's a creative way to increase the humidity. With the current VPD at 1.96 kPa, which is considered dangerously high, adding moisture to the environment can help. However, be cautious not to overhumidify, as this can lead to other issues. Consider monitoring the humidity levels closely and adjusting the towel or using a humidifier to maintain an optimal VPD range for your Sour Diesel in the bloom stage.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774605367948",
+      "createdAt": "2026-03-27T09:56:07.948Z",
+      "role": "user",
+      "content": "what will be the specific humidity for this Bloom phase",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774605368955",
+      "createdAt": "2026-03-27T09:56:09.971Z",
+      "role": "assistant",
+      "content": "Aim for 40-50% RH during Bloom phase for optimal flower growth.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"

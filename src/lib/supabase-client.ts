@@ -10,17 +10,25 @@ export async function saveConversation(
   role: "user" | "assistant",
   content: string
 ) {
-  const { data, error } = await supabase.from("conversations").insert([
-    {
-      plant_id: plantId,
-      role: role,
-      content: content,
-      created_at: new Date().toISOString(),
-    },
-  ]);
+  try {
+    const { data, error } = await supabase.from("conversations").insert([
+      {
+        plant_id: plantId,
+        role: role,
+        content: content,
+        created_at: new Date().toISOString(),
+      },
+    ]);
 
-  if (error) console.error("Supabase save error:", error);
-  return data;
+    if (error) {
+      console.warn("Supabase save unavailable, using local API:", error.message);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.warn("Supabase save unavailable, using local API:", err instanceof Error ? err.message : String(err));
+    return null;
+  }
 }
 
 export async function getPreviousContext(plantId: string, limit: number = 20) {
