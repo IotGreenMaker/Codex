@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const VOICE_NAME = 'en-US-Neural2-C' // Google male voice (natural)
-const LANGUAGE_CODE = 'en-US'
+const INWORLD_MODEL = 'inworld-tts-1.5-max'
+const INWORLD_VOICE = 'Mark'
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,49 +12,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'text is required' }, { status: 400 })
     }
 
-    const apiKey = process.env.GOOGLE_AI_API_KEY
+    const apiKey = process.env.INWORLD_API_KEY
     if (!apiKey) {
+      console.error('[TTS] INWORLD_API_KEY not configured')
       return NextResponse.json({ error: 'TTS not configured' }, { status: 503 })
     }
 
-    const upstream = await fetch(
-      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          input: {
-            text: text.slice(0, 800), // Cap to avoid runaway costs
-          },
-          voice: {
-            languageCode: LANGUAGE_CODE,
-            name: VOICE_NAME,
-          },
-          audioConfig: {
-            audioEncoding: 'MP3',
-            pitch: 0,
-            speakingRate: 1,
-          },
-        }),
-      }
-    )
+    // Call Inworld TTS API with Basic auth
+    const response = await fetch('https://api.inworld.ai/tts/v1/voice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${apiKey}`,
+      },
+      body: JSON.stringify({
+        text: text.slice(0, 1000), // Cap text to avoid excessive processing
+        voiceId: INWORLD_VOICE,
+        modelId: INWORLD_MODEL,
+      }),
+    })
 
-    if (!upstream.ok) {
-      const err = await upstream.text()
-      console.error('[TTS] Google error:', err)
-      return NextResponse.json({ error: 'TTS upstream failed' }, { status: 502 })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error('[TTS] Inworld error:', {
+        status: response.status,
+        statusText: response.statusText,
+        message: errorData.message || 'Unknown error',
+      })
+      return NextResponse.json(
+        { error: errorData.message || 'TTS service error' },
+        { status: response.status }
+      )
     }
 
-    const data = (await upstream.json()) as { audioContent?: string }
-    
+    const data = (await response.json()) as { audioContent?: string }
+
     if (!data.audioContent) {
       console.error('[TTS] No audio content in response')
       return NextResponse.json({ error: 'No audio generated' }, { status: 502 })
     }
 
-    // Convert base64 to buffer
+    // Decode base64 MP3 from Inworld
     const audioBuffer = Buffer.from(data.audioContent, 'base64')
 
     return new NextResponse(audioBuffer, {

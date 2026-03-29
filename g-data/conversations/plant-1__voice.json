@@ -1,7 +1,7 @@
 {
   "plantId": "plant-1",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-29T13:10:34.317Z",
+  "updatedAt": "2026-03-29T15:08:53.154Z",
   "messages": [
     {
       "id": "user-1774479496527",
@@ -1885,6 +1885,23 @@
       "createdAt": "2026-03-29T13:10:34.305Z",
       "role": "assistant",
       "content": "I've logged the climate adjustment. New humidity is set to 55%.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774796931093",
+      "createdAt": "2026-03-29T15:08:51.093Z",
+      "role": "user",
+      "content": "hey what's up",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774796932103",
+      "createdAt": "2026-03-29T15:08:53.142Z",
+      "role": "assistant",
+      "content": "Your Sour Diesel plant is currently in the bloom stage and the VPD is a bit high at 1.63 kPa, you may want to consider adjusting the humidity or temperature to get it back in a safe range.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"
