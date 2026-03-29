@@ -1,7 +1,7 @@
 {
   "plantId": "plant-1",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-27T09:56:09.979Z",
+  "updatedAt": "2026-03-29T11:06:00.840Z",
   "messages": [
     {
       "id": "user-1774479496527",
@@ -1630,6 +1630,227 @@
       "createdAt": "2026-03-27T09:56:09.971Z",
       "role": "assistant",
       "content": "Aim for 40-50% RH during Bloom phase for optimal flower growth.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774622878169",
+      "createdAt": "2026-03-27T14:47:58.169Z",
+      "role": "user",
+      "content": "what's up do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774622879174",
+      "createdAt": "2026-03-27T14:48:00.379Z",
+      "role": "assistant",
+      "content": "I'm here and ready to help with your Sour Diesel plant. Everything looks good so far, but I notice it's been 3 days since the last watering, so it might be time to water it again soon.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774624733867",
+      "createdAt": "2026-03-27T15:18:53.867Z",
+      "role": "user",
+      "content": "hello do you copy",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774624734870",
+      "createdAt": "2026-03-27T15:18:55.895Z",
+      "role": "assistant",
+      "content": "I copy. You're currently growing Sour Diesel in the bloom stage. Considering the high VPD of 1.42 kPa, you may want to keep an eye on temperature and humidity to optimize the environment for late bloom.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774629592037",
+      "createdAt": "2026-03-27T16:39:52.037Z",
+      "role": "user",
+      "content": "finish water",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774629593049",
+      "createdAt": "2026-03-27T16:39:54.818Z",
+      "role": "assistant",
+      "content": "Watering event recorded.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774629660538",
+      "createdAt": "2026-03-27T16:41:00.538Z",
+      "role": "user",
+      "content": "what time is it right now",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774629661547",
+      "createdAt": "2026-03-27T16:41:02.367Z",
+      "role": "assistant",
+      "content": "It is currently between 06:00 and 00:00, as the light schedule for your Sour Diesel plant is set to be on from 06:00 to 00:00. However, I don't have real-time access to the current time.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774629678331",
+      "createdAt": "2026-03-27T16:41:18.331Z",
+      "role": "user",
+      "content": "it is 1641 right now",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774629679347",
+      "createdAt": "2026-03-27T16:41:20.055Z",
+      "role": "assistant",
+      "content": "The current time is 16:41, and according to the schedule, the lights for Sour Diesel should still be on since they're set to be on from 06:00 to 00:00.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774693443314",
+      "createdAt": "2026-03-28T10:24:03.314Z",
+      "role": "user",
+      "content": "how's the current VPD trend",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774693444318",
+      "createdAt": "2026-03-28T10:24:05.598Z",
+      "role": "assistant",
+      "content": "The current VPD is 2.12 kPa, which is dangerously high. I recommend adjusting the temperature or humidity to bring it back to a safe range, ideally between 0.8-1.2 kPa for the bloom stage. Consider increasing the humidity to around 50-60% to mitigate this issue.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774693469429",
+      "createdAt": "2026-03-28T10:24:29.429Z",
+      "role": "user",
+      "content": "what's the current temperature",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774693470437",
+      "createdAt": "2026-03-28T10:24:31.065Z",
+      "role": "assistant",
+      "content": "The current temperature is 27.5°C. Considering the high VPD of 2.12 kPa, you may want to consider increasing the humidity to a more comfortable range for your Sour Diesel plant.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774693509243",
+      "createdAt": "2026-03-28T10:25:09.243Z",
+      "role": "user",
+      "content": "check for the last weather update",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774693510252",
+      "createdAt": "2026-03-28T10:25:11.040Z",
+      "role": "assistant",
+      "content": "The current climate is 27.5°C and 42% humidity.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774693537552",
+      "createdAt": "2026-03-28T10:25:37.552Z",
+      "role": "user",
+      "content": "new weather update 24 degrees Celsius is in 58% humidity",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774693538553",
+      "createdAt": "2026-03-28T10:25:39.346Z",
+      "role": "assistant",
+      "content": "Growing room conditions recorded: 24°C and 58% humidity - a better VPD for your Sour Diesel.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774700997286",
+      "createdAt": "2026-03-28T12:29:57.286Z",
+      "role": "user",
+      "content": "what about now what are the growing conditions Environmental",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774700998287",
+      "createdAt": "2026-03-28T12:29:59.717Z",
+      "role": "assistant",
+      "content": "The current temperature and humidity are within acceptable ranges, but consider adjusting the humidity for optimal VPD.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774739339994",
+      "createdAt": "2026-03-28T23:08:59.994Z",
+      "role": "user",
+      "content": "what's up do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774739341000",
+      "createdAt": "2026-03-28T23:09:02.581Z",
+      "role": "assistant",
+      "content": "I'm here and ready to help with your Sour Diesel plant. Everything looks good with the current environment, but I can offer advice or help with any changes you'd like to make - what's on your mind?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774740954150",
+      "createdAt": "2026-03-28T23:35:54.150Z",
+      "role": "user",
+      "content": "give me a weather update",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774740955150",
+      "createdAt": "2026-03-28T23:35:56.446Z",
+      "role": "assistant",
+      "content": "Current grow room conditions are stable.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774782358787",
+      "createdAt": "2026-03-29T11:05:58.787Z",
+      "role": "user",
+      "content": "hello good morning how are you what day is today",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774782359793",
+      "createdAt": "2026-03-29T11:06:00.830Z",
+      "role": "assistant",
+      "content": "Good morning, I'm doing well, thanks for asking. As for the day, I don't have real-time access to the current date, but I can tell you that your Sour Diesel plant is currently on day 73 of its growth cycle, with an unknown number of days in the bloom stage.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"

@@ -59,13 +59,13 @@ export function VPDChart({
 
   const getCellColor = (vpd: number, stage: "Veg" | "Bloom") => {
     if (isInOptimalRange(vpd, stage)) {
-      return "bg-lime-400/40 border-lime-300/50";
+      return "bg-lime-400/40 border-white/80";
     }
     return "bg-purple-400/30 border-purple-300/40";
   };
 
   return (
-    <div className="rounded-2xl border-2 border-lime-300/40 bg-black/20 p-5">
+    <div className="rounded-2xl border-2 border-white/80 bg-black/20 p-5">
       {/* Header with toggle */}
       <button
         onClick={() => setIsVisible(!isVisible)}
@@ -111,7 +111,7 @@ export function VPDChart({
 
           {/* Chart Grid */}
           <div className="overflow-x-auto">
-            <div className="min-w-full border border-lime-300/20 rounded-lg bg-slate-900/30 p-4">
+            <div className="min-w-full border border-white/80 rounded-lg bg-slate-900/30 p-4">
               {/* Title */}
               <p className="mb-4 text-center text-xs font-semibold text-lime-200">
                 Current: {currentTemp}°C, {currentHumidity}% RH = {currentVpd} kPa

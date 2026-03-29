@@ -261,7 +261,12 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
         <div className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
           <div className="glass-panel rounded-[2rem] p-5 lg:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
+             <div className="flex flex-wrap items-start justify-between gap-4">
+               <div className="">
+                <p className="font-mono text-[11px] uppercase tracking-[0.34em] text-lime-200">G-Buddy</p>
+              </div>
+             </div>
+            <div className=" items-start justify-between gap-4">
               <div className="rounded-2xl border border-lime-300/20 bg-lime-300/10 px-4 py-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-lime-200">{t.activePlant}</p>
                 <div className="mt-2 flex items-center gap-3">
@@ -293,9 +298,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   />
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-mono text-[11px] uppercase tracking-[0.34em] text-lime-200">G-Buddy</p>
-              </div>
+             
             </div>
 
             <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-3">
@@ -516,7 +519,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                         {lightsOnNow ? "Lights ON" : "Lights OFF"}
                       </span>
                     </div>
-                    <div className="mt-2 rounded-2xl border border-lime-300/12 bg-black/20 p-3">
+                    <div className="mt-2 rounded-2xl border border-white/80 bg-black/20 p-3">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Light</p>
                         <div className="rounded-xl border border-lime-300/20 bg-lime-300/10 p-2 text-lime-200">

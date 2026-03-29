@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@google-cloud/text-to-speech": "^5.5.0",
     "@supabase/supabase-js": "^2.100.0",
     "groq-sdk": "^1.1.2",
     "lucide-react": "^0.511.0",
