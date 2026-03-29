@@ -21,9 +21,9 @@
     }
   ],
   "env": {
-    "GROQ_API_KEY": "@groq_api_key",
-    "GOOGLE_AI_API_KEY": "@google_ai_api_key",
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY": "@next_public_supabase_publishable_default_key"
+    "GROQ_API_KEY": "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",
+    "GOOGLE_AI_API_KEY": "AQ.Ab8RN6KOjCiZ7X659gIa1D1cgRxUYpgty9tpMwcJnLinR-pEqQ",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://bpspxrtywwsvulpvttpq.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY": "sb_publishable_o2-jMIT7zovGOBy84SFUZQ_XXGJ-VEk"
   }
 }
