@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { PlantProfile } from "@/lib/types";
 import { createClient } from "@supabase/supabase-js";
+import { generateUUID } from "@/lib/uuid";
 
 export type PlantsState = {
   plants: PlantProfile[];
@@ -29,6 +30,77 @@ function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey);
 }
 
+function isValidUUID(id: string): boolean {
+  if (!id || typeof id !== "string") return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+}
+
+function validateTimestamp(ts: any): string | null {
+  if (!ts) return null;
+  const date = new Date(ts);
+  if (isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
+function sanitizePlantData(plant: any): PlantProfile | null {
+  try {
+    // Validate and generate UUIDs for plant ID
+    const plantId = isValidUUID(plant.id) ? plant.id : generateUUID();
+    if (!isValidUUID(plant.id) && plant.id) {
+      console.log(`[Plants] Regenerated invalid plant ID: ${plant.id} -> ${plantId}`);
+    }
+
+    // Validate watering data and regenerate invalid IDs
+    const wateringData = Array.isArray(plant.wateringData)
+      ? plant.wateringData
+          .map((w: any) => {
+            const waterId = isValidUUID(w.id) ? w.id : generateUUID();
+            if (!isValidUUID(w.id) && w.id) {
+              console.log(`[Watering] Regenerated invalid watering ID: ${w.id} -> ${waterId}`);
+            }
+            return {
+              ...w,
+              id: waterId,
+              timestamp: validateTimestamp(w.timestamp)
+            };
+          })
+          .filter((w: any) => w.timestamp)
+      : [];
+
+    // Validate climate data and regenerate invalid IDs
+    const climateData = Array.isArray(plant.climateData)
+      ? plant.climateData
+          .map((c: any) => {
+            const climateId = isValidUUID(c.id) ? c.id : generateUUID();
+            if (!isValidUUID(c.id) && c.id) {
+              console.log(`[Climate] Regenerated invalid climate ID: ${c.id} -> ${climateId}`);
+            }
+            return {
+              ...c,
+              id: climateId,
+              timestamp: validateTimestamp(c.timestamp)
+            };
+          })
+          .filter((c: any) => c.timestamp)
+      : [];
+
+    // Return sanitized plant with valid UUIDs
+    return {
+      ...plant,
+      id: plantId,
+      startedAt: validateTimestamp(plant.startedAt) || new Date().toISOString(),
+      bloomStartedAt: validateTimestamp(plant.bloomStartedAt) || "",
+      lastWateredAt: validateTimestamp(plant.lastWateredAt) || new Date().toISOString(),
+      wateringData,
+      climateData
+    } as PlantProfile;
+  } catch (err) {
+    console.error("Error sanitizing plant data:", err);
+    return null;
+  }
+}
+
 export async function readPlantsState(): Promise<PlantsState> {
   await mkdir(dataDir, { recursive: true });
 
@@ -44,10 +116,20 @@ export async function readPlantsState(): Promise<PlantsState> {
 
         if (!error && data && data.length > 0) {
           console.log("[Plants] Loaded from Supabase:", data.length, "plants");
-          return {
-            plants: data as PlantProfile[],
-            activePlantId: data[0]?.id || ""
-          };
+          const validPlants = data
+            .map((p) => {
+              // If plant has nested data object, extract it
+              const plantData = p.data && typeof p.data === "object" ? p.data : p;
+              return sanitizePlantData(plantData);
+            })
+            .filter((p) => p !== null) as PlantProfile[];
+          
+          if (validPlants.length > 0) {
+            return {
+              plants: validPlants,
+              activePlantId: validPlants[0]?.id || ""
+            };
+          }
         }
       } catch (err) {
         console.warn("[Plants] Supabase read failed, falling back to local:", err);
@@ -60,10 +142,16 @@ export async function readPlantsState(): Promise<PlantsState> {
 
     const plants = Array.isArray(parsed.plants) && parsed.plants.length > 0
       ? parsed.plants
+          .map((p) => sanitizePlantData(p))
+          .filter((p) => p !== null) as PlantProfile[]
       : [];
     const activePlantId = typeof parsed.activePlantId === "string" && parsed.activePlantId
       ? parsed.activePlantId
       : plants[0]?.id ?? "";
+
+    if (plants.length > 0) {
+      console.log("[Plants] Loaded from local storage:", plants.length, "plants with valid timestamps");
+    }
 
     return { plants, activePlantId };
   } catch (error) {
@@ -93,7 +181,7 @@ export async function writePlantsState(state: PlantsState) {
   if (supabase && safeState.plants.length > 0) {
     try {
       for (const plant of safeState.plants) {
-        // Upsert plants
+        // Upsert plants (using id as primary key)
         const { error: plantError } = await supabase
           .from("plants")
           .upsert(

@@ -1,4 +1,5 @@
 import type { GrowCommand, LocalLlmSettings, PlantProfile } from "@/lib/types";
+import { generateUUID } from "@/lib/uuid";
 
 export function normalizeBaseUrl(baseUrl: string) {
   return baseUrl.trim().replace(/\/+$/, "");
@@ -43,7 +44,7 @@ export function applyGrowCommand(plant: PlantProfile, command: GrowCommand) {
       wateringData: [
         ...plant.wateringData,
         {
-          id: `water-${Date.now()}`,
+          id: generateUUID(),
           timestamp,
           amountMl: Number(value.amountMl) || 0,
           ph: Number(value.ph) || 0,
@@ -65,7 +66,7 @@ export function applyGrowCommand(plant: PlantProfile, command: GrowCommand) {
       climateData: [
         ...plant.climateData,
         {
-          id: `climate-${Date.now()}`,
+          id: generateUUID(),
           timestamp,
           tempC: Number(value.tempC) || 0,
           humidity: Number(value.humidity) || 0

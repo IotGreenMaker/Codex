@@ -16,6 +16,7 @@ import {
   YAxis
 } from "recharts";
 import type { ClimateEntry, GrowLogEntry, GrowStage, WateringEntry } from "@/lib/types";
+import { generateUUID } from "@/lib/uuid";
 import type { Locale } from "@/lib/i18n";
 
 type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
@@ -68,10 +69,18 @@ export function GrowChart({
         break;
     }
 
-    return climateData.filter((entry) => new Date(entry.timestamp).getTime() >= cutoffTime);
+    return climateData.filter((entry) => {
+      if (!entry.timestamp) return false;
+      const ts = new Date(entry.timestamp).getTime();
+      return !isNaN(ts) && ts >= cutoffTime;
+    });
   }, [climateData, filterPeriod]);
 
-  const sortedClimate = [...filteredClimate].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const sortedClimate = [...filteredClimate].sort((a, b) => {
+    const aTime = new Date(a.timestamp).getTime();
+    const bTime = new Date(b.timestamp).getTime();
+    return aTime - bTime;
+  });
   const climateChartData = sortedClimate.map((entry) => ({
     tick: formatShortDate(entry.timestamp, locale),
     temp: entry.tempC,
@@ -79,10 +88,18 @@ export function GrowChart({
     vpd: calculateVpd(entry.tempC, entry.humidity)
   }));
 
-  const sortedWatering = [...wateringData].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-  const newestFirstWatering = [...sortedWatering].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const sortedWatering = [...wateringData].filter((w) => w.timestamp).sort((a, b) => {
+    const aTime = new Date(a.timestamp).getTime();
+    const bTime = new Date(b.timestamp).getTime();
+    return aTime - bTime;
+  });
+  const newestFirstWatering = [...sortedWatering].sort((a, b) => {
+    const aTime = new Date(a.timestamp).getTime();
+    const bTime = new Date(b.timestamp).getTime();
+    return bTime - aTime;
+  });
   const latestWatering = sortedWatering[sortedWatering.length - 1];
-  const projectedNextWatering = latestWatering
+  const projectedNextWatering = latestWatering && latestWatering.timestamp
     ? {
         id: "next-watering",
         timestamp: new Date(new Date(latestWatering.timestamp).getTime() + wateringIntervalDays * 24 * 60 * 60 * 1000).toISOString(),
@@ -149,7 +166,7 @@ export function GrowChart({
                 onClimateDataChange([
                   ...climateData,
                   {
-                    id: `climate-${Date.now()}`,
+                    id: generateUUID(),
                     timestamp: new Date().toISOString(),
                     tempC: climateData[0]?.tempC ?? 25,
                     humidity: climateData[0]?.humidity ?? 60
@@ -290,7 +307,7 @@ export function GrowChart({
               onWateringDataChange([
                 ...wateringData,
                 {
-                  id: `water-${Date.now()}`,
+                  id: generateUUID(),
                   timestamp: new Date().toISOString(),
                   amountMl: latestWatering?.amountMl ?? 500,
                   ph: latestWatering?.ph ?? 6,
@@ -523,7 +540,13 @@ function getVpdTooltip(stage: GrowStage, vpd: number) {
 }
 
 function buildDrybackSeries(watering: WateringEntry[], locale: Locale, intervalDays: number) {
-  const sorted = [...watering].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const sorted = [...watering]
+    .filter((w) => w.timestamp && new Date(w.timestamp).getTime())
+    .sort((a, b) => {
+      const aTime = new Date(a.timestamp).getTime();
+      const bTime = new Date(b.timestamp).getTime();
+      return aTime - bTime;
+    });
   if (!sorted.length) return [];
 
   const series: Array<{
@@ -579,16 +602,22 @@ function buildDrybackSeries(watering: WateringEntry[], locale: Locale, intervalD
 }
 
 function formatShortDate(iso: string, locale: Locale) {
-  return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(new Date(iso));
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(date);
 }
 
 function formatDateTime(iso: string, locale: Locale) {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return "";
   return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit"
-  }).format(new Date(iso));
+  }).format(date);
 }
 
 function toDatetimeLocal(iso: string) {

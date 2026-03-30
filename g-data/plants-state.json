@@ -1,525 +1,494 @@
 {
   "plants": [
     {
-      "id": "plant-1",
-      "strainName": "Sour Diesel",
-      "startedAt": "2026-01-15T09:00:00.000Z",
+      "id": "91952271-eedf-48ee-956e-defde1b9855a",
       "stage": "Bloom",
-      "bloomStartedAt": "",
-      "lightSchedule": "12 /12",
-      "lightsOn": "05:00",
-      "lightsOff": "17:00",
-      "lightType": "panel_100w",
-      "lightDimmerPercent": 75,
-      "lightLampName": "Phlizon PL1000",
-      "lightLampWatts": 100,
-      "containerVolumeL": 10,
-      "mediaVolumeL": 10,
-      "mediaType": "Light Mix",
-      "outsideTempC": 16.7,
-      "outsideHumidity": 60,
-      "growTempC": 21.4,
-      "growHumidity": 50,
-      "waterInputMl": 1000,
-      "waterPh": 5.8,
       "waterEc": 0.93,
-      "lastWateredAt": "2026-03-30T12:59:04.155Z",
-      "wateringIntervalDays": 4,
+      "waterPh": 5.8,
+      "lightsOn": "05:00",
+      "growTempC": 20,
+      "lightType": "panel_100w",
+      "lightsOff": "17:00",
+      "mediaType": "Light Mix",
       "stageDays": {
-        "seedling": 21,
         "veg": 21,
-        "bloom": 33
+        "bloom": 33,
+        "seedling": 21
       },
-      "wateringData": [
-        {
-          "id": "w-1",
-          "timestamp": "2026-03-04T08:30:00.000Z",
-          "amountMl": 700,
-          "ph": 5.9,
-          "ec": 0.906
-        },
-        {
-          "id": "w-2",
-          "timestamp": "2026-03-05T08:30:00.000Z",
-          "amountMl": 800,
-          "ph": 5.8,
-          "ec": 0.238,
-          "runoffPh": 6.7,
-          "runoffEc": 1.45
-        },
-        {
-          "id": "w-3",
-          "timestamp": "2026-03-09T08:30:00.000Z",
-          "amountMl": 900,
-          "ph": 5.9,
-          "ec": 0.857,
-          "runoffPh": 6.7,
-          "runoffEc": 1.2
-        },
-        {
-          "id": "water-1774606083256",
-          "timestamp": "2026-03-12T10:08:00.000Z",
-          "amountMl": 1000,
-          "ph": 5.9,
-          "ec": 0.238
-        },
-        {
-          "id": "water-1774606082415",
-          "timestamp": "2026-03-17T10:08:00.000Z",
-          "amountMl": 1000,
-          "ph": 5.9,
-          "ec": 0.84
-        },
-        {
-          "id": "w-4",
-          "timestamp": "2026-03-20T08:30:00.000Z",
-          "amountMl": 1000,
-          "ph": 5.9,
-          "ec": 0.915
-        },
-        {
-          "id": "water-1774570082405",
-          "timestamp": "2026-03-23T00:08:00.000Z",
-          "amountMl": 1000,
-          "ph": 5.9,
-          "ec": 0.98,
-          "runoffPh": 6.2,
-          "runoffEc": 1.26
-        },
-        {
-          "id": "water-1774606303960",
-          "timestamp": "2026-03-24T10:11:00.000Z",
-          "amountMl": 1000,
-          "ph": 5.9,
-          "ec": 0.95
-        },
-        {
-          "id": "water-1774622905247",
-          "timestamp": "2026-03-27T14:48:25.247Z",
-          "amountMl": 1000,
-          "ph": 5.9,
-          "ec": 0.85,
-          "runoffPh": 6.2,
-          "runoffEc": 0.656
-        },
-        {
-          "id": "water-1774875544155",
-          "timestamp": "2026-03-30T12:59:04.155Z",
-          "amountMl": 1000,
-          "ph": 5.8,
-          "ec": 0.93
-        }
-      ],
-      "climateData": [
-        {
-          "id": "climate-1774547589603",
-          "timestamp": "2026-02-26T17:53:00.000Z",
-          "tempC": 23,
-          "humidity": 58
-        },
-        {
-          "id": "climate-1774550002304",
-          "timestamp": "2026-03-05T18:33:00.000Z",
-          "tempC": 21.5,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774552399879",
-          "timestamp": "2026-03-08T19:13:00.000Z",
-          "tempC": 22.4,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774558898411",
-          "timestamp": "2026-03-09T21:01:00.000Z",
-          "tempC": 23.6,
-          "humidity": 55
-        },
-        {
-          "id": "climate-1774562560492",
-          "timestamp": "2026-03-12T22:02:00.000Z",
-          "tempC": 21.5,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774602817368",
-          "timestamp": "2026-03-17T09:13:00.000Z",
-          "tempC": 20.7,
-          "humidity": 61
-        },
-        {
-          "id": "climate-1774605830781",
-          "timestamp": "2026-03-20T10:03:00.000Z",
-          "tempC": 22.5,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774605830304",
-          "timestamp": "2026-03-23T10:03:00.000Z",
-          "tempC": 24,
-          "humidity": 49
-        },
-        {
-          "id": "climate-1774605829784",
-          "timestamp": "2026-03-23T15:03:00.000Z",
-          "tempC": 22,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774604814326",
-          "timestamp": "2026-03-27T09:46:54.326Z",
-          "tempC": 24,
-          "humidity": 34
-        },
-        {
-          "id": "climate-1774605369971",
-          "timestamp": "2026-03-27T09:56:09.971Z",
-          "tempC": 24,
-          "humidity": 40
-        },
-        {
-          "id": "climate-1774606356429",
-          "timestamp": "2026-03-27T10:12:36.429Z",
-          "tempC": 23,
-          "humidity": 38
-        },
-        {
-          "id": "climate-1774611068487",
-          "timestamp": "2026-03-27T11:31:08.487Z",
-          "tempC": 25.2,
-          "humidity": 40
-        },
-        {
-          "id": "climate-1774615711437",
-          "timestamp": "2026-03-27T12:48:31.437Z",
-          "tempC": 24.3,
-          "humidity": 40
-        },
-        {
-          "id": "climate-1774618952651",
-          "timestamp": "2026-03-27T13:42:32.651Z",
-          "tempC": 24,
-          "humidity": 55
-        },
-        {
-          "id": "climate-1774621767049",
-          "timestamp": "2026-03-27T14:29:27.049Z",
-          "tempC": 25,
-          "humidity": 55
-        },
-        {
-          "id": "climate-1774629819645",
-          "timestamp": "2026-03-27T16:43:39.645Z",
-          "tempC": 26,
-          "humidity": 56
-        },
-        {
-          "id": "climate-1774633034156",
-          "timestamp": "2026-03-27T17:37:14.157Z",
-          "tempC": 24.1,
-          "humidity": 50
-        },
-        {
-          "id": "climate-1774691978481",
-          "timestamp": "2026-03-28T09:59:38.481Z",
-          "tempC": 27.5,
-          "humidity": 42
-        },
-        {
-          "id": "climate-1774693566087",
-          "timestamp": "2026-03-28T10:15:00.000Z",
-          "tempC": 25,
-          "humidity": 55
-        },
-        {
-          "id": "climate-1774693539346",
-          "timestamp": "2026-03-28T10:25:39.346Z",
-          "tempC": 24,
-          "humidity": 58
-        },
-        {
-          "id": "climate-1774695890119",
-          "timestamp": "2026-03-28T11:04:50.119Z",
-          "tempC": 24.1,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774700999716",
-          "timestamp": "2026-03-28T12:29:59.716Z",
-          "tempC": 24.1,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774701022705",
-          "timestamp": "2026-03-28T12:30:22.705Z",
-          "tempC": 22.1,
-          "humidity": 44
-        },
-        {
-          "id": "climate-1774740956446",
-          "timestamp": "2026-03-28T23:35:56.446Z",
-          "tempC": 22.1,
-          "humidity": 43
-        },
-        {
-          "id": "climate-1774782222771",
-          "timestamp": "2026-03-29T11:03:42.771Z",
-          "tempC": 28,
-          "humidity": 36
-        },
-        {
-          "id": "climate-1774782240327",
-          "timestamp": "2026-03-29T11:04:00.327Z",
-          "tempC": 25,
-          "humidity": 40
-        },
-        {
-          "id": "climate-1774782254996",
-          "timestamp": "2026-03-29T11:04:14.996Z",
-          "tempC": 24,
-          "humidity": 46
-        },
-        {
-          "id": "climate-1774791222268",
-          "timestamp": "2026-03-29T13:33:42.268Z",
-          "tempC": 23,
-          "humidity": 42
-        },
-        {
-          "id": "climate-1774799584126",
-          "timestamp": "2026-03-29T15:53:04.126Z",
-          "tempC": 23.6,
-          "humidity": 46
-        },
-        {
-          "id": "climate-1774817606050",
-          "timestamp": "2026-03-29T20:53:26.050Z",
-          "tempC": 21.8,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774821857481",
-          "timestamp": "2026-03-29T22:04:17.481Z",
-          "tempC": 21.5,
-          "humidity": 43
-        },
-        {
-          "id": "climate-1774827700417",
-          "timestamp": "2026-03-29T23:41:40.417Z",
-          "tempC": 21,
-          "humidity": 44
-        },
-        {
-          "id": "climate-1774828753736",
-          "timestamp": "2026-03-29T23:59:13.736Z",
-          "tempC": 23,
-          "humidity": 46
-        },
-        {
-          "id": "climate-1774868991522",
-          "timestamp": "2026-03-30T11:09:51.522Z",
-          "tempC": 23,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774870647940",
-          "timestamp": "2026-03-30T11:37:27.940Z",
-          "tempC": 22.8,
-          "humidity": 56
-        },
-        {
-          "id": "climate-1774884123949",
-          "timestamp": "2026-03-30T15:22:03.949Z",
-          "tempC": 22,
-          "humidity": 54
-        },
-        {
-          "id": "climate-1774887124781",
-          "timestamp": "2026-03-30T16:12:04.781Z",
-          "tempC": 21.4,
-          "humidity": 50
-        }
-      ],
+      "startedAt": "2026-01-15T09:00:00.000Z",
       "feedRecipe": {
         "title": "Canna Nutrients",
         "baseAMl": 24,
         "baseBMl": 21,
         "calMagMl": 6,
         "targetEc": 1.45,
-        "targetPhLow": 5.8,
-        "targetPhHigh": 6.1,
         "additives": [
           {
             "id": "add-1",
             "label": "Silica",
             "amountMl": 5
           }
-        ]
-      }
-    },
-    {
-      "id": "plant-2",
-      "strainName": "Special Queen N1",
-      "startedAt": "2026-03-20T09:00:00.000Z",
-      "stage": "Seedling",
-      "bloomStartedAt": "",
-      "lightSchedule": "18 / 6",
-      "lightsOn": "03:00",
-      "lightsOff": "22:00",
-      "lightType": "blurple_40w",
-      "lightDimmerPercent": 100,
-      "lightLampName": "Veg blurple",
-      "lightLampWatts": 40,
-      "containerVolumeL": 0.2,
-      "mediaVolumeL": 0.2,
-      "mediaType": "Other",
-      "outsideTempC": 15.1,
-      "outsideHumidity": 66,
-      "growTempC": 24.1,
-      "growHumidity": 68,
-      "waterInputMl": 50,
-      "waterPh": 5.8,
-      "waterEc": 0.5,
-      "lastWateredAt": "2026-03-25T19:04:54.670Z",
-      "wateringIntervalDays": 3,
-      "stageDays": {
-        "seedling": 8,
-        "veg": 0,
-        "bloom": 0
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
       },
-      "wateringData": [
-        {
-          "id": "w-b-1",
-          "timestamp": "2026-03-23T18:34:20.027Z",
-          "amountMl": 300,
-          "ph": 5.8,
-          "ec": 0.3
-        },
-        {
-          "id": "water-1774465494670",
-          "timestamp": "2026-03-25T19:04:54.670Z",
-          "amountMl": 50,
-          "ph": 5.8,
-          "ec": 0.5
-        }
-      ],
+      "strainName": "Sour Diesel",
       "climateData": [
         {
-          "id": "c-b-1",
-          "timestamp": "2026-03-20T09:10:00.000Z",
-          "tempC": 23.8,
-          "humidity": 70
+          "id": "3cca105d-0e61-4ae3-a5a8-0574ca516578",
+          "tempC": 23,
+          "humidity": 58,
+          "timestamp": "2026-02-26T17:53:00.000Z"
         },
         {
-          "id": "c-b-2",
-          "timestamp": "2026-03-21T09:10:00.000Z",
-          "tempC": 24.1,
-          "humidity": 68
+          "id": "c6db322a-c315-4313-bf4e-3242a1b8d4ef",
+          "tempC": 21.5,
+          "humidity": 54,
+          "timestamp": "2026-03-05T18:33:00.000Z"
         },
         {
-          "id": "c-b-3",
-          "timestamp": "2026-03-22T09:10:00.000Z",
+          "id": "982a99df-342c-4c2a-8e62-bd95bb6fb01b",
+          "tempC": 22.4,
+          "humidity": 54,
+          "timestamp": "2026-03-08T19:13:00.000Z"
+        },
+        {
+          "id": "e9689feb-8cdf-4be8-a369-ceccfdfd9c4e",
+          "tempC": 23.6,
+          "humidity": 55,
+          "timestamp": "2026-03-09T21:01:00.000Z"
+        },
+        {
+          "id": "1fa09cfd-739c-453d-a325-0405feddda81",
+          "tempC": 21.5,
+          "humidity": 54,
+          "timestamp": "2026-03-12T22:02:00.000Z"
+        },
+        {
+          "id": "00acd934-6ef2-4300-bc8a-e723d145ac10",
+          "tempC": 20.7,
+          "humidity": 61,
+          "timestamp": "2026-03-17T09:13:00.000Z"
+        },
+        {
+          "id": "0ac8c190-e219-4158-b8b4-5512d5f4a3e4",
+          "tempC": 22.5,
+          "humidity": 54,
+          "timestamp": "2026-03-20T10:03:00.000Z"
+        },
+        {
+          "id": "b7d1848c-598a-4b94-94c8-d5ad0fe8a691",
+          "tempC": 24,
+          "humidity": 49,
+          "timestamp": "2026-03-23T10:03:00.000Z"
+        },
+        {
+          "id": "4a3ed125-32b2-4ada-8962-36b38fef970f",
+          "tempC": 22,
+          "humidity": 54,
+          "timestamp": "2026-03-23T15:03:00.000Z"
+        },
+        {
+          "id": "d3657400-3db6-474a-b567-61c5f67b3e22",
+          "tempC": 24,
+          "humidity": 34,
+          "timestamp": "2026-03-27T09:46:54.326Z"
+        },
+        {
+          "id": "a62c124a-23c1-471a-aecc-3cfc420fa782",
+          "tempC": 24,
+          "humidity": 40,
+          "timestamp": "2026-03-27T09:56:09.971Z"
+        },
+        {
+          "id": "29e093e8-70db-4f06-9fb7-9510aa2f52fb",
+          "tempC": 23,
+          "humidity": 38,
+          "timestamp": "2026-03-27T10:12:36.429Z"
+        },
+        {
+          "id": "2be5eb20-d272-4b8e-9eec-dd19ef016a78",
+          "tempC": 25.2,
+          "humidity": 40,
+          "timestamp": "2026-03-27T11:31:08.487Z"
+        },
+        {
+          "id": "997b74da-821e-49e4-a426-ab36c99efa2f",
+          "tempC": 24.3,
+          "humidity": 40,
+          "timestamp": "2026-03-27T12:48:31.437Z"
+        },
+        {
+          "id": "71d5f044-b1a7-4613-8b23-f62845014a17",
+          "tempC": 24,
+          "humidity": 55,
+          "timestamp": "2026-03-27T13:42:32.651Z"
+        },
+        {
+          "id": "7c3f357f-ec01-4220-b653-f6112fd1000f",
+          "tempC": 25,
+          "humidity": 55,
+          "timestamp": "2026-03-27T14:29:27.049Z"
+        },
+        {
+          "id": "fa2f41c9-48e4-4896-86f5-a2f5beb77fac",
+          "tempC": 26,
+          "humidity": 56,
+          "timestamp": "2026-03-27T16:43:39.645Z"
+        },
+        {
+          "id": "068dfd64-630e-4794-971b-c3006cdf9bce",
           "tempC": 24.1,
-          "humidity": 68
+          "humidity": 50,
+          "timestamp": "2026-03-27T17:37:14.157Z"
+        },
+        {
+          "id": "a2b46fa0-7d78-4f9b-997d-e73a817edefb",
+          "tempC": 27.5,
+          "humidity": 42,
+          "timestamp": "2026-03-28T09:59:38.481Z"
+        },
+        {
+          "id": "b3a91836-4097-4d52-b294-3d344cddad2c",
+          "tempC": 25,
+          "humidity": 55,
+          "timestamp": "2026-03-28T10:15:00.000Z"
+        },
+        {
+          "id": "f1d9419f-3105-4013-b6c4-6a1e570dba8d",
+          "tempC": 24,
+          "humidity": 58,
+          "timestamp": "2026-03-28T10:25:39.346Z"
+        },
+        {
+          "id": "68ed4284-b164-4653-ac5f-4cf2931a0c80",
+          "tempC": 24.1,
+          "humidity": 54,
+          "timestamp": "2026-03-28T11:04:50.119Z"
+        },
+        {
+          "id": "96b2f1cd-4182-4e6e-8ca7-4341ec84a2af",
+          "tempC": 24.1,
+          "humidity": 54,
+          "timestamp": "2026-03-28T12:29:59.716Z"
+        },
+        {
+          "id": "a33d7c75-6b40-4035-bf14-f0c7b6918016",
+          "tempC": 22.1,
+          "humidity": 44,
+          "timestamp": "2026-03-28T12:30:22.705Z"
+        },
+        {
+          "id": "257a196d-8f0c-4a1c-a83d-febdc12c42c5",
+          "tempC": 22.1,
+          "humidity": 43,
+          "timestamp": "2026-03-28T23:35:56.446Z"
+        },
+        {
+          "id": "cd99c239-f1d2-4348-b26f-47e10dc537af",
+          "tempC": 28,
+          "humidity": 36,
+          "timestamp": "2026-03-29T11:03:42.771Z"
+        },
+        {
+          "id": "22a21520-4293-46df-b5a8-93fd56a0ce3f",
+          "tempC": 25,
+          "humidity": 40,
+          "timestamp": "2026-03-29T11:04:00.327Z"
+        },
+        {
+          "id": "8babe4c6-e7a3-475b-8c13-f259c08eae66",
+          "tempC": 24,
+          "humidity": 46,
+          "timestamp": "2026-03-29T11:04:14.996Z"
+        },
+        {
+          "id": "a67eddb5-a1d0-49fd-8373-60ea151c6f06",
+          "tempC": 23,
+          "humidity": 42,
+          "timestamp": "2026-03-29T13:33:42.268Z"
+        },
+        {
+          "id": "58c25b07-9480-4cb5-97da-3672a1600750",
+          "tempC": 23.6,
+          "humidity": 46,
+          "timestamp": "2026-03-29T15:53:04.126Z"
+        },
+        {
+          "id": "1e7e168d-be57-4d2e-9911-c0dcb6f1ae9a",
+          "tempC": 21.8,
+          "humidity": 54,
+          "timestamp": "2026-03-29T20:53:26.050Z"
+        },
+        {
+          "id": "8e184744-d0f7-4cd2-aef0-741a113a74aa",
+          "tempC": 21.5,
+          "humidity": 43,
+          "timestamp": "2026-03-29T22:04:17.481Z"
+        },
+        {
+          "id": "e287013f-84cc-49d6-a267-eeb600f26b10",
+          "tempC": 21,
+          "humidity": 44,
+          "timestamp": "2026-03-29T23:41:40.417Z"
+        },
+        {
+          "id": "762fc6b0-93d0-46af-8d1a-4f5bb4a879e6",
+          "tempC": 23,
+          "humidity": 46,
+          "timestamp": "2026-03-29T23:59:13.736Z"
+        },
+        {
+          "id": "f72bc6e2-16ec-453c-8e3f-8af4ef5ed454",
+          "tempC": 23,
+          "humidity": 54,
+          "timestamp": "2026-03-30T11:09:51.522Z"
+        },
+        {
+          "id": "f0d07a14-0758-4f80-bbc4-4bb5c8f264b8",
+          "tempC": 22.8,
+          "humidity": 56,
+          "timestamp": "2026-03-30T11:37:27.940Z"
+        },
+        {
+          "id": "e847e0d8-781b-4d41-aac7-6c9165366b25",
+          "tempC": 22,
+          "humidity": 54,
+          "timestamp": "2026-03-30T15:22:03.949Z"
+        },
+        {
+          "id": "91275d90-e7f0-40a6-8759-f081149eda6e",
+          "tempC": 21.4,
+          "humidity": 50,
+          "timestamp": "2026-03-30T16:12:04.781Z"
+        },
+        {
+          "id": "b2a3c16e-88c1-4593-b29c-feae73a27e0a",
+          "tempC": 21.9,
+          "humidity": 45,
+          "timestamp": "2026-03-30T17:12:22.730Z"
+        },
+        {
+          "id": "a6acbda3-da52-4280-9502-d68d195f9b30",
+          "tempC": 23,
+          "humidity": 58,
+          "timestamp": "2026-03-30T17:30:33.008Z"
+        },
+        {
+          "id": "30f7432a-a283-45ab-884d-1350fc6a76a5",
+          "tempC": 20,
+          "humidity": 47,
+          "timestamp": "2026-03-30T19:24:14.341Z"
         }
       ],
+      "growHumidity": 47,
+      "mediaVolumeL": 10,
+      "outsideTempC": 16.7,
+      "waterInputMl": 478,
+      "wateringData": [
+        {
+          "ec": 0.906,
+          "id": "a6ea37a9-7894-4224-af07-de3ff820a460",
+          "ph": 5.9,
+          "amountMl": 700,
+          "timestamp": "2026-03-04T08:30:00.000Z"
+        },
+        {
+          "ec": 0.238,
+          "id": "f5cbfcdf-8945-489b-a1e7-25b99df446c0",
+          "ph": 5.8,
+          "amountMl": 800,
+          "runoffEc": 1.45,
+          "runoffPh": 6.7,
+          "timestamp": "2026-03-05T08:30:00.000Z"
+        },
+        {
+          "ec": 0.857,
+          "id": "40bbbb95-a331-4420-a5ca-5d026070db0f",
+          "ph": 5.9,
+          "amountMl": 900,
+          "runoffEc": 1.2,
+          "runoffPh": 6.7,
+          "timestamp": "2026-03-09T08:30:00.000Z"
+        },
+        {
+          "ec": 0.238,
+          "id": "2e0a1ab4-0c08-449d-a3a7-c28d47498a5d",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-12T10:08:00.000Z"
+        },
+        {
+          "ec": 0.84,
+          "id": "06ad957d-b772-4b9a-b1ed-9c82087027aa",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-17T10:08:00.000Z"
+        },
+        {
+          "ec": 0.915,
+          "id": "19ac3137-309a-4e6f-abcb-46c64fecbca6",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "ec": 0.98,
+          "id": "5ca0e18a-2538-46cb-bfbb-b32501eb1a31",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "runoffEc": 1.26,
+          "runoffPh": 6.2,
+          "timestamp": "2026-03-23T00:08:00.000Z"
+        },
+        {
+          "ec": 0.95,
+          "id": "b3c524c9-9c50-4615-9296-7ba5835b34c3",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-24T10:11:00.000Z"
+        },
+        {
+          "ec": 0.85,
+          "id": "a282bac0-9dd6-4da6-8a91-e44890039f25",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "runoffEc": 0.656,
+          "runoffPh": 6.2,
+          "timestamp": "2026-03-27T14:48:25.247Z"
+        },
+        {
+          "ec": 0.93,
+          "id": "5ad88c60-7328-43b1-8e53-7bb6d5843447",
+          "ph": 5.8,
+          "amountMl": 1000,
+          "timestamp": "2026-03-30T12:59:04.155Z"
+        },
+        {
+          "ec": 0.93,
+          "id": "6ba4d006-e89e-492c-a3e5-2451489e716f",
+          "ph": 5.8,
+          "amountMl": 478,
+          "runoffEc": 44,
+          "runoffPh": 44,
+          "timestamp": "2026-03-30T17:14:44.202Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-30T17:14:44.202Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "12 /12",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 10,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 2
+    },
+    {
+      "id": "c346f75b-20f6-4e58-9c9d-bebf3a964fc2",
+      "stage": "Seedling",
+      "waterEc": 0.5,
+      "waterPh": 5.8,
+      "lightsOn": "03:00",
+      "growTempC": 24.1,
+      "lightType": "blurple_40w",
+      "lightsOff": "22:00",
+      "mediaType": "Other",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 8
+      },
+      "startedAt": "2026-03-20T09:00:00.000Z",
       "feedRecipe": {
         "title": "10 L veg mix",
         "baseAMl": 12,
         "baseBMl": 10,
         "calMagMl": 3,
         "targetEc": 0.5,
-        "targetPhLow": 5.8,
-        "targetPhHigh": 6.1,
         "additives": [
           {
             "id": "add-1",
             "label": "Silica",
             "amountMl": 5
           }
-        ]
-      }
-    },
-    {
-      "id": "plant-3",
-      "strainName": "Special Kush N1",
-      "startedAt": "2026-03-20T09:00:00.000Z",
-      "stage": "Seedling",
-      "bloomStartedAt": "2026-02-10T09:00:00.000Z",
-      "lightSchedule": "18/6",
-      "lightsOn": "03:00",
-      "lightsOff": "22:00",
-      "lightType": "blurple_40w",
-      "lightDimmerPercent": 80,
-      "lightLampName": "Vegging Panel",
-      "lightLampWatts": 40,
-      "containerVolumeL": 0.2,
-      "mediaVolumeL": 0.2,
-      "mediaType": "Light Mix",
-      "outsideTempC": 14.2,
-      "outsideHumidity": 58,
-      "growTempC": 22.9,
-      "growHumidity": 61,
-      "waterInputMl": 49,
-      "waterPh": 5.8,
-      "waterEc": 0.5,
-      "lastWateredAt": "2026-03-21T12:00:00.000Z",
-      "wateringIntervalDays": 6,
-      "stageDays": {
-        "seedling": 3,
-        "veg": 0,
-        "bloom": 0
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
       },
-      "wateringData": [
-        {
-          "id": "w-c-2",
-          "timestamp": "2026-03-18T12:00:00.000Z",
-          "amountMl": 20,
-          "ph": 5.8,
-          "ec": 0.3
-        },
-        {
-          "id": "w-c-3",
-          "timestamp": "2026-03-21T12:00:00.000Z",
-          "amountMl": 49,
-          "ph": 5.8,
-          "ec": 0.5
-        }
-      ],
+      "strainName": "Special Queen N1",
       "climateData": [
         {
-          "id": "c-c-1",
-          "timestamp": "2026-03-15T12:00:00.000Z",
-          "tempC": 24.5,
-          "humidity": 54
+          "id": "d51261d0-b39e-4afd-92af-1d64aee8163b",
+          "tempC": 23.8,
+          "humidity": 70,
+          "timestamp": "2026-03-20T09:10:00.000Z"
         },
         {
-          "id": "c-c-2",
-          "timestamp": "2026-03-18T12:00:00.000Z",
-          "tempC": 24.8,
-          "humidity": 52
+          "id": "8e83efa9-12f3-47db-b1ec-d12d7bf077bd",
+          "tempC": 24.1,
+          "humidity": 68,
+          "timestamp": "2026-03-21T09:10:00.000Z"
         },
         {
-          "id": "c-c-3",
-          "timestamp": "2026-03-21T12:00:00.000Z",
-          "tempC": 25,
-          "humidity": 51
-        },
-        {
-          "id": "climate-1774447055229",
-          "timestamp": "2026-03-25T13:57:35.229Z",
-          "tempC": 22.9,
-          "humidity": 61
+          "id": "2fc70a86-4011-4e48-9cca-ed69f4568b63",
+          "tempC": 24.1,
+          "humidity": 68,
+          "timestamp": "2026-03-22T09:10:00.000Z"
         }
       ],
+      "growHumidity": 68,
+      "mediaVolumeL": 0.2,
+      "outsideTempC": 15.1,
+      "waterInputMl": 50,
+      "wateringData": [
+        {
+          "ec": 0.3,
+          "id": "e50e99a7-5c01-4c08-ac69-a5d0c77e3316",
+          "ph": 5.8,
+          "amountMl": 300,
+          "timestamp": "2026-03-23T18:34:20.027Z"
+        },
+        {
+          "ec": 0.5,
+          "id": "11d88d3f-9ec9-4ab9-9beb-150e03e9d06c",
+          "ph": 5.8,
+          "amountMl": 50,
+          "timestamp": "2026-03-25T19:04:54.670Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-25T19:04:54.670Z",
+      "lightLampName": "Veg blurple",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 40,
+      "outsideHumidity": 66,
+      "containerVolumeL": 0.2,
+      "lightDimmerPercent": 100,
+      "wateringIntervalDays": 3
+    },
+    {
+      "id": "ac4f091c-e2ac-41e2-b2ed-580c970d68a9",
+      "stage": "Seedling",
+      "waterEc": 0.5,
+      "waterPh": 5.8,
+      "lightsOn": "03:00",
+      "growTempC": 22.9,
+      "lightType": "blurple_40w",
+      "lightsOff": "22:00",
+      "mediaType": "Light Mix",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 3
+      },
+      "startedAt": "2026-03-20T09:00:00.000Z",
       "feedRecipe": {
         "title": "Canna Nutrients",
         "baseAMl": 0,
         "baseBMl": 0,
         "calMagMl": 0,
         "targetEc": 450,
-        "targetPhLow": 5.8,
-        "targetPhHigh": 6.2,
         "additives": [
           {
             "id": "add-1",
@@ -531,200 +500,1762 @@
             "label": "CannaZym",
             "amountMl": 1
           }
-        ]
-      }
-    },
-    {
-      "id": "plant-1774284802244",
-      "strainName": "Sour Diesel Clone",
-      "startedAt": "2026-02-15T09:00:00.000Z",
-      "stage": "Veg",
-      "bloomStartedAt": "",
-      "lightSchedule": "18 / 6",
-      "lightsOn": "06:00",
-      "lightsOff": "00:00",
-      "lightType": "panel_100w",
-      "lightDimmerPercent": 75,
-      "lightLampName": "Phlizon PL1000",
-      "lightLampWatts": 100,
-      "containerVolumeL": 15,
-      "mediaVolumeL": 13,
-      "mediaType": "Soil",
-      "outsideTempC": 16.7,
-      "outsideHumidity": 60,
-      "growTempC": 21.4,
-      "growHumidity": 62,
-      "waterInputMl": 50,
-      "waterPh": 5.9,
-      "waterEc": 0.4,
-      "lastWateredAt": "2026-03-22T08:30:00.000Z",
-      "wateringIntervalDays": 3,
-      "stageDays": {
-        "seedling": 14,
-        "veg": 41,
-        "bloom": 0
-      },
-      "wateringData": [
-        {
-          "id": "w-1",
-          "timestamp": "2026-03-16T08:30:00.000Z",
-          "amountMl": 50,
-          "ph": 5.9,
-          "ec": 0.2
-        },
-        {
-          "id": "w-2",
-          "timestamp": "2026-03-18T08:30:00.000Z",
-          "amountMl": 50,
-          "ph": 5.8,
-          "ec": 0.2
-        },
-        {
-          "id": "w-3",
-          "timestamp": "2026-03-20T08:30:00.000Z",
-          "amountMl": 50,
-          "ph": 5.9,
-          "ec": 0.2
-        },
-        {
-          "id": "w-4",
-          "timestamp": "2026-03-22T08:30:00.000Z",
-          "amountMl": 50,
-          "ph": 5.9,
-          "ec": 0.4
-        }
-      ],
-      "climateData": [
-        {
-          "id": "c-1",
-          "timestamp": "2026-03-16T08:30:00.000Z",
-          "tempC": 24.4,
-          "humidity": 64
-        },
-        {
-          "id": "c-2",
-          "timestamp": "2026-03-17T08:30:00.000Z",
-          "tempC": 24.9,
-          "humidity": 63
-        },
-        {
-          "id": "c-3",
-          "timestamp": "2026-03-18T08:30:00.000Z",
-          "tempC": 25.4,
-          "humidity": 61
-        },
-        {
-          "id": "c-4",
-          "timestamp": "2026-03-19T08:30:00.000Z",
-          "tempC": 24.7,
-          "humidity": 60
-        },
-        {
-          "id": "c-5",
-          "timestamp": "2026-03-20T08:30:00.000Z",
-          "tempC": 25.1,
-          "humidity": 59
-        },
-        {
-          "id": "c-6",
-          "timestamp": "2026-03-21T08:30:00.000Z",
-          "tempC": 25.6,
-          "humidity": 58
-        },
-        {
-          "id": "c-7",
-          "timestamp": "2026-03-22T08:30:00.000Z",
-          "tempC": 25.3,
-          "humidity": 60
-        },
-        {
-          "id": "climate-1774301077975",
-          "timestamp": "2026-03-23T21:24:37.975Z",
-          "tempC": 21.4,
-          "humidity": 62
-        }
-      ],
-      "feedRecipe": {
-        "title": "10 L veg mix",
-        "baseAMl": 24,
-        "baseBMl": 21,
-        "calMagMl": 6,
-        "targetEc": 1.45,
+        ],
         "targetPhLow": 5.8,
-        "targetPhHigh": 6.1,
-        "additives": [
-          {
-            "id": "add-1",
-            "label": "Silica",
-            "amountMl": 5
-          }
-        ]
-      }
-    },
-    {
-      "id": "plant-1774386568351",
-      "strainName": "Sour Diesel Hydro Clone",
-      "startedAt": "2026-03-24T21:09:28.351Z",
-      "stage": "Seedling",
-      "bloomStartedAt": "",
-      "lightSchedule": "18 / 6",
-      "lightsOn": "06:00",
-      "lightsOff": "00:00",
-      "lightType": "panel_100w",
-      "lightDimmerPercent": 75,
-      "lightLampName": "Phlizon PL1000",
-      "lightLampWatts": 100,
-      "containerVolumeL": 15,
-      "mediaVolumeL": 13,
-      "mediaType": "Soil",
-      "outsideTempC": 16.7,
-      "outsideHumidity": 60,
-      "growTempC": 21.4,
-      "growHumidity": 62,
-      "waterInputMl": 300,
-      "waterPh": 6,
-      "waterEc": 0.45,
-      "lastWateredAt": "2026-03-24T21:09:28.351Z",
-      "wateringIntervalDays": 3,
-      "stageDays": {
-        "seedling": 1,
-        "veg": 0,
-        "bloom": 0
+        "targetPhHigh": 6.2
       },
-      "wateringData": [
-        {
-          "id": "water-1774386568351",
-          "timestamp": "2026-03-24T21:09:28.351Z",
-          "amountMl": 300,
-          "ph": 6,
-          "ec": 0.45
-        }
-      ],
+      "strainName": "Special Kush N1",
       "climateData": [
         {
-          "id": "climate-1774386568351",
-          "timestamp": "2026-03-24T21:09:28.351Z",
+          "id": "0062a48c-425a-45e2-9117-5ba6afa1188b",
+          "tempC": 24.5,
+          "humidity": 54,
+          "timestamp": "2026-03-15T12:00:00.000Z"
+        },
+        {
+          "id": "c5aab889-0d7a-481a-ad05-d66022e73dd0",
+          "tempC": 24.8,
+          "humidity": 52,
+          "timestamp": "2026-03-18T12:00:00.000Z"
+        },
+        {
+          "id": "89e6955e-4543-42b1-a02d-8e7729f88377",
           "tempC": 25,
-          "humidity": 60
+          "humidity": 51,
+          "timestamp": "2026-03-21T12:00:00.000Z"
+        },
+        {
+          "id": "c743e61a-e085-4436-9ca8-eee96d9f2ee2",
+          "tempC": 22.9,
+          "humidity": 61,
+          "timestamp": "2026-03-25T13:57:35.229Z"
         }
       ],
+      "growHumidity": 61,
+      "mediaVolumeL": 0.2,
+      "outsideTempC": 14.2,
+      "waterInputMl": 49,
+      "wateringData": [
+        {
+          "ec": 0.3,
+          "id": "067939eb-a89a-4905-995c-8ed23ae0fe9d",
+          "ph": 5.8,
+          "amountMl": 20,
+          "timestamp": "2026-03-18T12:00:00.000Z"
+        },
+        {
+          "ec": 0.5,
+          "id": "8112e8d0-3ee2-4be2-874c-4dad68763e63",
+          "ph": 5.8,
+          "amountMl": 49,
+          "timestamp": "2026-03-21T12:00:00.000Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-21T12:00:00.000Z",
+      "lightLampName": "Vegging Panel",
+      "lightSchedule": "18/6",
+      "bloomStartedAt": "2026-02-10T09:00:00.000Z",
+      "lightLampWatts": 40,
+      "outsideHumidity": 58,
+      "containerVolumeL": 0.2,
+      "lightDimmerPercent": 80,
+      "wateringIntervalDays": 6
+    },
+    {
+      "id": "028083dc-242f-4694-af78-f6878b0afb16",
+      "stage": "Veg",
+      "waterEc": 0.4,
+      "waterPh": 5.9,
+      "lightsOn": "06:00",
+      "growTempC": 21.4,
+      "lightType": "panel_100w",
+      "lightsOff": "00:00",
+      "mediaType": "Soil",
+      "stageDays": {
+        "veg": 41,
+        "bloom": 0,
+        "seedling": 14
+      },
+      "startedAt": "2026-02-15T09:00:00.000Z",
       "feedRecipe": {
         "title": "10 L veg mix",
         "baseAMl": 24,
         "baseBMl": 21,
         "calMagMl": 6,
         "targetEc": 1.45,
-        "targetPhLow": 5.8,
-        "targetPhHigh": 6.1,
         "additives": [
           {
             "id": "add-1",
             "label": "Silica",
             "amountMl": 5
           }
-        ]
-      }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Sour Diesel Clone",
+      "climateData": [
+        {
+          "id": "0272ccc8-2c66-4a6d-88b7-9f9d595df86b",
+          "tempC": 24.4,
+          "humidity": 64,
+          "timestamp": "2026-03-16T08:30:00.000Z"
+        },
+        {
+          "id": "ee2e393e-00c7-4f62-91d3-90f7f3803e5f",
+          "tempC": 24.9,
+          "humidity": 63,
+          "timestamp": "2026-03-17T08:30:00.000Z"
+        },
+        {
+          "id": "b1c689d6-be79-40fb-9b91-a28bbee83af3",
+          "tempC": 25.4,
+          "humidity": 61,
+          "timestamp": "2026-03-18T08:30:00.000Z"
+        },
+        {
+          "id": "ee6f4211-6d22-44cf-b3be-40b68f06d0c9",
+          "tempC": 24.7,
+          "humidity": 60,
+          "timestamp": "2026-03-19T08:30:00.000Z"
+        },
+        {
+          "id": "1022a8a3-a43c-473e-9c9b-42cf2d925130",
+          "tempC": 25.1,
+          "humidity": 59,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "id": "236a64df-f50b-4ac4-b281-ca625030c200",
+          "tempC": 25.6,
+          "humidity": 58,
+          "timestamp": "2026-03-21T08:30:00.000Z"
+        },
+        {
+          "id": "7271186d-f34c-45fb-9dcf-27ebe4d6003f",
+          "tempC": 25.3,
+          "humidity": 60,
+          "timestamp": "2026-03-22T08:30:00.000Z"
+        },
+        {
+          "id": "61884754-1f48-4424-87b3-78148983811e",
+          "tempC": 21.4,
+          "humidity": 62,
+          "timestamp": "2026-03-23T21:24:37.975Z"
+        }
+      ],
+      "growHumidity": 62,
+      "mediaVolumeL": 13,
+      "outsideTempC": 16.7,
+      "waterInputMl": 50,
+      "wateringData": [
+        {
+          "ec": 0.2,
+          "id": "31843484-28d6-46c6-a70c-f76c58e78e76",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-16T08:30:00.000Z"
+        },
+        {
+          "ec": 0.2,
+          "id": "d8664c9a-6213-4fd3-832f-8f47abb5ae53",
+          "ph": 5.8,
+          "amountMl": 50,
+          "timestamp": "2026-03-18T08:30:00.000Z"
+        },
+        {
+          "ec": 0.2,
+          "id": "341c2ba0-cae0-4dfc-b783-1c8f85ef3361",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "ec": 0.4,
+          "id": "2827c008-383b-4c25-80e2-b5ba8c974a55",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-22T08:30:00.000Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-22T08:30:00.000Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 15,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 3
+    },
+    {
+      "id": "1cdc74d0-22b3-4f7a-b8ad-22c596cf5cd9",
+      "stage": "Seedling",
+      "waterEc": 0.45,
+      "waterPh": 6,
+      "lightsOn": "06:00",
+      "growTempC": 21.4,
+      "lightType": "panel_100w",
+      "lightsOff": "00:00",
+      "mediaType": "Soil",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 1
+      },
+      "startedAt": "2026-03-24T21:09:28.351Z",
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Sour Diesel Hydro Clone",
+      "climateData": [
+        {
+          "id": "e91822e1-fc4c-4c16-8d74-ab9a85c4c265",
+          "tempC": 25,
+          "humidity": 60,
+          "timestamp": "2026-03-24T21:09:28.351Z"
+        }
+      ],
+      "growHumidity": 62,
+      "mediaVolumeL": 13,
+      "outsideTempC": 16.7,
+      "waterInputMl": 300,
+      "wateringData": [
+        {
+          "ec": 0.45,
+          "id": "ab64108d-b105-4b54-8231-2ffca768c02e",
+          "ph": 6,
+          "amountMl": 300,
+          "timestamp": "2026-03-24T21:09:28.351Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-24T21:09:28.351Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 15,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 3
+    },
+    {
+      "id": "990052d2-f994-4ef2-aaee-1ab4e31387b1",
+      "stage": "Bloom",
+      "waterEc": 0.93,
+      "waterPh": 5.8,
+      "lightsOn": "05:00",
+      "growTempC": 20,
+      "lightType": "panel_100w",
+      "lightsOff": "17:00",
+      "mediaType": "Light Mix",
+      "stageDays": {
+        "veg": 21,
+        "bloom": 33,
+        "seedling": 21
+      },
+      "startedAt": "2026-01-15T09:00:00.000Z",
+      "feedRecipe": {
+        "title": "Canna Nutrients",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Sour Diesel",
+      "climateData": [
+        {
+          "id": "63f05c66-2094-40fa-bc43-cf15000f9a4f",
+          "tempC": 23,
+          "humidity": 58,
+          "timestamp": "2026-02-26T17:53:00.000Z"
+        },
+        {
+          "id": "4d763f51-f293-4004-ab4f-6ccaa73f7cfc",
+          "tempC": 21.5,
+          "humidity": 54,
+          "timestamp": "2026-03-05T18:33:00.000Z"
+        },
+        {
+          "id": "31968c9e-cf64-46a2-9443-4c09f61b87be",
+          "tempC": 22.4,
+          "humidity": 54,
+          "timestamp": "2026-03-08T19:13:00.000Z"
+        },
+        {
+          "id": "6bcc3e74-bbd9-4a12-bf3b-7f51b1b832a3",
+          "tempC": 23.6,
+          "humidity": 55,
+          "timestamp": "2026-03-09T21:01:00.000Z"
+        },
+        {
+          "id": "b479d845-3b57-40e2-81d7-bc104fd250a2",
+          "tempC": 21.5,
+          "humidity": 54,
+          "timestamp": "2026-03-12T22:02:00.000Z"
+        },
+        {
+          "id": "4a3b0dcc-36ac-4268-a55b-e4facfb3c795",
+          "tempC": 20.7,
+          "humidity": 61,
+          "timestamp": "2026-03-17T09:13:00.000Z"
+        },
+        {
+          "id": "df349ae8-53d4-4008-b5de-1febc6e1ee96",
+          "tempC": 22.5,
+          "humidity": 54,
+          "timestamp": "2026-03-20T10:03:00.000Z"
+        },
+        {
+          "id": "485a82d7-cef8-423f-86f8-98ecdbece51d",
+          "tempC": 24,
+          "humidity": 49,
+          "timestamp": "2026-03-23T10:03:00.000Z"
+        },
+        {
+          "id": "1c1cc671-d2bd-4254-98cd-2d3a21746a7c",
+          "tempC": 22,
+          "humidity": 54,
+          "timestamp": "2026-03-23T15:03:00.000Z"
+        },
+        {
+          "id": "c6fc556d-d6d0-475d-882d-5dfb4463e97b",
+          "tempC": 24,
+          "humidity": 34,
+          "timestamp": "2026-03-27T09:46:54.326Z"
+        },
+        {
+          "id": "5e79311d-da53-481b-a491-49dab7577243",
+          "tempC": 24,
+          "humidity": 40,
+          "timestamp": "2026-03-27T09:56:09.971Z"
+        },
+        {
+          "id": "8704a3ea-1c05-4236-8df6-eadf008175fa",
+          "tempC": 23,
+          "humidity": 38,
+          "timestamp": "2026-03-27T10:12:36.429Z"
+        },
+        {
+          "id": "8fe0f4d2-cb2a-4e00-afe5-c229dbdbe53c",
+          "tempC": 25.2,
+          "humidity": 40,
+          "timestamp": "2026-03-27T11:31:08.487Z"
+        },
+        {
+          "id": "0cf9e3d0-05e3-4b4b-b69b-9d1937296bfd",
+          "tempC": 24.3,
+          "humidity": 40,
+          "timestamp": "2026-03-27T12:48:31.437Z"
+        },
+        {
+          "id": "d7023858-c5ae-4bc1-94a9-1b3888520293",
+          "tempC": 24,
+          "humidity": 55,
+          "timestamp": "2026-03-27T13:42:32.651Z"
+        },
+        {
+          "id": "c08948a8-809d-4d28-9364-865e0d373749",
+          "tempC": 25,
+          "humidity": 55,
+          "timestamp": "2026-03-27T14:29:27.049Z"
+        },
+        {
+          "id": "dfa7c70b-2a46-4814-a065-004da01f2f20",
+          "tempC": 26,
+          "humidity": 56,
+          "timestamp": "2026-03-27T16:43:39.645Z"
+        },
+        {
+          "id": "b81d3d1a-3b9f-4f79-a21a-9cc197f2a038",
+          "tempC": 24.1,
+          "humidity": 50,
+          "timestamp": "2026-03-27T17:37:14.157Z"
+        },
+        {
+          "id": "d5554f76-1730-420e-b097-111fffbafc56",
+          "tempC": 27.5,
+          "humidity": 42,
+          "timestamp": "2026-03-28T09:59:38.481Z"
+        },
+        {
+          "id": "cfd12a17-f72b-4c5c-a1c5-36b2f50b429a",
+          "tempC": 25,
+          "humidity": 55,
+          "timestamp": "2026-03-28T10:15:00.000Z"
+        },
+        {
+          "id": "b4550041-69e0-44c4-9624-a8fa6a9e9bcd",
+          "tempC": 24,
+          "humidity": 58,
+          "timestamp": "2026-03-28T10:25:39.346Z"
+        },
+        {
+          "id": "73992515-eeee-43d3-9d46-d30516b727a2",
+          "tempC": 24.1,
+          "humidity": 54,
+          "timestamp": "2026-03-28T11:04:50.119Z"
+        },
+        {
+          "id": "597b9722-fc57-4d36-bc08-cee596ae8d2c",
+          "tempC": 24.1,
+          "humidity": 54,
+          "timestamp": "2026-03-28T12:29:59.716Z"
+        },
+        {
+          "id": "c3b3def0-7e6c-4e3d-90bc-ccab209fc9d4",
+          "tempC": 22.1,
+          "humidity": 44,
+          "timestamp": "2026-03-28T12:30:22.705Z"
+        },
+        {
+          "id": "21a5e71c-2af5-4bca-9345-bca5c95aac72",
+          "tempC": 22.1,
+          "humidity": 43,
+          "timestamp": "2026-03-28T23:35:56.446Z"
+        },
+        {
+          "id": "8bc58e36-6127-428d-8be2-a668b95f9ce7",
+          "tempC": 28,
+          "humidity": 36,
+          "timestamp": "2026-03-29T11:03:42.771Z"
+        },
+        {
+          "id": "d883fcf6-2da1-44ce-b744-02271cb3dcec",
+          "tempC": 25,
+          "humidity": 40,
+          "timestamp": "2026-03-29T11:04:00.327Z"
+        },
+        {
+          "id": "aeb123f5-3273-4609-b53e-c4d691233f1c",
+          "tempC": 24,
+          "humidity": 46,
+          "timestamp": "2026-03-29T11:04:14.996Z"
+        },
+        {
+          "id": "a145408c-deb4-44ee-abce-b09fc33a2a1b",
+          "tempC": 23,
+          "humidity": 42,
+          "timestamp": "2026-03-29T13:33:42.268Z"
+        },
+        {
+          "id": "a685587f-de6d-467f-92c1-37878d2ec47b",
+          "tempC": 23.6,
+          "humidity": 46,
+          "timestamp": "2026-03-29T15:53:04.126Z"
+        },
+        {
+          "id": "c4e6ba9b-542a-4060-9b62-1801672c808a",
+          "tempC": 21.8,
+          "humidity": 54,
+          "timestamp": "2026-03-29T20:53:26.050Z"
+        },
+        {
+          "id": "683e6068-4510-4593-9df8-a0e2bc313a17",
+          "tempC": 21.5,
+          "humidity": 43,
+          "timestamp": "2026-03-29T22:04:17.481Z"
+        },
+        {
+          "id": "11d54157-80d2-48f8-88e5-40930e9f9298",
+          "tempC": 21,
+          "humidity": 44,
+          "timestamp": "2026-03-29T23:41:40.417Z"
+        },
+        {
+          "id": "3ec90bd4-0b4c-49d3-9e6b-d01489c0b02c",
+          "tempC": 23,
+          "humidity": 46,
+          "timestamp": "2026-03-29T23:59:13.736Z"
+        },
+        {
+          "id": "74aad977-e40f-41f0-8d5a-a69f7c3ed5f0",
+          "tempC": 23,
+          "humidity": 54,
+          "timestamp": "2026-03-30T11:09:51.522Z"
+        },
+        {
+          "id": "91ab83f4-7715-49c5-80c2-10d9983cb6db",
+          "tempC": 22.8,
+          "humidity": 56,
+          "timestamp": "2026-03-30T11:37:27.940Z"
+        },
+        {
+          "id": "f6dfde28-1918-4147-95b4-de0ea0c42f09",
+          "tempC": 22,
+          "humidity": 54,
+          "timestamp": "2026-03-30T15:22:03.949Z"
+        },
+        {
+          "id": "aecce4da-224c-46ca-b79a-ca514cfcdb04",
+          "tempC": 21.4,
+          "humidity": 50,
+          "timestamp": "2026-03-30T16:12:04.781Z"
+        },
+        {
+          "id": "adfc3ef0-727c-4ff6-9a79-ed7ec568560b",
+          "tempC": 21.9,
+          "humidity": 45,
+          "timestamp": "2026-03-30T17:12:22.730Z"
+        },
+        {
+          "id": "90e60523-6aab-494b-a339-f7e665e3bc96",
+          "tempC": 23,
+          "humidity": 58,
+          "timestamp": "2026-03-30T17:30:33.008Z"
+        },
+        {
+          "id": "30f7432a-a283-45ab-884d-1350fc6a76a5",
+          "tempC": 20,
+          "humidity": 47,
+          "timestamp": "2026-03-30T19:24:14.341Z"
+        }
+      ],
+      "growHumidity": 47,
+      "mediaVolumeL": 10,
+      "outsideTempC": 16.7,
+      "waterInputMl": 478,
+      "wateringData": [
+        {
+          "ec": 0.906,
+          "id": "c27cca84-1225-4c6d-b9ad-5e0c0d5b649d",
+          "ph": 5.9,
+          "amountMl": 700,
+          "timestamp": "2026-03-04T08:30:00.000Z"
+        },
+        {
+          "ec": 0.238,
+          "id": "329055cd-9e96-429c-93ac-2e5759493eb0",
+          "ph": 5.8,
+          "amountMl": 800,
+          "runoffEc": 1.45,
+          "runoffPh": 6.7,
+          "timestamp": "2026-03-05T08:30:00.000Z"
+        },
+        {
+          "ec": 0.857,
+          "id": "abd90e32-078a-4a44-965a-db21ddfee06f",
+          "ph": 5.9,
+          "amountMl": 900,
+          "runoffEc": 1.2,
+          "runoffPh": 6.7,
+          "timestamp": "2026-03-09T08:30:00.000Z"
+        },
+        {
+          "ec": 0.238,
+          "id": "7c62cf68-23e5-409c-980f-9b6d311a6e58",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-12T10:08:00.000Z"
+        },
+        {
+          "ec": 0.84,
+          "id": "ff288332-5667-4ccd-a305-0d724a2baeb4",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-17T10:08:00.000Z"
+        },
+        {
+          "ec": 0.915,
+          "id": "caba5282-9888-4654-b843-c7aeb4055145",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "ec": 0.98,
+          "id": "92f725b1-07bb-44c3-9835-ded9555dd233",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "runoffEc": 1.26,
+          "runoffPh": 6.2,
+          "timestamp": "2026-03-23T00:08:00.000Z"
+        },
+        {
+          "ec": 0.95,
+          "id": "929cb1cf-2812-4d0b-a52b-c34d4366ad79",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-24T10:11:00.000Z"
+        },
+        {
+          "ec": 0.85,
+          "id": "4ae5e2d9-1caa-4e88-bb79-21b505e21baf",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "runoffEc": 0.656,
+          "runoffPh": 6.2,
+          "timestamp": "2026-03-27T14:48:25.247Z"
+        },
+        {
+          "ec": 0.93,
+          "id": "7ebec552-8ff7-4715-abe9-a1e8a9394fda",
+          "ph": 5.8,
+          "amountMl": 1000,
+          "timestamp": "2026-03-30T12:59:04.155Z"
+        },
+        {
+          "ec": 0.93,
+          "id": "a42372b8-2dc9-4984-bb5f-ff5239cf08de",
+          "ph": 5.8,
+          "amountMl": 478,
+          "runoffEc": 44,
+          "runoffPh": 44,
+          "timestamp": "2026-03-30T17:14:44.202Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-30T17:14:44.202Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "12 /12",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 10,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 2
+    },
+    {
+      "id": "b2e6f826-9efa-42ac-8694-169cfb8ac74b",
+      "stage": "Seedling",
+      "waterEc": 0.5,
+      "waterPh": 5.8,
+      "lightsOn": "03:00",
+      "growTempC": 24.1,
+      "lightType": "blurple_40w",
+      "lightsOff": "22:00",
+      "mediaType": "Other",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 8
+      },
+      "startedAt": "2026-03-20T09:00:00.000Z",
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 12,
+        "baseBMl": 10,
+        "calMagMl": 3,
+        "targetEc": 0.5,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Special Queen N1",
+      "climateData": [
+        {
+          "id": "8e7150b3-c454-4aff-abe4-0117d4114d4e",
+          "tempC": 23.8,
+          "humidity": 70,
+          "timestamp": "2026-03-20T09:10:00.000Z"
+        },
+        {
+          "id": "6fa96e5a-16da-4a49-b2f0-ed0ee604e9b0",
+          "tempC": 24.1,
+          "humidity": 68,
+          "timestamp": "2026-03-21T09:10:00.000Z"
+        },
+        {
+          "id": "23d3df73-3f51-47dd-afff-9a0c18b4016a",
+          "tempC": 24.1,
+          "humidity": 68,
+          "timestamp": "2026-03-22T09:10:00.000Z"
+        }
+      ],
+      "growHumidity": 68,
+      "mediaVolumeL": 0.2,
+      "outsideTempC": 15.1,
+      "waterInputMl": 50,
+      "wateringData": [
+        {
+          "ec": 0.3,
+          "id": "3dc0092b-6fc8-471a-a728-576416267b01",
+          "ph": 5.8,
+          "amountMl": 300,
+          "timestamp": "2026-03-23T18:34:20.027Z"
+        },
+        {
+          "ec": 0.5,
+          "id": "bc87cec2-0767-46f9-a8f4-540d622f7d81",
+          "ph": 5.8,
+          "amountMl": 50,
+          "timestamp": "2026-03-25T19:04:54.670Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-25T19:04:54.670Z",
+      "lightLampName": "Veg blurple",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 40,
+      "outsideHumidity": 66,
+      "containerVolumeL": 0.2,
+      "lightDimmerPercent": 100,
+      "wateringIntervalDays": 3
+    },
+    {
+      "id": "895597a5-de7b-463b-a0d9-70a15a7c6b45",
+      "stage": "Seedling",
+      "waterEc": 0.5,
+      "waterPh": 5.8,
+      "lightsOn": "03:00",
+      "growTempC": 22.9,
+      "lightType": "blurple_40w",
+      "lightsOff": "22:00",
+      "mediaType": "Light Mix",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 3
+      },
+      "startedAt": "2026-03-20T09:00:00.000Z",
+      "feedRecipe": {
+        "title": "Canna Nutrients",
+        "baseAMl": 0,
+        "baseBMl": 0,
+        "calMagMl": 0,
+        "targetEc": 450,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Ryzothonic",
+            "amountMl": 1
+          },
+          {
+            "id": "add-1774450868081",
+            "label": "CannaZym",
+            "amountMl": 1
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.2
+      },
+      "strainName": "Special Kush N1",
+      "climateData": [
+        {
+          "id": "f5190013-a8b8-4f2a-b97a-0393a5b19078",
+          "tempC": 24.5,
+          "humidity": 54,
+          "timestamp": "2026-03-15T12:00:00.000Z"
+        },
+        {
+          "id": "9bcf739c-5835-427b-af5d-3f87a8e82767",
+          "tempC": 24.8,
+          "humidity": 52,
+          "timestamp": "2026-03-18T12:00:00.000Z"
+        },
+        {
+          "id": "c405663e-161f-4433-b4d9-2b133a252c8c",
+          "tempC": 25,
+          "humidity": 51,
+          "timestamp": "2026-03-21T12:00:00.000Z"
+        },
+        {
+          "id": "382d0f54-65c9-4145-9986-9cf6c4062ef1",
+          "tempC": 22.9,
+          "humidity": 61,
+          "timestamp": "2026-03-25T13:57:35.229Z"
+        }
+      ],
+      "growHumidity": 61,
+      "mediaVolumeL": 0.2,
+      "outsideTempC": 14.2,
+      "waterInputMl": 49,
+      "wateringData": [
+        {
+          "ec": 0.3,
+          "id": "f9b26d65-8d02-44c2-bfe0-ae3e984bd563",
+          "ph": 5.8,
+          "amountMl": 20,
+          "timestamp": "2026-03-18T12:00:00.000Z"
+        },
+        {
+          "ec": 0.5,
+          "id": "70b5e0da-7026-4727-8fa6-b51554b33015",
+          "ph": 5.8,
+          "amountMl": 49,
+          "timestamp": "2026-03-21T12:00:00.000Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-21T12:00:00.000Z",
+      "lightLampName": "Vegging Panel",
+      "lightSchedule": "18/6",
+      "bloomStartedAt": "2026-02-10T09:00:00.000Z",
+      "lightLampWatts": 40,
+      "outsideHumidity": 58,
+      "containerVolumeL": 0.2,
+      "lightDimmerPercent": 80,
+      "wateringIntervalDays": 6
+    },
+    {
+      "id": "16775ba3-980c-4377-b147-ee7fd07df04d",
+      "stage": "Veg",
+      "waterEc": 0.4,
+      "waterPh": 5.9,
+      "lightsOn": "06:00",
+      "growTempC": 21.4,
+      "lightType": "panel_100w",
+      "lightsOff": "00:00",
+      "mediaType": "Soil",
+      "stageDays": {
+        "veg": 41,
+        "bloom": 0,
+        "seedling": 14
+      },
+      "startedAt": "2026-02-15T09:00:00.000Z",
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Sour Diesel Clone",
+      "climateData": [
+        {
+          "id": "b0a96e28-1af5-4b6f-8f0c-e215ae595b59",
+          "tempC": 24.4,
+          "humidity": 64,
+          "timestamp": "2026-03-16T08:30:00.000Z"
+        },
+        {
+          "id": "0dab9e02-b456-4f78-9327-3231758eb127",
+          "tempC": 24.9,
+          "humidity": 63,
+          "timestamp": "2026-03-17T08:30:00.000Z"
+        },
+        {
+          "id": "b29e1645-fa54-4c50-a2d8-4e3a8d16dbe8",
+          "tempC": 25.4,
+          "humidity": 61,
+          "timestamp": "2026-03-18T08:30:00.000Z"
+        },
+        {
+          "id": "e0a696cf-eacb-457c-9765-212c19007ec6",
+          "tempC": 24.7,
+          "humidity": 60,
+          "timestamp": "2026-03-19T08:30:00.000Z"
+        },
+        {
+          "id": "0b8bbc4c-ffda-44bb-a1a2-9914d2c1447f",
+          "tempC": 25.1,
+          "humidity": 59,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "id": "804465fd-f44d-4264-a7b0-196dda96dc79",
+          "tempC": 25.6,
+          "humidity": 58,
+          "timestamp": "2026-03-21T08:30:00.000Z"
+        },
+        {
+          "id": "0d2286a2-78f6-45f5-8e0b-f12464ac332f",
+          "tempC": 25.3,
+          "humidity": 60,
+          "timestamp": "2026-03-22T08:30:00.000Z"
+        },
+        {
+          "id": "47cd1316-76ba-4e2c-be00-e2ef859cb03c",
+          "tempC": 21.4,
+          "humidity": 62,
+          "timestamp": "2026-03-23T21:24:37.975Z"
+        }
+      ],
+      "growHumidity": 62,
+      "mediaVolumeL": 13,
+      "outsideTempC": 16.7,
+      "waterInputMl": 50,
+      "wateringData": [
+        {
+          "ec": 0.2,
+          "id": "dabfdb11-8191-490e-b094-0ac4f93a9a25",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-16T08:30:00.000Z"
+        },
+        {
+          "ec": 0.2,
+          "id": "5f5bceb1-badc-428e-a926-926fa81fa24b",
+          "ph": 5.8,
+          "amountMl": 50,
+          "timestamp": "2026-03-18T08:30:00.000Z"
+        },
+        {
+          "ec": 0.2,
+          "id": "86311823-577c-4400-82d3-de1146df2b39",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "ec": 0.4,
+          "id": "5e6b0012-bcc9-4f32-a8ad-d870703642c4",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-22T08:30:00.000Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-22T08:30:00.000Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 15,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 3
+    },
+    {
+      "id": "804126c1-2022-4fda-a4ab-3ee535f8b501",
+      "stage": "Seedling",
+      "waterEc": 0.45,
+      "waterPh": 6,
+      "lightsOn": "06:00",
+      "growTempC": 21.4,
+      "lightType": "panel_100w",
+      "lightsOff": "00:00",
+      "mediaType": "Soil",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 1
+      },
+      "startedAt": "2026-03-24T21:09:28.351Z",
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Sour Diesel Hydro Clone",
+      "climateData": [
+        {
+          "id": "4e24b786-a8cb-4458-805d-ee49fed98cf3",
+          "tempC": 25,
+          "humidity": 60,
+          "timestamp": "2026-03-24T21:09:28.351Z"
+        }
+      ],
+      "growHumidity": 62,
+      "mediaVolumeL": 13,
+      "outsideTempC": 16.7,
+      "waterInputMl": 300,
+      "wateringData": [
+        {
+          "ec": 0.45,
+          "id": "57ea45c7-91fb-4f5e-a7d3-c7b6d262092d",
+          "ph": 6,
+          "amountMl": 300,
+          "timestamp": "2026-03-24T21:09:28.351Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-24T21:09:28.351Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 15,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 3
+    },
+    {
+      "id": "4840a394-b278-4d81-bb76-4cab3c5222e4",
+      "stage": "Bloom",
+      "waterEc": 0.93,
+      "waterPh": 5.8,
+      "lightsOn": "05:00",
+      "growTempC": 20,
+      "lightType": "panel_100w",
+      "lightsOff": "17:00",
+      "mediaType": "Light Mix",
+      "stageDays": {
+        "veg": 21,
+        "bloom": 33,
+        "seedling": 21
+      },
+      "startedAt": "2026-01-15T09:00:00.000Z",
+      "feedRecipe": {
+        "title": "Canna Nutrients",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Sour Diesel",
+      "climateData": [
+        {
+          "id": "08abc524-70be-4071-bed7-2bf8f3ba1bb1",
+          "tempC": 23,
+          "humidity": 58,
+          "timestamp": "2026-02-26T17:53:00.000Z"
+        },
+        {
+          "id": "953a5702-75a8-4d84-a07f-fb665dd4aa27",
+          "tempC": 21.5,
+          "humidity": 54,
+          "timestamp": "2026-03-05T18:33:00.000Z"
+        },
+        {
+          "id": "cf8a3bbb-4527-429b-8cae-7150e5677b16",
+          "tempC": 22.4,
+          "humidity": 54,
+          "timestamp": "2026-03-08T19:13:00.000Z"
+        },
+        {
+          "id": "f42024d2-ce1a-4b7b-8779-71280fdc756c",
+          "tempC": 23.6,
+          "humidity": 55,
+          "timestamp": "2026-03-09T21:01:00.000Z"
+        },
+        {
+          "id": "1ee72144-9f90-437f-8363-7416f78dbc74",
+          "tempC": 21.5,
+          "humidity": 54,
+          "timestamp": "2026-03-12T22:02:00.000Z"
+        },
+        {
+          "id": "8b3fc170-4e2d-440e-9d20-c4fad4e28cf8",
+          "tempC": 20.7,
+          "humidity": 61,
+          "timestamp": "2026-03-17T09:13:00.000Z"
+        },
+        {
+          "id": "604b8ec4-f649-4e25-9f7a-c800cb5baa47",
+          "tempC": 22.5,
+          "humidity": 54,
+          "timestamp": "2026-03-20T10:03:00.000Z"
+        },
+        {
+          "id": "3c70b6c2-8846-40b7-9e35-fe51ac4b42cf",
+          "tempC": 24,
+          "humidity": 49,
+          "timestamp": "2026-03-23T10:03:00.000Z"
+        },
+        {
+          "id": "037a1cd8-f6a9-4168-a705-4d6486fde783",
+          "tempC": 22,
+          "humidity": 54,
+          "timestamp": "2026-03-23T15:03:00.000Z"
+        },
+        {
+          "id": "f81e1bc8-9d65-4e4c-b1f8-dbfa9e70674b",
+          "tempC": 24,
+          "humidity": 34,
+          "timestamp": "2026-03-27T09:46:54.326Z"
+        },
+        {
+          "id": "37e0289d-9b2f-4942-9f1d-b5b099422315",
+          "tempC": 24,
+          "humidity": 40,
+          "timestamp": "2026-03-27T09:56:09.971Z"
+        },
+        {
+          "id": "6445f54e-1686-4fe2-a432-ae6c08abc210",
+          "tempC": 23,
+          "humidity": 38,
+          "timestamp": "2026-03-27T10:12:36.429Z"
+        },
+        {
+          "id": "06b66f0c-862b-449e-a1d0-f99465b41d63",
+          "tempC": 25.2,
+          "humidity": 40,
+          "timestamp": "2026-03-27T11:31:08.487Z"
+        },
+        {
+          "id": "3f798d89-33f7-4f4c-a15b-3924b9633d50",
+          "tempC": 24.3,
+          "humidity": 40,
+          "timestamp": "2026-03-27T12:48:31.437Z"
+        },
+        {
+          "id": "b5a700ac-84ad-4ecb-935b-0d09d75f3750",
+          "tempC": 24,
+          "humidity": 55,
+          "timestamp": "2026-03-27T13:42:32.651Z"
+        },
+        {
+          "id": "3b9923dc-27a1-427c-98df-41b69bdf86ab",
+          "tempC": 25,
+          "humidity": 55,
+          "timestamp": "2026-03-27T14:29:27.049Z"
+        },
+        {
+          "id": "a3f62e2c-3ba4-4926-9415-125d1d545f38",
+          "tempC": 26,
+          "humidity": 56,
+          "timestamp": "2026-03-27T16:43:39.645Z"
+        },
+        {
+          "id": "8c64da14-520f-4d67-b2ac-feb91f36e8f8",
+          "tempC": 24.1,
+          "humidity": 50,
+          "timestamp": "2026-03-27T17:37:14.157Z"
+        },
+        {
+          "id": "e93a9fa6-c40d-4c63-8e6e-729f0ba43056",
+          "tempC": 27.5,
+          "humidity": 42,
+          "timestamp": "2026-03-28T09:59:38.481Z"
+        },
+        {
+          "id": "3c878a02-2f4a-41d0-a259-14b735f68e73",
+          "tempC": 25,
+          "humidity": 55,
+          "timestamp": "2026-03-28T10:15:00.000Z"
+        },
+        {
+          "id": "aab79278-05c6-41e7-a9ab-83bc13019678",
+          "tempC": 24,
+          "humidity": 58,
+          "timestamp": "2026-03-28T10:25:39.346Z"
+        },
+        {
+          "id": "7c0ea1dd-99f7-41fd-9966-e13c6611c25d",
+          "tempC": 24.1,
+          "humidity": 54,
+          "timestamp": "2026-03-28T11:04:50.119Z"
+        },
+        {
+          "id": "3083650b-b11d-4edd-be55-2ea296f36dd7",
+          "tempC": 24.1,
+          "humidity": 54,
+          "timestamp": "2026-03-28T12:29:59.716Z"
+        },
+        {
+          "id": "1d436032-00ba-4fb6-b32f-4a0878f25157",
+          "tempC": 22.1,
+          "humidity": 44,
+          "timestamp": "2026-03-28T12:30:22.705Z"
+        },
+        {
+          "id": "6977b979-0bb9-4fa5-a6e2-14535dd5895b",
+          "tempC": 22.1,
+          "humidity": 43,
+          "timestamp": "2026-03-28T23:35:56.446Z"
+        },
+        {
+          "id": "e1541391-15be-4248-9171-be32bbeec13d",
+          "tempC": 28,
+          "humidity": 36,
+          "timestamp": "2026-03-29T11:03:42.771Z"
+        },
+        {
+          "id": "af7dca6a-979a-420e-b0a0-4618b9ee1580",
+          "tempC": 25,
+          "humidity": 40,
+          "timestamp": "2026-03-29T11:04:00.327Z"
+        },
+        {
+          "id": "f4ec5ee1-e1ed-479f-a409-3feadd7fd65e",
+          "tempC": 24,
+          "humidity": 46,
+          "timestamp": "2026-03-29T11:04:14.996Z"
+        },
+        {
+          "id": "a74f0c6e-8427-4f28-b5b7-9171de34fc01",
+          "tempC": 23,
+          "humidity": 42,
+          "timestamp": "2026-03-29T13:33:42.268Z"
+        },
+        {
+          "id": "0942ce3e-7c0b-4197-930c-492f1b4e04a0",
+          "tempC": 23.6,
+          "humidity": 46,
+          "timestamp": "2026-03-29T15:53:04.126Z"
+        },
+        {
+          "id": "eb838ca1-cb11-47cf-8b85-0ad491a98a2c",
+          "tempC": 21.8,
+          "humidity": 54,
+          "timestamp": "2026-03-29T20:53:26.050Z"
+        },
+        {
+          "id": "f5c42429-deb3-4d6a-9d91-511d212c466c",
+          "tempC": 21.5,
+          "humidity": 43,
+          "timestamp": "2026-03-29T22:04:17.481Z"
+        },
+        {
+          "id": "1543c72b-49f1-4303-b62d-ebe2ca938675",
+          "tempC": 21,
+          "humidity": 44,
+          "timestamp": "2026-03-29T23:41:40.417Z"
+        },
+        {
+          "id": "37063363-b00a-42f1-b953-8292da18901b",
+          "tempC": 23,
+          "humidity": 46,
+          "timestamp": "2026-03-29T23:59:13.736Z"
+        },
+        {
+          "id": "19553ae1-846e-4db4-be67-80ff40cb28f4",
+          "tempC": 23,
+          "humidity": 54,
+          "timestamp": "2026-03-30T11:09:51.522Z"
+        },
+        {
+          "id": "e5c75153-2ded-4440-a6c7-2ee3a13c84ea",
+          "tempC": 22.8,
+          "humidity": 56,
+          "timestamp": "2026-03-30T11:37:27.940Z"
+        },
+        {
+          "id": "cfe783be-faef-43b5-bbfd-e6816a9f9347",
+          "tempC": 22,
+          "humidity": 54,
+          "timestamp": "2026-03-30T15:22:03.949Z"
+        },
+        {
+          "id": "801d78b9-186c-4d41-be21-45699777fbcc",
+          "tempC": 21.4,
+          "humidity": 50,
+          "timestamp": "2026-03-30T16:12:04.781Z"
+        },
+        {
+          "id": "db2f2b29-f300-4142-9fee-14072dd0dcce",
+          "tempC": 21.9,
+          "humidity": 45,
+          "timestamp": "2026-03-30T17:12:22.730Z"
+        },
+        {
+          "id": "4d5006bb-a8ee-4afb-af2d-95e419270f46",
+          "tempC": 23,
+          "humidity": 58,
+          "timestamp": "2026-03-30T17:30:33.008Z"
+        },
+        {
+          "id": "30f7432a-a283-45ab-884d-1350fc6a76a5",
+          "tempC": 20,
+          "humidity": 47,
+          "timestamp": "2026-03-30T19:24:14.341Z"
+        }
+      ],
+      "growHumidity": 47,
+      "mediaVolumeL": 10,
+      "outsideTempC": 16.7,
+      "waterInputMl": 478,
+      "wateringData": [
+        {
+          "ec": 0.906,
+          "id": "08b3272f-b870-478e-94f1-86d2ec5552ca",
+          "ph": 5.9,
+          "amountMl": 700,
+          "timestamp": "2026-03-04T08:30:00.000Z"
+        },
+        {
+          "ec": 0.238,
+          "id": "91adaa2d-63a0-4d8d-b57b-194941d564bf",
+          "ph": 5.8,
+          "amountMl": 800,
+          "runoffEc": 1.45,
+          "runoffPh": 6.7,
+          "timestamp": "2026-03-05T08:30:00.000Z"
+        },
+        {
+          "ec": 0.857,
+          "id": "7581fabd-c927-42f5-90d8-10c5dc52f417",
+          "ph": 5.9,
+          "amountMl": 900,
+          "runoffEc": 1.2,
+          "runoffPh": 6.7,
+          "timestamp": "2026-03-09T08:30:00.000Z"
+        },
+        {
+          "ec": 0.238,
+          "id": "e43b79fa-5831-49ec-96cb-3030787ee93b",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-12T10:08:00.000Z"
+        },
+        {
+          "ec": 0.84,
+          "id": "58e655e9-8aa5-465e-9ead-e5cd377961da",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-17T10:08:00.000Z"
+        },
+        {
+          "ec": 0.915,
+          "id": "02423c84-56ad-48ca-ae0c-f009b78885d1",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "ec": 0.98,
+          "id": "e0117afe-a4fe-4875-8452-74c73d6b9ebe",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "runoffEc": 1.26,
+          "runoffPh": 6.2,
+          "timestamp": "2026-03-23T00:08:00.000Z"
+        },
+        {
+          "ec": 0.95,
+          "id": "1c7e7f8e-66d3-4b28-be50-a9c79340b629",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "timestamp": "2026-03-24T10:11:00.000Z"
+        },
+        {
+          "ec": 0.85,
+          "id": "76564983-bd7f-47ed-80f2-476508946f3c",
+          "ph": 5.9,
+          "amountMl": 1000,
+          "runoffEc": 0.656,
+          "runoffPh": 6.2,
+          "timestamp": "2026-03-27T14:48:25.247Z"
+        },
+        {
+          "ec": 0.93,
+          "id": "0cece035-f542-4f54-a7f8-b6939f2b33a9",
+          "ph": 5.8,
+          "amountMl": 1000,
+          "timestamp": "2026-03-30T12:59:04.155Z"
+        },
+        {
+          "ec": 0.93,
+          "id": "08831638-7160-42dc-abdf-33dfcbafec9e",
+          "ph": 5.8,
+          "amountMl": 478,
+          "runoffEc": 44,
+          "runoffPh": 44,
+          "timestamp": "2026-03-30T17:14:44.202Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-30T17:14:44.202Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "12 /12",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 10,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 2
+    },
+    {
+      "id": "d1647b6d-e75e-49de-bc07-119b59d032a7",
+      "stage": "Seedling",
+      "waterEc": 0.5,
+      "waterPh": 5.8,
+      "lightsOn": "03:00",
+      "growTempC": 24.1,
+      "lightType": "blurple_40w",
+      "lightsOff": "22:00",
+      "mediaType": "Other",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 8
+      },
+      "startedAt": "2026-03-20T09:00:00.000Z",
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 12,
+        "baseBMl": 10,
+        "calMagMl": 3,
+        "targetEc": 0.5,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Special Queen N1",
+      "climateData": [
+        {
+          "id": "51e57bee-d34c-4a2b-a23a-f952d02d64fd",
+          "tempC": 23.8,
+          "humidity": 70,
+          "timestamp": "2026-03-20T09:10:00.000Z"
+        },
+        {
+          "id": "55a920f0-2250-4d3c-a4eb-05afd9a9fa99",
+          "tempC": 24.1,
+          "humidity": 68,
+          "timestamp": "2026-03-21T09:10:00.000Z"
+        },
+        {
+          "id": "ad07100b-d3e1-455b-87f9-0bd1b0b3a013",
+          "tempC": 24.1,
+          "humidity": 68,
+          "timestamp": "2026-03-22T09:10:00.000Z"
+        }
+      ],
+      "growHumidity": 68,
+      "mediaVolumeL": 0.2,
+      "outsideTempC": 15.1,
+      "waterInputMl": 50,
+      "wateringData": [
+        {
+          "ec": 0.3,
+          "id": "30a259aa-66f4-4a8d-8aba-15f8f5ecf33d",
+          "ph": 5.8,
+          "amountMl": 300,
+          "timestamp": "2026-03-23T18:34:20.027Z"
+        },
+        {
+          "ec": 0.5,
+          "id": "8107cf34-df1b-4c4e-bb20-a3acb9078c75",
+          "ph": 5.8,
+          "amountMl": 50,
+          "timestamp": "2026-03-25T19:04:54.670Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-25T19:04:54.670Z",
+      "lightLampName": "Veg blurple",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 40,
+      "outsideHumidity": 66,
+      "containerVolumeL": 0.2,
+      "lightDimmerPercent": 100,
+      "wateringIntervalDays": 3
+    },
+    {
+      "id": "f8a0bf85-4fae-4949-a8e3-0f24a59f8ca7",
+      "stage": "Seedling",
+      "waterEc": 0.5,
+      "waterPh": 5.8,
+      "lightsOn": "03:00",
+      "growTempC": 22.9,
+      "lightType": "blurple_40w",
+      "lightsOff": "22:00",
+      "mediaType": "Light Mix",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 3
+      },
+      "startedAt": "2026-03-20T09:00:00.000Z",
+      "feedRecipe": {
+        "title": "Canna Nutrients",
+        "baseAMl": 0,
+        "baseBMl": 0,
+        "calMagMl": 0,
+        "targetEc": 450,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Ryzothonic",
+            "amountMl": 1
+          },
+          {
+            "id": "add-1774450868081",
+            "label": "CannaZym",
+            "amountMl": 1
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.2
+      },
+      "strainName": "Special Kush N1",
+      "climateData": [
+        {
+          "id": "cb449930-e00b-406d-910c-cba9ef280d06",
+          "tempC": 24.5,
+          "humidity": 54,
+          "timestamp": "2026-03-15T12:00:00.000Z"
+        },
+        {
+          "id": "25d9db5d-f73f-4b44-aac0-4a84e13cddfe",
+          "tempC": 24.8,
+          "humidity": 52,
+          "timestamp": "2026-03-18T12:00:00.000Z"
+        },
+        {
+          "id": "56ddd046-1114-49eb-8bb3-4c43a3acec65",
+          "tempC": 25,
+          "humidity": 51,
+          "timestamp": "2026-03-21T12:00:00.000Z"
+        },
+        {
+          "id": "d8239f7a-ec33-44ef-b7d1-181058912627",
+          "tempC": 22.9,
+          "humidity": 61,
+          "timestamp": "2026-03-25T13:57:35.229Z"
+        }
+      ],
+      "growHumidity": 61,
+      "mediaVolumeL": 0.2,
+      "outsideTempC": 14.2,
+      "waterInputMl": 49,
+      "wateringData": [
+        {
+          "ec": 0.3,
+          "id": "fd931076-05df-490d-9aeb-d45728c6e7a1",
+          "ph": 5.8,
+          "amountMl": 20,
+          "timestamp": "2026-03-18T12:00:00.000Z"
+        },
+        {
+          "ec": 0.5,
+          "id": "77419fa7-870d-45a5-a0fa-efd83c945e21",
+          "ph": 5.8,
+          "amountMl": 49,
+          "timestamp": "2026-03-21T12:00:00.000Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-21T12:00:00.000Z",
+      "lightLampName": "Vegging Panel",
+      "lightSchedule": "18/6",
+      "bloomStartedAt": "2026-02-10T09:00:00.000Z",
+      "lightLampWatts": 40,
+      "outsideHumidity": 58,
+      "containerVolumeL": 0.2,
+      "lightDimmerPercent": 80,
+      "wateringIntervalDays": 6
+    },
+    {
+      "id": "31e5013f-e276-4330-a8ad-b6a8d88c9db3",
+      "stage": "Veg",
+      "waterEc": 0.4,
+      "waterPh": 5.9,
+      "lightsOn": "06:00",
+      "growTempC": 21.4,
+      "lightType": "panel_100w",
+      "lightsOff": "00:00",
+      "mediaType": "Soil",
+      "stageDays": {
+        "veg": 41,
+        "bloom": 0,
+        "seedling": 14
+      },
+      "startedAt": "2026-02-15T09:00:00.000Z",
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Sour Diesel Clone",
+      "climateData": [
+        {
+          "id": "6f9ab5f0-6d8a-4bd0-a1c5-1b252b3f630d",
+          "tempC": 24.4,
+          "humidity": 64,
+          "timestamp": "2026-03-16T08:30:00.000Z"
+        },
+        {
+          "id": "2421870a-8e7d-42f6-b48b-5fc7b91610cb",
+          "tempC": 24.9,
+          "humidity": 63,
+          "timestamp": "2026-03-17T08:30:00.000Z"
+        },
+        {
+          "id": "29ebef2f-96f0-4655-91e0-ce50ca01594b",
+          "tempC": 25.4,
+          "humidity": 61,
+          "timestamp": "2026-03-18T08:30:00.000Z"
+        },
+        {
+          "id": "e699e5e5-6094-446a-9d70-958308e7bcbd",
+          "tempC": 24.7,
+          "humidity": 60,
+          "timestamp": "2026-03-19T08:30:00.000Z"
+        },
+        {
+          "id": "9a10863c-ed6e-43ac-89a1-14708a7380db",
+          "tempC": 25.1,
+          "humidity": 59,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "id": "21bb1a0f-bae2-4a07-8aef-48cc18d7e3d5",
+          "tempC": 25.6,
+          "humidity": 58,
+          "timestamp": "2026-03-21T08:30:00.000Z"
+        },
+        {
+          "id": "74c48cbc-106e-438f-b8a2-9b2f6ab9d0b3",
+          "tempC": 25.3,
+          "humidity": 60,
+          "timestamp": "2026-03-22T08:30:00.000Z"
+        },
+        {
+          "id": "a4fd06af-b4f8-472e-874c-4e166ac3c487",
+          "tempC": 21.4,
+          "humidity": 62,
+          "timestamp": "2026-03-23T21:24:37.975Z"
+        }
+      ],
+      "growHumidity": 62,
+      "mediaVolumeL": 13,
+      "outsideTempC": 16.7,
+      "waterInputMl": 50,
+      "wateringData": [
+        {
+          "ec": 0.2,
+          "id": "e04223eb-6689-4d00-b691-adf88dedffe5",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-16T08:30:00.000Z"
+        },
+        {
+          "ec": 0.2,
+          "id": "cf276ec7-4297-4b91-9d87-8c24da9d2225",
+          "ph": 5.8,
+          "amountMl": 50,
+          "timestamp": "2026-03-18T08:30:00.000Z"
+        },
+        {
+          "ec": 0.2,
+          "id": "d79c5a68-f27b-4fad-a346-697786767c18",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-20T08:30:00.000Z"
+        },
+        {
+          "ec": 0.4,
+          "id": "a1ea2602-bc1d-44e2-87f5-f9c8c107c3d5",
+          "ph": 5.9,
+          "amountMl": 50,
+          "timestamp": "2026-03-22T08:30:00.000Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-22T08:30:00.000Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 15,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 3
+    },
+    {
+      "id": "67798fc3-29a8-4019-a9a4-e22214539358",
+      "stage": "Seedling",
+      "waterEc": 0.45,
+      "waterPh": 6,
+      "lightsOn": "06:00",
+      "growTempC": 21.4,
+      "lightType": "panel_100w",
+      "lightsOff": "00:00",
+      "mediaType": "Soil",
+      "stageDays": {
+        "veg": 0,
+        "bloom": 0,
+        "seedling": 1
+      },
+      "startedAt": "2026-03-24T21:09:28.351Z",
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "additives": [
+          {
+            "id": "add-1",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ],
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1
+      },
+      "strainName": "Sour Diesel Hydro Clone",
+      "climateData": [
+        {
+          "id": "36a9dfca-a68d-47e4-9fde-0a8a0d2abc6e",
+          "tempC": 25,
+          "humidity": 60,
+          "timestamp": "2026-03-24T21:09:28.351Z"
+        }
+      ],
+      "growHumidity": 62,
+      "mediaVolumeL": 13,
+      "outsideTempC": 16.7,
+      "waterInputMl": 300,
+      "wateringData": [
+        {
+          "ec": 0.45,
+          "id": "b9f842a6-f9ce-4e88-b40f-47b6eeee96be",
+          "ph": 6,
+          "amountMl": 300,
+          "timestamp": "2026-03-24T21:09:28.351Z"
+        }
+      ],
+      "lastWateredAt": "2026-03-24T21:09:28.351Z",
+      "lightLampName": "Phlizon PL1000",
+      "lightSchedule": "18 / 6",
+      "bloomStartedAt": "",
+      "lightLampWatts": 100,
+      "outsideHumidity": 60,
+      "containerVolumeL": 15,
+      "lightDimmerPercent": 75,
+      "wateringIntervalDays": 3
     }
   ],
-  "activePlantId": "plant-2"
+  "activePlantId": "91952271-eedf-48ee-956e-defde1b9855a"
 }

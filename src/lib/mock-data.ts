@@ -1,5 +1,6 @@
 import { calculateNutrientPlan, calculateVpd } from "@/lib/grow-math";
 import type { GrowLogEntry, PlantProfile, VoiceInteraction } from "@/lib/types";
+import { generateUUID } from "@/lib/uuid";
 
 const defaultFeedRecipe = {
   title: "10 L veg mix",
@@ -9,7 +10,7 @@ const defaultFeedRecipe = {
   targetEc: 1.45,
   targetPhLow: 5.8,
   targetPhHigh: 6.1,
-  additives: [{ id: "add-1", label: "Silica", amountMl: 5 }]
+  additives: [{ id: generateUUID(), label: "Silica", amountMl: 5 }]
 };
 
 function createFeedRecipe(overrides?: Partial<typeof defaultFeedRecipe>) {
@@ -21,7 +22,7 @@ function createFeedRecipe(overrides?: Partial<typeof defaultFeedRecipe>) {
 }
 
 export const activePlant: PlantProfile = {
-  id: "plant-starter",
+  id: generateUUID(),
   strainName: "My First Plant",
   startedAt: new Date().toISOString(),
   stage: "Seedling",

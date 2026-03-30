@@ -7,6 +7,7 @@ import { translations } from "@/lib/i18n";
 import { speak } from "@/lib/tts";
 import { buildGrowContext } from "@/lib/buildGrowContext";
 import { getPreviousContext } from "@/lib/supabase-client";
+import { generateUUID } from "@/lib/uuid";
 import type { PlantProfile } from "@/lib/types";
 
 type ChatMessage = {
@@ -225,7 +226,7 @@ export function AiAssistantPanel({
         // Update watering data
         if (parsedData.watering && onUpdateWateringData) {
           const newWatering = {
-            id: `water-${Date.now()}`,
+            id: generateUUID(),
             timestamp: new Date().toISOString(),
             amountMl: parsedData.watering.amountMl ?? 0,
             ph: parsedData.watering.ph ?? 6.0,
@@ -239,7 +240,7 @@ export function AiAssistantPanel({
         // Update climate data
         if (parsedData.climate && onUpdateClimateData) {
           const newClimate = {
-            id: `climate-${Date.now()}`,
+            id: generateUUID(),
             timestamp: new Date().toISOString(),
             tempC: parsedData.climate.tempC ?? plant.growTempC,
             humidity: parsedData.climate.humidity ?? plant.growHumidity

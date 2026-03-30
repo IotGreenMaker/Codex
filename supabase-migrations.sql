@@ -17,7 +17,7 @@ CREATE INDEX IF NOT EXISTS conversations_created_at_idx ON public.conversations(
 
 -- 2. Plants table (main plant profiles)
 CREATE TABLE IF NOT EXISTS public.plants (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL,
   strain_name TEXT NOT NULL,
   started_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -34,13 +34,14 @@ CREATE INDEX IF NOT EXISTS plants_updated_at_idx ON public.plants(updated_at DES
 -- 3. Watering log table
 CREATE TABLE IF NOT EXISTS public.watering_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  plant_id TEXT NOT NULL REFERENCES public.plants(id) ON DELETE CASCADE,
+  plant_id UUID NOT NULL REFERENCES public.plants(id) ON DELETE CASCADE,
   amount_ml NUMERIC NOT NULL,
   ph NUMERIC,
   ec NUMERIC,
   runoff_ph NUMERIC,
   runoff_ec NUMERIC,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  UNIQUE (plant_id, created_at)
 );
 
 CREATE INDEX IF NOT EXISTS watering_log_plant_id_idx ON public.watering_log(plant_id);
@@ -49,10 +50,11 @@ CREATE INDEX IF NOT EXISTS watering_log_created_at_idx ON public.watering_log(cr
 -- 4. Climate log table
 CREATE TABLE IF NOT EXISTS public.climate_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  plant_id TEXT NOT NULL REFERENCES public.plants(id) ON DELETE CASCADE,
+  plant_id UUID NOT NULL REFERENCES public.plants(id) ON DELETE CASCADE,
   temp_c NUMERIC,
   humidity NUMERIC,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  UNIQUE (plant_id, created_at)
 );
 
 CREATE INDEX IF NOT EXISTS climate_log_plant_id_idx ON public.climate_log(plant_id);

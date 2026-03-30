@@ -8,6 +8,7 @@ import { VPDChart } from "@/components/dashboard/vpd-chart";
 import { calculateVpd, getCycleSummary, getDetailedCycleSummary, getVpdBand } from "@/lib/grow-math";
 import { Locale, translations } from "@/lib/i18n";
 import { dailyLogs } from "@/lib/mock-data";
+import { generateUUID } from "@/lib/uuid";
 import type { GrowStage, PlantProfile } from "@/lib/types";
 
 type DashboardShellProps = {
@@ -153,7 +154,16 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   };
 
   const patchWateringData = (nextWateringData: PlantProfile["wateringData"]) => {
-    const sorted = [...nextWateringData].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const validData = nextWateringData.filter((w) => {
+      if (!w.timestamp) return false;
+      const ts = new Date(w.timestamp).getTime();
+      return !isNaN(ts);
+    });
+    const sorted = [...validData].sort((a, b) => {
+      const aTime = new Date(a.timestamp).getTime();
+      const bTime = new Date(b.timestamp).getTime();
+      return aTime - bTime;
+    });
     const latest = sorted[sorted.length - 1];
 
     patchActivePlant({
@@ -170,7 +180,16 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   };
 
   const patchClimateData = (nextClimateData: PlantProfile["climateData"]) => {
-    const sorted = [...nextClimateData].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const validData = nextClimateData.filter((c) => {
+      if (!c.timestamp) return false;
+      const ts = new Date(c.timestamp).getTime();
+      return !isNaN(ts);
+    });
+    const sorted = [...validData].sort((a, b) => {
+      const aTime = new Date(a.timestamp).getTime();
+      const bTime = new Date(b.timestamp).getTime();
+      return aTime - bTime;
+    });
     const latest = sorted[sorted.length - 1];
 
     patchActivePlant({
@@ -188,7 +207,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     const nextIndex = plants.length + 1;
     const next: PlantProfile = {
       ...activePlant,
-      id: `plant-${Date.now()}`,
+      id: generateUUID(),
       strainName: `New Plant ${nextIndex}`,
       startedAt: new Date().toISOString(),
       bloomStartedAt: "",
@@ -197,7 +216,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
       stageDays: { seedling: 1, veg: 0, bloom: 0 },
       wateringData: [
         {
-          id: `water-${Date.now()}`,
+          id: generateUUID(),
           timestamp: new Date().toISOString(),
           amountMl: 300,
           ph: 6,
@@ -206,7 +225,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
       ],
       climateData: [
         {
-          id: `climate-${Date.now()}`,
+          id: generateUUID(),
           timestamp: new Date().toISOString(),
           tempC: 25,
           humidity: 60
@@ -272,7 +291,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 <div className="mt-2 flex items-center gap-3">
                   <EditableText
                     value={activePlant.strainName}
-                    className="text-lg font-semibold text-green-500"
+                    className="text-xl font-semibold text-slate-100"
                     onSave={(value) => patchActivePlant({ strainName: value })}
                   />
                   <Leaf className={`h-4 w-4 ${getStageLeafTone(activePlant.stage)}`} />
@@ -469,7 +488,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                       patchWateringData([
                         ...activePlant.wateringData,
                         {
-                          id: `water-${Date.now()}`,
+                          id: generateUUID(),
                           timestamp: new Date().toISOString(),
                           amountMl: activePlant.waterInputMl,
                           ph: activePlant.waterPh,
