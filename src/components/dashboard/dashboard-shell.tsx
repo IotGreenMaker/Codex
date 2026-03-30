@@ -268,11 +268,11 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
              </div>
             <div className=" items-start justify-between gap-4">
               <div className="rounded-2xl border border-lime-300/20 bg-lime-300/10 px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-lime-200">{t.activePlant}</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.24em]  text-green-500">{t.activePlant}</p>
                 <div className="mt-2 flex items-center gap-3">
                   <EditableText
                     value={activePlant.strainName}
-                    className="text-lg font-semibold text-lime-100"
+                    className="text-lg font-semibold text-green-500"
                     onSave={(value) => patchActivePlant({ strainName: value })}
                   />
                   <Leaf className={`h-4 w-4 ${getStageLeafTone(activePlant.stage)}`} />
@@ -287,7 +287,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   <span className="text-xs font-semibold text-lime-100/80">{cycleDetailed.totalDays} days</span>
                 </div>
                 <div className="mt-3">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Stage progress</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Progress</p>
                   <StageProgressBar
                     seedlingDays={daysSeedling}
                     vegDays={cycleDetailed.daysInVeg}
@@ -351,7 +351,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 }
                 helper={
                   <EditableText
-                    value={`${activePlant.outsideTempC} C / ${activePlant.outsideHumidity}%`}
+                    value={`${weather?.temperatureC} C / ${weather?.humidity}%`}
                     className="text-xs leading-5 text-lime-100/70"
                     onSave={(value) => {
                       const match = value.match(/([0-9]+(?:\.[0-9]+)?)\s*(?:C|c)?\s*\/\s*([0-9]+(?:\.[0-9]+)?)\s*%?/);
@@ -475,9 +475,9 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   </button>
                 </div>
               </div>
-              <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-white/10">
+              <div className="mt-3 h-4 w-full overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-3 rounded-full bg-gradient-to-r from-lime-300/90 via-lime-200/70 to-lime-300/40 transition-all duration-700"
+                  className="h-4 rounded-full bg-gradient-to-r from-amber-500/90 via-sky-300/70 to-sky-500/90 transition-all duration-700"
                   style={{ width: `${wateringProgress}%` }}
                 />
               </div>
@@ -513,13 +513,13 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                       <span className="ml-auto flex items-center gap-2">
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            lightsOnNow ? "bg-lime-300 shadow-[0_0_10px_rgba(158,255,102,0.9)]" : "bg-slate-600"
+                            lightsOnNow ? "bg-green-500 shadow-[0_0_10px_rgba(158,255,102,0.9)]" : "bg-slate-600"
                           }`}
                         />
                         {lightsOnNow ? "Lights ON" : "Lights OFF"}
                       </span>
                     </div>
-                    <div className="mt-2 rounded-2xl border border-white/80 bg-black/20 p-3">
+                    <div className="mt-2 rounded-2xl border border-white/8 bg-black/20 p-3">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Light</p>
                         <div className="rounded-xl border border-lime-300/20 bg-lime-300/10 p-2 text-lime-200">
@@ -550,8 +550,8 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                             onChange={(event) => patchActivePlant({ lightType: event.target.value as "blurple_40w" | "panel_100w" })}
                             className="mt-1 w-full rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none"
                           >
-                            <option value="blurple_40w">Veg blurple</option>
-                            <option value="panel_100w">Main panel</option>
+                            <option value="blurple_40w">Vegging Light</option>
+                            <option value="panel_100w">Bloom Light </option>
                           </select>
                         </div>
                         <div>
@@ -576,9 +576,9 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                           />
                         </div>
                         <div className="sm:col-span-3">
-                          <p className="text-[11px] text-lime-100/65">PPFD</p>
+                          <p className="text-[11px] text-lime-100/65"> PPFD</p>
                           <p className="text-sm font-semibold text-lime-100">
-                            {ppfd === null ? "--" : `${ppfd} PPFD`}
+                            {ppfd === null ? "--" : `${ppfd}  PPFD`}
                           </p>
                         </div>
                       </div>
@@ -717,8 +717,8 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 />
               </div>
 
-              <div className="mt-4 rounded-2xl border border-lime-300/12 bg-black/20 p-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Nutrient calculator (Canna Aqua)</p>
+              <div className="mt-4 rounded-2xl border border-white/8 bg-black/20 p-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Nutrient calculator</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   <div className="sm:col-span-2">
                     <p className="text-[11px] text-lime-100/65">Period</p>
@@ -1155,8 +1155,8 @@ function estimatePpfd(lightType: "blurple_40w" | "panel_100w", dimmerPercent: nu
 }
 
 function getStageLeafTone(stage: GrowStage) {
-  if (stage === "Seedling") return "text-lime-200";
-  if (stage === "Veg") return "text-lime-400";
+  if (stage === "Seedling") return "text-green-500";
+  if (stage === "Veg") return "text-green-300";
   if (stage === "Bloom") return "text-purple-300";
   return "text-slate-400";
 }
@@ -1184,17 +1184,17 @@ function StageProgressBar({
   return (
     <div className="mt-2 grid grid-cols-3 gap-2">
       <div className="overflow-hidden rounded-full bg-white/10">
-        <div className="h-2 rounded-full bg-lime-200/80" style={{ width: `${Math.round(seedlingPct * 100)}%` }} />
+        <div className="h-2 rounded-full bg-green-500/80" style={{ width: `${Math.round(seedlingPct * 100)}%` }} />
       </div>
       <div className="overflow-hidden rounded-full bg-white/10">
-        <div className="h-2 rounded-full bg-lime-400/80" style={{ width: `${Math.round(vegPct * 100)}%` }} />
+        <div className="h-2 rounded-full bg-green-300/80" style={{ width: `${Math.round(vegPct * 100)}%` }} />
       </div>
       <div className="overflow-hidden rounded-full bg-white/10">
-        <div className="h-2 rounded-full bg-purple-300/80" style={{ width: `${Math.round(bloomPct * 100)}%` }} />
+        <div className="h-2 rounded-full bg-purple-500/100" style={{ width: `${Math.round(bloomPct * 100)}%` }} />
       </div>
       <div className="col-span-3 flex justify-between text-[10px] text-lime-100/70">
         <span>Seedling</span>
-        <span>Veg</span>
+        <span>Vegging</span>
         <span>Bloom</span>
       </div>
     </div>

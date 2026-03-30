@@ -421,7 +421,7 @@ export function AiAssistantPanel({
   }
 
   return (
-    <div className="rounded-2xl border border-lime-300/14 bg-black/20 p-5">
+    <div className="rounded-2xl border border-white/8 bg-black/20 p-5">
       <div className="flex items-center justify-between gap-3">
         <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">
           {t.aiConversation}
@@ -435,20 +435,7 @@ export function AiAssistantPanel({
             </div>
           )}
 
-          {/* Connection status */}
-          <span
-            className={`rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest ${
-              connectionState === "connected"
-                ? "bg-lime-300/14 text-lime-100"
-                : connectionState === "failed"
-                  ? "bg-red-400/12 text-red-100"
-                  : connectionState === "connecting"
-                    ? "bg-white/10 text-slate-200"
-                    : "bg-white/6 text-slate-400"
-            }`}
-          >
-            {connectionState}
-          </span>
+        
         </div>
       </div>
 
@@ -463,7 +450,7 @@ export function AiAssistantPanel({
         {micError && <p className="mb-2 text-xs text-amber-300">{micError}</p>}
 
         {/* Chat messages */}
-        <div className="mt-3 max-h-96 space-y-3 overflow-y-auto pr-1" ref={chatContainerRef}>
+        <div className="mt-3 max-h-screen space-y-3 overflow-y-auto pr-1" ref={chatContainerRef}>
           {messages.length === 0 ? (
             <p className="text-xs text-slate-400 italic">
               Click the microphone to start a natural conversation...
@@ -486,6 +473,20 @@ export function AiAssistantPanel({
             ))
           )}
         </div>
+          {/* Connection status */}
+          <span
+            className={`rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest ${
+              connectionState === "connected"
+                ? "bg-lime-300/14 text-lime-100"
+                : connectionState === "failed"
+                  ? "bg-red-400/12 text-red-100"
+                  : connectionState === "connecting"
+                    ? "bg-white/10 text-slate-200"
+                    : "bg-white/6 text-slate-400"
+            }`}
+          >
+            {connectionState}
+          </span>
       </div>
 
       {/* Quick text input with integrated voice */}
@@ -503,7 +504,7 @@ export function AiAssistantPanel({
                 setInterimTranscript("");
               }
             }}
-            className="flex-1 rounded-lg border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 placeholder-slate-500 outline-none focus:border-lime-300/50"
+            className="flex-1 rounded-full border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 placeholder-slate-500 outline-none focus:border-lime-300/50"
           />
 
           {/* Mic button - small, integrated with Send */}
@@ -511,7 +512,7 @@ export function AiAssistantPanel({
             type="button"
             onClick={toggleMicrophone}
             title={isListening ? "Stop listening" : "Start listening"}
-            className={`group relative grid h-10 w-10 place-items-center rounded-lg border transition focus:outline-none ${
+            className={`group relative grid h-10 w-10 place-items-center rounded-full border transition focus:outline-none ${
               isListening
                 ? "border-lime-200/80 bg-gradient-to-br from-lime-300/35 via-fuchsia-400/25 to-emerald-300/25 text-lime-100 shadow-[0_0_20px_6px_rgba(178,107,255,0.12),0_0_40px_12px_rgba(158,255,102,0.12)]"
                 : "border-lime-300/35 bg-gradient-to-br from-lime-300/18 via-fuchsia-400/10 to-emerald-300/10 text-lime-100 hover:from-lime-300/30 hover:via-fuchsia-400/20 hover:to-emerald-300/20"
@@ -520,7 +521,7 @@ export function AiAssistantPanel({
             {isListening ? (
               <>
                 <span
-                  className="absolute h-10 w-10 animate-pulse rounded-lg"
+                  className="absolute h-10 w-10 animate-pulse rounded-full"
                   style={{
                     background:
                       "radial-gradient(circle at 60% 40%, rgba(158,255,102,0.22) 40%, rgba(178,107,255,0.18) 100%)",

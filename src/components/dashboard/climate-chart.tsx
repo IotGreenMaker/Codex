@@ -136,7 +136,7 @@ export function ClimateChart({ climateData }: ClimateChartProps) {
             dot={false}
             strokeWidth={2}
             name="VPD (kPa)"
-            isAnimationActive={false}
+            isAnimationActive={true}
           />
         </LineChart>
       </ResponsiveContainer>

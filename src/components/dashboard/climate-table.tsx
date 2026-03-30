@@ -24,7 +24,7 @@ export function ClimateTable({ climateData, stage }: ClimateTableProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-lime-300/14 bg-black/20 p-5 overflow-x-auto">
+    <div className="rounded-2xl border border-lime-300/14 bg-black/20 p-5 overflow-auto max-height-[35vh]">
       <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">Recent Climate Readings</p>
       
       <table className="w-full text-sm">
@@ -55,16 +55,16 @@ export function ClimateTable({ climateData, stage }: ClimateTableProps) {
                   <div
                     className={`inline-flex items-center gap-2 rounded-lg px-3 py-1 font-mono font-semibold ${vpdStatus.bgColor} ${vpdStatus.color} border ${
                       vpdStatus.status === "optimal"
-                        ? "border-lime-300/30"
+                        ? "border-green-500/100"
                         : vpdStatus.status === "low"
-                          ? "border-blue-300/30"
-                          : "border-red-300/30"
+                          ? "border-sky-300/80"
+                          : "border-orange-300/80"
                     }`}
                   >
                     <span
                       className={`h-2 w-2 rounded-full ${
                         vpdStatus.status === "optimal"
-                          ? "bg-lime-300"
+                          ? "bg-green-500/30"
                           : vpdStatus.status === "low"
                             ? "bg-blue-300"
                             : "bg-red-300"

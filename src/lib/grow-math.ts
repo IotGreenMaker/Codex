@@ -18,14 +18,14 @@ export function getVpdBand(stage: GrowStage, vpd: number) {
   const [min, max] = targets[stage];
 
   if (vpd < min) {
-    return { label: "Low", tone: "text-amber-300", range: `${min}-${max} kPa` };
+    return { label: "Low", tone: "text-amber-500", range: `${min}-${max} kPa` };
   }
 
   if (vpd > max) {
-    return { label: "High", tone: "text-red-300", range: `${min}-${max} kPa` };
+    return { label: "High", tone: "text-red-500", range: `${min}-${max} kPa` };
   }
 
-  return { label: "In Range", tone: "text-lime-300", range: `${min}-${max} kPa` };
+  return { label: "OK", tone: "text-green-500", range: `${min}-${max} kPa` };
 }
 
 export function getDaysSinceStart(startedAt: string) {

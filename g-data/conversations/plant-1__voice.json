@@ -1,7 +1,7 @@
 {
   "plantId": "plant-1",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-29T15:08:53.154Z",
+  "updatedAt": "2026-03-29T23:59:13.756Z",
   "messages": [
     {
       "id": "user-1774479496527",
@@ -1902,6 +1902,74 @@
       "createdAt": "2026-03-29T15:08:53.142Z",
       "role": "assistant",
       "content": "Your Sour Diesel plant is currently in the bloom stage and the VPD is a bit high at 1.63 kPa, you may want to consider adjusting the humidity or temperature to get it back in a safe range.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774799089171",
+      "createdAt": "2026-03-29T15:44:49.171Z",
+      "role": "user",
+      "content": "hey you what's the current plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774799090176",
+      "createdAt": "2026-03-29T15:44:51.050Z",
+      "role": "assistant",
+      "content": "The current plant is Sour Diesel, and it's currently in the Bloom stage. It's been 73 days since planting, and it's been  ? days in the Bloom stage, with a 12/12 light schedule and 100W lighting at 75%.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774799159045",
+      "createdAt": "2026-03-29T15:45:59.045Z",
+      "role": "user",
+      "content": "hey what's up what's the current plan",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774799160057",
+      "createdAt": "2026-03-29T15:46:00.943Z",
+      "role": "assistant",
+      "content": "Your Sour Diesel is currently in the Bloom stage with a dangerously high VPD of 1.63 kPa. I recommend adjusting the humidity to around 50-60% to bring the VPD back to a safe range for optimal flowering.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774827541955",
+      "createdAt": "2026-03-29T23:39:01.955Z",
+      "role": "user",
+      "content": "hello are you there",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774827542960",
+      "createdAt": "2026-03-29T23:39:04.132Z",
+      "role": "assistant",
+      "content": "Hello. Yes, I'm here to help with your plants. The current plant, Sour Diesel, is in its bloom stage and has a high VPD of 1.46 kPa, which may need adjustment to optimize its growth.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774828751149",
+      "createdAt": "2026-03-29T23:59:11.149Z",
+      "role": "user",
+      "content": "hello what is the last weather update",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774828752189",
+      "createdAt": "2026-03-29T23:59:13.737Z",
+      "role": "assistant",
+      "content": "Current climate is 21°C, 44% humidity, and VPD is 1.39 kPa.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"

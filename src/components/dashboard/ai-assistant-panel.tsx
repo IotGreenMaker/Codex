@@ -388,7 +388,7 @@ export function AiAssistantPanel({
   }
 
   return (
-    <div className="rounded-2xl border border-lime-300/14 bg-black/20 p-5">
+    <div className="rounded-2xl border border-white/8 bg-black/20 p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">{t.aiConversation}</p>
@@ -441,12 +441,12 @@ export function AiAssistantPanel({
         ) : null}
         {micError ? <p className="mt-2 text-xs text-amber-300">{micError}</p> : null}
 
-        <div className="mt-3 max-h-96 space-y-2 overflow-y-auto pr-1" ref={chatContainerRef}>
+        <div className="mt-3 max-h-screen space-y-2 overflow-y-auto pr-1" ref={chatContainerRef}>
           {messages.map((message) => (
             <div
               key={message.id}
               className={`border-l-2 pl-3 ${
-                message.role === "assistant" ? "border-lime-300/60" : "border-white/20"
+                message.role === "assistant" ? "border-white/8" : "border-white/20"
               }`}
             >
               <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">

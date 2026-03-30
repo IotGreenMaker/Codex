@@ -169,7 +169,7 @@ export function GrowChart({
               <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
               <YAxis yAxisId="climate" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
               <YAxis yAxisId="vpd" orientation="right" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-              <ReferenceArea yAxisId="vpd" y1={idealVpd.min} y2={idealVpd.max} fill="rgba(158,255,102,0.08)" />
+              <ReferenceArea yAxisId="vpd" y1={idealVpd.min} y2={idealVpd.max} fill="rgba(158,255,102,0.9)" />
               <Tooltip
                 contentStyle={{
                   background: "#120f1c",
@@ -184,7 +184,7 @@ export function GrowChart({
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-2xl bg-black/20">
+        <div className="mt-4 rounded-2xl bg-black/20 overflow-auto max-h-[30vh]">
           <table className="w-full border-collapse text-xs text-lime-100">
             <thead className="bg-black/25">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
@@ -321,25 +321,25 @@ export function GrowChart({
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-xs text-amber-200/90">{projectedNextWatering ? `Next watering projected: ${nextWateringLabel}` : ""}</p>
+        <p className="mt-2 text-sm text-amber-200/90">{projectedNextWatering ? `Next watering projected: ${nextWateringLabel}` : ""}</p>
 
-        <div className="mt-3 overflow-hidden rounded-2xl bg-black/20">
+        <div className="mt-3 rounded-2xl bg-black/20 overflow-auto max-h-[30vh]">
           <table className="w-full border-collapse text-xs text-lime-100">
             <thead className="bg-black/25">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
-                <th className="px-3 py-2">When</th>
+                <th className="px-3 py-2">Time</th>
                 <th className="px-3 py-2">ml</th>
-                <th className="px-3 py-2">L</th>
-                <th className="px-3 py-2">In pH</th>
-                <th className="px-3 py-2">In EC</th>
-                <th className="px-3 py-2">Runoff pH</th>
-                <th className="px-3 py-2">Runoff EC</th>
-                <th className="px-3 py-2 text-right">Del</th>
+                {/* <th className="px-3 py-2">L</th> */}
+                <th className="px-3 py-2">pH in</th>
+                <th className="px-3 py-2">EC in</th>
+                <th className="px-3 py-2">pH Out</th>
+                <th className="px-3 py-2">EC Out</th>
+                <th className="px-3 py-2 text-right">x</th>
               </tr>
             </thead>
             <tbody>
               {projectedNextWatering ? (
-                <tr className="border-t border-amber-300/35 bg-amber-300/12">
+                <tr className="border-t border-lime-300/80 bg-amber-300/12">
                   <td className="px-3 py-2">{nextWateringLabel}</td>
                   <td className="px-3 py-2">{projectedNextWatering.amountMl}</td>
                   <td className="px-3 py-2">{(projectedNextWatering.amountMl / 1000).toFixed(2)}</td>
@@ -380,7 +380,7 @@ export function GrowChart({
                       className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
                     />
                   </td>
-                  <td className="px-3 py-2">{(entry.amountMl / 1000).toFixed(2)}</td>
+                  {/* <td className="px-3 py-2">{(entry.amountMl / 1000).toFixed(2)}</td> */}
                   <td className="px-3 py-2">
                     <input
                       type="number"
@@ -479,12 +479,12 @@ function getVpdPillClass(stage: GrowStage, vpd: number) {
   const span = ideal.max - ideal.min;
   const caution = Math.max(0.1, span * 0.25);
   if (vpd < ideal.min - caution || vpd > ideal.max + caution) {
-    return "bg-red-400/12 text-red-100 border border-red-400/18";
+    return "bg-red-500/20 text-red-100 border border-red-500/30";
   }
   if (vpd < ideal.min || vpd > ideal.max) {
-    return "bg-amber-300/14 text-amber-100 border border-amber-300/18";
+    return "bg-amber-500/20 text-amber-100 border border-amber-500/30";
   }
-  return "bg-lime-300/14 text-lime-100 border border-lime-300/18";
+  return "bg-green-500/20 text-lime-100 border border-green-500/30";
 }
 
 function getVpdTooltip(stage: GrowStage, vpd: number) {

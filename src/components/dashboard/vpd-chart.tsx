@@ -65,7 +65,7 @@ export function VPDChart({
   };
 
   return (
-    <div className="rounded-2xl border-2 border-white/80 bg-black/20 p-5">
+    <div className="rounded-2xl border border-white/8 bg-black/20 p-5">
       {/* Header with toggle */}
       <button
         onClick={() => setIsVisible(!isVisible)}
@@ -183,7 +183,7 @@ export function VPDChart({
           <div
             className={`rounded-lg border ${currentInfo.bgColor} border-l-4 p-4 ${
               currentInfo.status === "optimal"
-                ? "border-lime-300"
+                ? "border-green-300"
                 : currentInfo.status === "low"
                   ? "border-blue-300"
                   : "border-red-300"
@@ -193,7 +193,7 @@ export function VPDChart({
               <div
                 className={`h-3 w-3 rounded-full ${
                   currentInfo.status === "optimal"
-                    ? "bg-lime-300"
+                    ? "bg-green-300"
                     : currentInfo.status === "low"
                       ? "bg-blue-300"
                       : "bg-red-300"
