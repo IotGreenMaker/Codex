@@ -461,12 +461,12 @@ export function AiAssistantPanel({
                 key={message.id}
                 className={`border-l-2 pl-3 pb-2 ${
                   message.role === "assistant"
-                    ? "border-lime-300/60"
-                    : "border-white/20"
+                    ? "border-indigo-500/80"
+                    : "border-green-500/80"
                 }`}
               >
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
-                  {message.role === "assistant" ? "🤖 Assistant - " : "You:"}
+                  {message.role === "assistant" ? "🤖 Assistant " : "You"}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-100">{message.content}</p>
               </div>

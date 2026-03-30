@@ -161,15 +161,15 @@ export function GrowChart({
                   <stop offset="100%" stopColor="#9eff66" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="humidityGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#b26bff" stopOpacity={0.34} />
-                  <stop offset="100%" stopColor="#b26bff" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#2b7fff" stopOpacity={0.34} />
+                  <stop offset="100%" stopColor="#2b7fff" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
               <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
               <YAxis yAxisId="climate" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
               <YAxis yAxisId="vpd" orientation="right" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-              <ReferenceArea yAxisId="vpd" y1={idealVpd.min} y2={idealVpd.max} fill="rgba(158,255,102,0.9)" />
+              <ReferenceArea yAxisId="vpd" y1={idealVpd.min} y2={idealVpd.max} fill="rgba(158,255,102,0.8)" />
               <Tooltip
                 contentStyle={{
                   background: "#120f1c",
@@ -178,8 +178,8 @@ export function GrowChart({
                 }}
               />
               <Area yAxisId="climate" type="monotone" dataKey="temp" stroke="#9eff66" fill="url(#tempGradient)" strokeWidth={2.5} />
-              <Area yAxisId="climate" type="monotone" dataKey="humidity" stroke="#b26bff" fill="url(#humidityGradient)" strokeWidth={2} />
-              <Line yAxisId="vpd" type="monotone" dataKey="vpd" stroke="#f472b6" strokeWidth={2} dot={false} />
+              <Area yAxisId="climate" type="monotone" dataKey="humidity" stroke="#2b7fff" fill="url(#humidityGradient)" strokeWidth={2} />
+              <Line yAxisId="vpd" type="monotone" dataKey="vpd" stroke="#fe9a00" strokeWidth={2} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

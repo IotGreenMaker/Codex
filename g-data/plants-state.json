@@ -18,12 +18,12 @@
       "mediaType": "Light Mix",
       "outsideTempC": 16.7,
       "outsideHumidity": 60,
-      "growTempC": 21,
-      "growHumidity": 44,
+      "growTempC": 23,
+      "growHumidity": 46,
       "waterInputMl": 1000,
       "waterPh": 5.9,
       "waterEc": 0.85,
-      "lastWateredAt": "2026-03-29T22:12:46.306Z",
+      "lastWateredAt": "2026-03-29T22:12:00.000Z",
       "wateringIntervalDays": 1,
       "stageDays": {
         "seedling": 21,
@@ -104,7 +104,7 @@
         },
         {
           "id": "water-1774822366306",
-          "timestamp": "2026-03-29T22:12:46.306Z",
+          "timestamp": "2026-03-29T22:12:00.000Z",
           "amountMl": 1000,
           "ph": 5.9,
           "ec": 0.85
@@ -312,8 +312,8 @@
         {
           "id": "climate-1774828753736",
           "timestamp": "2026-03-29T23:59:13.736Z",
-          "tempC": 21,
-          "humidity": 44
+          "tempC": 23,
+          "humidity": 46
         }
       ],
       "feedRecipe": {

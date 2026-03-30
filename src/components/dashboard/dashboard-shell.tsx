@@ -436,6 +436,15 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                     displayValue={lastWateredLabel}
                   />
                 </span>
+                <span className="text-xs text-lime-100/75">
+                  Next{" "}
+                  {new Date(
+                    new Date().getTime() + activePlant.wateringIntervalDays * 24 * 60 * 60 * 1000
+                  ).toLocaleDateString(locale, {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </span>
                 <div className="ml-auto flex items-center gap-2">
                   <button
                     type="button"

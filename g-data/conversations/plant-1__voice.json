@@ -1,7 +1,7 @@
 {
   "plantId": "plant-1",
   "assistantKey": "voice",
-  "updatedAt": "2026-03-29T23:59:13.756Z",
+  "updatedAt": "2026-03-30T09:57:54.584Z",
   "messages": [
     {
       "id": "user-1774479496527",
@@ -1970,6 +1970,23 @@
       "createdAt": "2026-03-29T23:59:13.737Z",
       "role": "assistant",
       "content": "Current climate is 21°C, 44% humidity, and VPD is 1.39 kPa.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1774864671184",
+      "createdAt": "2026-03-30T09:57:51.184Z",
+      "role": "user",
+      "content": "do you still hear me find it right",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1774864672196",
+      "createdAt": "2026-03-30T09:57:53.949Z",
+      "role": "assistant",
+      "content": "Humidity adjustment may be necessary for optimal growth.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"
