@@ -106,6 +106,18 @@ export function GrowChart({
     });
   }
 
+  // Calculate watering progress percentage
+  const wateringProgressPercent = latestWatering && projectedNextWatering
+    ? Math.min(
+        100,
+        Math.max(
+          0,
+          ((Date.now() - new Date(latestWatering.timestamp).getTime()) /
+            (new Date(projectedNextWatering.timestamp).getTime() - new Date(latestWatering.timestamp).getTime())) * 100
+        )
+      )
+    : 0;
+
   const idealVpd = getIdealVpd(stage);
   const nextWateringLabel = projectedNextWatering ? formatDateTime(projectedNextWatering.timestamp, locale) : "";
 
@@ -322,6 +334,16 @@ export function GrowChart({
           </ResponsiveContainer>
         </div>
         <p className="mt-2 text-sm text-amber-200/90">{projectedNextWatering ? `Next watering projected: ${nextWateringLabel}` : ""}</p>
+
+        {/* Watering progress bar */}
+        {projectedNextWatering && (
+          <div className="mt-3 h-4 w-full overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-4 rounded-full bg-gradient-to-r from-amber-500/90 via-sky-300/70 to-sky-500/90 transition-all duration-700"
+              style={{ width: `${wateringProgressPercent}%` }}
+            />
+          </div>
+        )}
 
         <div className="mt-3 rounded-2xl bg-black/20 overflow-auto max-h-[30vh]">
           <table className="w-full border-collapse text-xs text-lime-100">
