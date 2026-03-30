@@ -310,7 +310,7 @@ export function GrowChart({
               <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
               <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
               <YAxis yAxisId="water" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="dryback" orientation="right" domain={[0, 100]} stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+              <YAxis yAxisId="dryback" orientation="right" domain={[0, 100]} stroke="#fe9a00" tickLine={true} axisLine={false} tick={{ fontSize: 11 }} />
               <YAxis yAxisId="ph" orientation="right" domain={[4.5, 7]} hide />
               <Tooltip
                 contentStyle={{
@@ -323,13 +323,13 @@ export function GrowChart({
                 {hydrationChartData.map((entry) => (
                   <Cell
                     key={entry.id}
-                    fill={entry.projected ? "rgba(250, 204, 21, 0.68)" : "rgba(158, 255, 102, 0.35)"}
+                    fill={entry.projected ? "rgba(250, 204, 21, 0.808)" : "rgba(54, 132, 250, 0.616)"}
                   />
                 ))}
               </Bar>
               <Line yAxisId="dryback" type="monotone" dataKey="drybackPercent" stroke="#9eff66" strokeWidth={2.5} dot={false} />
-              <Line yAxisId="ph" type="monotone" dataKey="ph" stroke="#60a5fa" strokeWidth={2} dot={false} connectNulls />
-              <Line yAxisId="ph" type="monotone" dataKey="runoffPh" stroke="#f59e0b" strokeWidth={2} dot={false} connectNulls />
+              <Line yAxisId="ph" type="monotone" dataKey="ph" stroke="#fe9a00" strokeWidth={2} dot={false} connectNulls />
+              <Line yAxisId="ph" type="monotone" dataKey="runoffPh" stroke="#c160fa" strokeWidth={2} dot={false} connectNulls />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

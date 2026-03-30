@@ -14,7 +14,9 @@
   background: rgba(255, 255, 255, 0.03);
   border-radius: 4px;
 }
-
+.test {
+  color:#9eff66 ,#f59e0b , #c160fa , #2b7fff , #fe9a00 , #a8a2bb, rgba(250, 204, 21, 0.808), rgba(54, 132, 250, 0.616);
+}
 ::-webkit-scrollbar-thumb {
   background: rgba(178, 255, 102, 0.25);
   border-radius: 4px;
@@ -66,7 +68,7 @@ a {
 
 /* Brutal style: near-square corners globally */
 [class*="rounded-"] {
-  border-radius: 4px !important;
+  border-radius: 20px !important;
 }
 
 /* Replace white-ish borders with lime borders */
@@ -86,7 +88,7 @@ a {
 th,
 .table-label,
 .table-header {
-  color: rgba(190, 255, 130, 0.92) !important;
+  color: rgba(5, 240, 5, 1) !important;
 }
 
 .glass-panel {
