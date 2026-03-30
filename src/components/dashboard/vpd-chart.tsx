@@ -113,19 +113,19 @@ export function VPDChart({
           <div className="overflow-x-auto">
             <div className="min-w-full border border-white/80 rounded-lg bg-slate-900/30 p-4">
               {/* Title */}
-              <p className="mb-4 text-center text-xs font-semibold text-lime-200">
+              <p className="mb-4 text-center text-md font-semibold text-slate-200">
                 Current: {currentTemp}°C, {currentHumidity}% RH = {currentVpd} kPa
               </p>
 
               {/* Legend */}
               <div className="mb-4 flex gap-4 text-xs">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded bg-lime-400/40" />
-                  <span className="text-lime-300">Optimal Range</span>
+                  <div className="h-3 w-3 rounded bg-green-400/40" />
+                  <span className="text-green-500">Optimal Range</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded bg-purple-400/30" />
-                  <span className="text-purple-300">Out of Range</span>
+                  <div className="h-3 w-3 rounded bg-red-400/30" />
+                  <span className="text-red-500">Out of Range</span>
                 </div>
               </div>
 

@@ -342,12 +342,12 @@ export function GrowChart({
                 <tr className="border-t border-lime-300/80 bg-amber-300/12">
                   <td className="px-3 py-2">{nextWateringLabel}</td>
                   <td className="px-3 py-2">{projectedNextWatering.amountMl}</td>
-                  <td className="px-3 py-2">{(projectedNextWatering.amountMl / 1000).toFixed(2)}</td>
-                  <td className="px-3 py-2">-</td>
-                  <td className="px-3 py-2">-</td>
-                  <td className="px-3 py-2">-</td>
-                  <td className="px-3 py-2">-</td>
-                  <td className="px-3 py-2">-</td>
+                  {/* <td className="px-3 py-2">{(projectedNextWatering.amountMl / 1000).toFixed(2)}</td> */}
+                  <td className="px-3 py-2">5.8-6.0</td>
+                  <td className="px-3 py-2"></td>
+                  <td className="px-3 py-2"></td>
+                  <td className="px-3 py-2"></td>
+                  <td className="px-3 py-2"></td>
                 </tr>
               ) : null}
               {newestFirstWatering.map((entry) => (

@@ -268,7 +268,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
              </div>
             <div className=" items-start justify-between gap-4">
               <div className="rounded-2xl border border-lime-300/20 bg-lime-300/10 px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em]  text-green-500">{t.activePlant}</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.24em]  text-slate-100">{t.activePlant}</p>
                 <div className="mt-2 flex items-center gap-3">
                   <EditableText
                     value={activePlant.strainName}
@@ -1157,8 +1157,8 @@ function estimatePpfd(lightType: "blurple_40w" | "panel_100w", dimmerPercent: nu
 function getStageLeafTone(stage: GrowStage) {
   if (stage === "Seedling") return "text-green-500";
   if (stage === "Veg") return "text-green-300";
-  if (stage === "Bloom") return "text-purple-300";
-  return "text-slate-400";
+  if (stage === "Bloom") return "text-indigo-300";
+  return "text-indigo-500";
 }
 
 function StageProgressBar({
@@ -1190,7 +1190,7 @@ function StageProgressBar({
         <div className="h-2 rounded-full bg-green-300/80" style={{ width: `${Math.round(vegPct * 100)}%` }} />
       </div>
       <div className="overflow-hidden rounded-full bg-white/10">
-        <div className="h-2 rounded-full bg-purple-500/100" style={{ width: `${Math.round(bloomPct * 100)}%` }} />
+        <div className="h-2 rounded-full bg-indigo-500/100" style={{ width: `${Math.round(bloomPct * 100)}%` }} />
       </div>
       <div className="col-span-3 flex justify-between text-[10px] text-lime-100/70">
         <span>Seedling</span>
