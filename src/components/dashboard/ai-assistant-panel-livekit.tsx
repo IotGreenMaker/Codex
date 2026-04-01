@@ -43,6 +43,7 @@ export function AiAssistantPanel({
   const t = translations[locale];
   const [isConnected, setIsConnected] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [interimTranscript, setInterimTranscript] = useState("");
   const [micError, setMicError] = useState<string | null>(null);
@@ -332,6 +333,7 @@ export function AiAssistantPanel({
       setIsListening(false);
     } else {
       setInterimTranscript("");
+      setDraft("");
       setMicError(null);
       recognitionRef.current.start();
       setIsListening(true);
@@ -495,17 +497,18 @@ export function AiAssistantPanel({
         <div className="flex gap-2">
           <input
             type="text"
-            placeholder={isListening ? "Listening..." : interimTranscript || "Type or speak..."}
-            value={interimTranscript}
+            placeholder={isListening ? "Listening..." : "Type or speak..."}
+            value={draft}
+            onChange={(e) => setDraft(e.currentTarget.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const target = e.currentTarget;
-                sendMessage(target.value);
-                target.value = "";
+              if (e.key === "Enter" && draft.trim()) {
+                sendMessage(draft);
+                setDraft("");
                 setInterimTranscript("");
               }
             }}
-            className="flex-1 rounded-full border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 placeholder-slate-500 outline-none focus:border-lime-300/50"
+            disabled={isListening}
+            className="flex-1 rounded-full border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 placeholder-slate-500 outline-none focus:border-lime-300/50 disabled:opacity-50 disabled:cursor-not-allowed"
           />
 
           {/* Mic button - small, integrated with Send */}
@@ -540,15 +543,15 @@ export function AiAssistantPanel({
           {/* Send button */}
           <button
             type="button"
-            onClick={(e) => {
-              const input = e.currentTarget.previousElementSibling?.previousElementSibling as HTMLInputElement;
-              if (input) {
-                sendMessage(input.value);
-                input.value = "";
+            onClick={() => {
+              if (draft.trim()) {
+                sendMessage(draft);
+                setDraft("");
                 setInterimTranscript("");
               }
             }}
-            className="rounded-lg border border-lime-300/20 bg-lime-300/12 px-4 py-2 text-sm font-semibold text-lime-100 transition hover:bg-lime-300/20 flex items-center gap-2"
+            disabled={!draft.trim() || isListening}
+            className="rounded-lg border border-lime-300/20 bg-lime-300/12 px-4 py-2 text-sm font-semibold text-lime-100 transition hover:bg-lime-300/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="h-4 w-4" />
           </button>

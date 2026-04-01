@@ -21,38 +21,44 @@ function createFeedRecipe(overrides?: Partial<typeof defaultFeedRecipe>) {
   };
 }
 
-export const activePlant: PlantProfile = {
-  id: generateUUID(),
-  strainName: "My First Plant",
-  startedAt: new Date().toISOString(),
-  stage: "Seedling",
-  bloomStartedAt: "",
-  lightSchedule: "18 / 6",
-  lightsOn: "06:00",
-  lightsOff: "00:00",
-  lightType: "panel_100w",
-  lightDimmerPercent: 75,
-  lightLampName: "Growth Light",
-  lightLampWatts: 100,
-  containerVolumeL: 15,
-  mediaVolumeL: 13,
-  mediaType: "Soil",
-  outsideTempC: 20,
-  outsideHumidity: 50,
-  growTempC: 24,
-  growHumidity: 60,
-  waterInputMl: 500,
-  waterPh: 6.0,
-  waterEc: 1.0,
-  lastWateredAt: new Date().toISOString(),
-  wateringIntervalDays: 2,
-  stageDays: { seedling: 0, veg: 0, bloom: 0 },
-  wateringData: [],
-  climateData: [],
-  feedRecipe: createFeedRecipe()
-};
+// Template for creating new plants (NOT auto-created)
+export function createNewPlant(overrides?: Partial<PlantProfile>): PlantProfile {
+  return {
+    id: generateUUID(),
+    strainName: "New Plant",
+    startedAt: new Date().toISOString(),
+    stage: "Seedling",
+    bloomStartedAt: "",
+    lightSchedule: "18 / 6",
+    lightsOn: "06:00",
+    lightsOff: "00:00",
+    lightType: "panel_100w",
+    lightDimmerPercent: 75,
+    lightLampName: "Growth Light",
+    lightLampWatts: 100,
+    containerVolumeL: 15,
+    mediaVolumeL: 13,
+    mediaType: "Soil",
+    outsideTempC: 20,
+    outsideHumidity: 50,
+    growTempC: 24,
+    growHumidity: 60,
+    waterInputMl: 500,
+    waterPh: 6.0,
+    waterEc: 1.0,
+    lastWateredAt: new Date().toISOString(),
+    wateringIntervalDays: 2,
+    stageDays: { seedling: 1, veg: 0, bloom: 0 },
+    seedlingStartedAt: new Date().toISOString(),
+    wateringData: [],
+    climateData: [],
+    feedRecipe: createFeedRecipe(),
+    ...overrides
+  };
+}
 
-export const plantProfiles: PlantProfile[] = [activePlant];
+// DO NOT auto-create plants - loading from Supabase/local storage only
+export const plantProfiles: PlantProfile[] = [];
 
 export const dailyLogs: GrowLogEntry[] = [];
 

@@ -263,3 +263,139 @@ export async function writePlantsState(state: PlantsState) {
     }
   }
 }
+
+export async function deleteWateringLogById(wateringId: string, plantId: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    console.warn("[Watering] Supabase not configured - cannot delete from database");
+    return true;
+  }
+
+  try {
+    const { error } = await supabase
+      .from("watering_log")
+      .delete()
+      .eq("id", wateringId);
+
+    if (error) {
+      console.error(`[Watering] Failed to delete watering log ${wateringId}:`, error);
+      return false;
+    } else {
+      console.log(`[Watering] Deleted from Supabase: ${wateringId}`);
+      return true;
+    }
+  } catch (err) {
+    console.error("[Watering] Delete failed:", err);
+    return false;
+  }
+}
+
+export async function deleteClimateLogById(climateId: string, plantId: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    console.warn("[Climate] Supabase not configured - cannot delete from database");
+    return true;
+  }
+
+  try {
+    const { error } = await supabase
+      .from("climate_log")
+      .delete()
+      .eq("id", climateId);
+
+    if (error) {
+      console.error(`[Climate] Failed to delete climate log ${climateId}:`, error);
+      return false;
+    } else {
+      console.log(`[Climate] Deleted from Supabase: ${climateId}`);
+      return true;
+    }
+  } catch (err) {
+    console.error("[Climate] Delete failed:", err);
+    return false;
+  }
+}
+
+export async function deletePlantById(plantId: string): Promise<boolean> {
+  try {
+    // Delete from local storage
+    const current = await readPlantsState();
+    const updated = current.plants.filter((p) => p.id !== plantId);
+    let newActivePlantId = current.activePlantId;
+    
+    // If the deleted plant was active, switch to the first remaining plant
+    if (newActivePlantId === plantId) {
+      newActivePlantId = updated[0]?.id || "";
+    }
+
+    await writePlantsState({
+      plants: updated,
+      activePlantId: newActivePlantId
+    });
+
+    console.log(`[Plants] Deleted locally: ${plantId}`);
+
+    // Delete from Supabase (cascade will handle related records)
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      try {
+        // Delete conversations
+        const { error: conversationsError } = await supabase
+          .from("conversations")
+          .delete()
+          .eq("plant_id", plantId);
+
+        if (conversationsError) {
+          console.warn(`[Conversations] Failed to delete for plant ${plantId}:`, conversationsError);
+        } else {
+          console.log(`[Conversations] Deleted for plant ${plantId}`);
+        }
+
+        // Delete climate logs
+        const { error: climateError } = await supabase
+          .from("climate_log")
+          .delete()
+          .eq("plant_id", plantId);
+
+        if (climateError) {
+          console.warn(`[Climate] Failed to delete for plant ${plantId}:`, climateError);
+        } else {
+          console.log(`[Climate] Deleted for plant ${plantId}`);
+        }
+
+        // Delete watering logs
+        const { error: wateringError } = await supabase
+          .from("watering_log")
+          .delete()
+          .eq("plant_id", plantId);
+
+        if (wateringError) {
+          console.warn(`[Watering] Failed to delete for plant ${plantId}:`, wateringError);
+        } else {
+          console.log(`[Watering] Deleted for plant ${plantId}`);
+        }
+
+        // Delete the plant itself
+        const { error: plantError } = await supabase
+          .from("plants")
+          .delete()
+          .eq("id", plantId);
+
+        if (plantError) {
+          console.error(`[Plants] Failed to delete plant ${plantId}:`, plantError);
+          return false;
+        } else {
+          console.log(`[Plants] Deleted from Supabase: ${plantId}`);
+        }
+      } catch (err) {
+        console.error("[Plants] Supabase delete failed:", err);
+        return false;
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting plant:", error);
+    return false;
+  }
+}

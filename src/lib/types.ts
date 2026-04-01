@@ -39,6 +39,8 @@ export type PlantProfile = {
   strainName: string;
   startedAt: string;
   stage: GrowStage;
+  seedlingStartedAt?: string;
+  vegStartedAt?: string;
   bloomStartedAt?: string;
   lightSchedule: string;
   lightsOn: string;

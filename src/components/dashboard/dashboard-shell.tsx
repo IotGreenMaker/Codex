@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Droplets, Leaf, Lightbulb, Minus, Plus, RotateCcw, Thermometer, Waves } from "lucide-react";
+import { CalendarDays, Droplets, Leaf, Lightbulb, Minus, Plus, RotateCcw, Thermometer, Waves, X } from "lucide-react";
 import { GrowChart } from "@/components/charts/grow-chart";
 import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel-livekit";
 import { VPDChart } from "@/components/dashboard/vpd-chart";
+import { PlantTimelineCalendar } from "@/components/dashboard/plant-timeline-calendar";
 import { calculateVpd, getCycleSummary, getDetailedCycleSummary, getVpdBand } from "@/lib/grow-math";
 import { Locale, translations } from "@/lib/i18n";
-import { dailyLogs } from "@/lib/mock-data";
+import { dailyLogs, createNewPlant } from "@/lib/mock-data";
 import { generateUUID } from "@/lib/uuid";
 import type { GrowStage, PlantProfile } from "@/lib/types";
 
@@ -82,7 +83,17 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
         if (!ignore && data.ok && Array.isArray(data.plants) && data.plants.length) {
           setPlants(data.plants);
-          setActivePlantId(data.activePlantId ?? data.plants[0].id);
+          if (!data.activePlantId) {
+            // Set active plant to first in list order (by startedAt)
+            const sorted = [...data.plants].sort((a, b) => {
+              const aDate = new Date(a.startedAt).getTime();
+              const bDate = new Date(b.startedAt).getTime();
+              return aDate - bDate;
+            });
+            setActivePlantId(sorted[0]?.id || data.plants[0].id);
+          } else {
+            setActivePlantId(data.activePlantId);
+          }
         }
       } finally {
         if (!ignore) {
@@ -114,13 +125,90 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     });
   }, [activePlantId, loadedFromServer, plants]);
 
+  const getFirstPlantByList = () => {
+    if (plants.length === 0) return undefined;
+    const sorted = [...plants].sort((a, b) => {
+      const aDate = new Date(a.startedAt).getTime();
+      const bDate = new Date(b.startedAt).getTime();
+      return aDate - bDate;
+    });
+    return sorted[0];
+  };
+
   const activePlant = useMemo(
-    () => plants.find((entry) => entry.id === activePlantId) ?? plants[0],
+    () => plants.find((entry) => entry.id === activePlantId) ?? getFirstPlantByList(),
     [plants, activePlantId]
   );
 
+  const addPlant = () => {
+    const nextIndex = plants.length + 1;
+    const next = createNewPlant({
+      strainName: `New Plant ${nextIndex}`,
+      // Copy settings from active plant if available
+      ...(activePlant ? {
+        lightSchedule: activePlant.lightSchedule,
+        lightsOn: activePlant.lightsOn,
+        lightsOff: activePlant.lightsOff,
+        lightType: activePlant.lightType,
+        lightDimmerPercent: activePlant.lightDimmerPercent,
+        containerVolumeL: activePlant.containerVolumeL,
+        mediaVolumeL: activePlant.mediaVolumeL,
+        mediaType: activePlant.mediaType,
+        wateringIntervalDays: activePlant.wateringIntervalDays,
+        feedRecipe: {
+          ...activePlant.feedRecipe,
+          additives: activePlant.feedRecipe.additives.map((entry) => ({ ...entry, id: generateUUID() }))
+        }
+      } : {})
+    });
+    setPlants((current) => [...current, next]);
+    setActivePlantId(next.id);
+  };
+
+  const removePlant = async (plantId: string) => {
+    if (confirm("Are you sure you want to delete this plant? This action cannot be undone.")) {
+      try {
+        const response = await fetch("/api/plants", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ plantId })
+        });
+
+        const result = (await response.json()) as { ok: boolean; error?: string };
+        if (result.ok) {
+          setPlants((current) => current.filter((p) => p.id !== plantId));
+          if (activePlantId === plantId) {
+            const remaining = plants.filter((p) => p.id !== plantId);
+            setActivePlantId(remaining[0]?.id || "");
+          }
+        } else {
+          console.error("Failed to delete plant:", result.error);
+          alert("Failed to delete plant. Check console for details.");
+        }
+      } catch (error) {
+        console.error("Error deleting plant:", error);
+        alert("Error deleting plant. Check console for details.");
+      }
+    }
+  };
+
   if (!activePlant) {
-    return null;
+    return (
+      <main className="min-h-screen bg-hero-grid flex items-center justify-center">
+        <div className="glass-panel rounded-3xl p-8 max-w-md text-center">
+          <p className="text-xl font-semibold text-lime-100 mb-4">No Plants Yet</p>
+          <p className="text-lime-100/70 mb-6">Create your first plant to get started tracking growth, climate, and nutrition.</p>
+          <button
+            onClick={addPlant}
+            className="rounded-lg bg-lime-400/20 border border-lime-300/30 hover:bg-lime-400/30 px-6 py-3 font-semibold text-lime-100 transition"
+          >
+            Create First Plant
+          </button>
+        </div>
+      </main>
+    );
   }
 
   const cycle = getCycleSummary(activePlant);
@@ -151,6 +239,25 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
       ...activePlant,
       ...patch
     });
+  };
+
+  const handleStageChange = (newStage: GrowStage) => {
+    const now = new Date().toISOString();
+    const patch: Partial<PlantProfile> = { stage: newStage };
+
+    // When moving TO Veg for the first time
+    if (newStage === "Veg" && activePlant.stageDays.veg === 0 && !activePlant.vegStartedAt) {
+      patch.vegStartedAt = now;
+      patch.stageDays = { ...activePlant.stageDays, veg: 1 };
+    }
+
+    // When moving TO Bloom for the first time
+    if (newStage === "Bloom" && activePlant.stageDays.bloom === 0 && !activePlant.bloomStartedAt) {
+      patch.bloomStartedAt = now;
+      patch.stageDays = { ...activePlant.stageDays, bloom: 1 };
+    }
+
+    patchActivePlant(patch);
   };
 
   const patchWateringData = (nextWateringData: PlantProfile["wateringData"]) => {
@@ -201,44 +308,6 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
           }
         : {})
     });
-  };
-
-  const addPlant = () => {
-    const nextIndex = plants.length + 1;
-    const next: PlantProfile = {
-      ...activePlant,
-      id: generateUUID(),
-      strainName: `New Plant ${nextIndex}`,
-      startedAt: new Date().toISOString(),
-      bloomStartedAt: "",
-      stage: "Seedling",
-      totalDaysOverride: undefined,
-      stageDays: { seedling: 1, veg: 0, bloom: 0 },
-      wateringData: [
-        {
-          id: generateUUID(),
-          timestamp: new Date().toISOString(),
-          amountMl: 300,
-          ph: 6,
-          ec: 1
-        }
-      ],
-      climateData: [
-        {
-          id: generateUUID(),
-          timestamp: new Date().toISOString(),
-          tempC: 25,
-          humidity: 60
-        }
-      ],
-      feedRecipe: {
-        ...activePlant.feedRecipe,
-        title: activePlant.feedRecipe.title || "10 L veg mix",
-        additives: activePlant.feedRecipe.additives.map((entry) => ({ ...entry }))
-      }
-    };
-    setPlants((current) => [...current, next]);
-    setActivePlantId(next.id);
   };
 
   return (
@@ -333,22 +402,33 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 </button>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                {plants.map((entry) => (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    onClick={() => setActivePlantId(entry.id)}
-                    className={`rounded-full border px-3 py-1.5 text-xs transition ${
-                      entry.id === activePlantId
-                        ? "border-lime-300/28 bg-lime-300/16 text-lime-100"
-                        : "border-white/10 bg-black/25 text-slate-300 hover:bg-white/10"
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <Leaf className={`h-4 w-4 ${getStageLeafTone(entry.stage)}`} />
-                      {entry.strainName}
-                    </span>
-                  </button>
+                {plants
+                  .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())
+                  .map((entry) => (
+                  <div key={entry.id} className="relative group">
+                    <button
+                      type="button"
+                      onClick={() => setActivePlantId(entry.id)}
+                      className={`rounded-full border px-3 py-1.5 text-xs transition ${
+                        entry.id === activePlantId
+                          ? "border-lime-300/28 bg-lime-300/16 text-lime-100"
+                          : "border-white/10 bg-black/25 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <Leaf className={`h-4 w-4 ${getStageLeafTone(entry.stage)}`} />
+                        {entry.strainName}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removePlant(entry.id)}
+                      className="absolute -top-2 -right-2 rounded-full bg-red-500/90 hover:bg-red-600 p-0.5 text-white opacity-0 group-hover:opacity-100 transition"
+                      title={`Delete ${entry.strainName}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -516,14 +596,16 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 label={t.lightHours}
                 value={
                   <div className="space-y-1">
-                    <EditableText
+                    
+                    <div className="flex items-center justify-between gap-3 text-xs text-lime-100/80">
+
+                     <EditableText
                       value={activePlant.lightSchedule}
                       className="text-sm font-semibold text-lime-100"
                       onSave={(value) => patchActivePlant({ lightSchedule: value })}
-                    />
-                    <div className="flex items-center gap-3 text-xs text-lime-100/80">
+                      />
                       <span>
-                        On{" "}
+                        On {" "}
                         <EditableText
                           value={activePlant.lightsOn}
                           className="font-semibold text-lime-100"
@@ -531,7 +613,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                         />
                       </span>
                       <span>
-                        Off{" "}
+                        Off {" "}
                         <EditableText
                           value={activePlant.lightsOff}
                           className="font-semibold text-lime-100"
@@ -547,15 +629,15 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                         {lightsOnNow ? "Lights ON" : "Lights OFF"}
                       </span>
                     </div>
-                    <div className="mt-2 rounded-2xl border border-white/8 bg-black/20 p-3">
-                      <div className="flex items-center justify-between gap-2">
+                    {/* <div className="mt-2 rounded-2xl border border-white/8 bg-black/20 p-3"> */}
+                      {/* <div className="flex items-center justify-between gap-2">
                         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Light</p>
                         <div className="rounded-xl border border-lime-300/20 bg-lime-300/10 p-2 text-lime-200">
                           <Lightbulb className="h-4 w-4" />
                         </div>
-                      </div>
+                      </div> */}
                       <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                        <div className="sm:col-span-2">
+                        <div className="sm:col-span-1">
                           <p className="text-[11px] text-lime-100/65">Lamp name</p>
                           <EditableText
                             value={activePlant.lightLampName ?? ""}
@@ -570,6 +652,12 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                             value={activePlant.lightLampWatts ?? (activePlant.lightType === "blurple_40w" ? 40 : 100)}
                             onSave={(value) => patchActivePlant({ lightLampWatts: value })}
                           />
+                        </div>
+                         <div className="sm:col-span-1">
+                          <p className="text-[11px] text-lime-100/65"> PPFD</p>
+                          <p className="text-sm font-semibold text-lime-100">
+                            {ppfd === null ? "--" : `${ppfd}  PPFD`}
+                          </p>
                         </div>
                         <div className="sm:col-span-2">
                           <p className="text-[11px] text-lime-100/65">Type</p>
@@ -603,15 +691,10 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                             disabled={(activePlant.lightType ?? "panel_100w") === "blurple_40w"}
                           />
                         </div>
-                        <div className="sm:col-span-3">
-                          <p className="text-[11px] text-lime-100/65"> PPFD</p>
-                          <p className="text-sm font-semibold text-lime-100">
-                            {ppfd === null ? "--" : `${ppfd}  PPFD`}
-                          </p>
-                        </div>
+                       
                       </div>
                     </div>
-                  </div>
+                  // </div>
                 }
               />
             </div>
@@ -642,6 +725,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
           {/* Growth Progression Chart */}
           <GrowChart
+            plantId={activePlant.id}
             logs={dailyLogs}
             wateringData={activePlant.wateringData}
             climateData={activePlant.climateData}
@@ -662,8 +746,8 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 </div>
                 <CalendarDays className="h-4 w-4 text-lime-300" />
               </div>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                <MiniInfo label={t.stage} value={<EditableStage value={activePlant.stage} onSave={(value) => patchActivePlant({ stage: value })} />} />
+              <div className="mt-4 flex  gap-2 sm:grid-cols-2">
+                <MiniInfo label={t.stage} value={<EditableStage value={activePlant.stage} onSave={handleStageChange} />} />
                 <MiniInfo label={t.totalDays} value={<span className="text-sm font-semibold text-lime-100">{cycleDetailed.totalDays}</span>} />
                 <MiniInfo
                   label="Days Seedling"
@@ -675,11 +759,18 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   }
                 />
                 <MiniInfo
-                  label="Days Veg"
+                  label="Days Vegging"
                   value={
                     <EditableNumber
                       value={activePlant.stageDays.veg}
-                      onSave={(value) => patchActivePlant({ stageDays: { ...activePlant.stageDays, veg: value } })}
+                      onSave={(value) => {
+                        const wasInactive = activePlant.stageDays.veg === 0;
+                        const isActivating = wasInactive && value > 0;
+                        patchActivePlant({
+                          stageDays: { ...activePlant.stageDays, veg: value },
+                          ...(isActivating && !activePlant.vegStartedAt ? { vegStartedAt: new Date().toISOString() } : {})
+                        });
+                      }}
                     />
                   }
                 />
@@ -688,10 +779,22 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   value={
                     <EditableNumber
                       value={activePlant.stageDays.bloom}
-                      onSave={(value) => patchActivePlant({ stageDays: { ...activePlant.stageDays, bloom: value } })}
+                      onSave={(value) => {
+                        const wasInactive = activePlant.stageDays.bloom === 0;
+                        const isActivating = wasInactive && value > 0;
+                        patchActivePlant({
+                          stageDays: { ...activePlant.stageDays, bloom: value },
+                          ...(isActivating && !activePlant.bloomStartedAt ? { bloomStartedAt: new Date().toISOString() } : {})
+                        });
+                      }}
                     />
                   }
                 />
+              </div>
+
+              {/* Calendar View */}
+              <div className="mt-6 border-t border-white/10 pt-6">
+                <PlantTimelineCalendar plant={activePlant} />
               </div>
             </div>
 

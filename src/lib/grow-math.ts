@@ -70,14 +70,15 @@ export function getCycleSummary(plant: PlantProfile) {
 
 export function getDetailedCycleSummary(plant: PlantProfile) {
   if (plant.stageDays) {
+    const daysInSeedling = Math.max(0, plant.stageDays.seedling);
     const daysInVeg = Math.max(0, plant.stageDays.veg);
     const daysInBloom = Math.max(0, plant.stageDays.bloom);
-    const daysInSeedling = Math.max(0, plant.stageDays.seedling);
 
     return {
       totalDays: daysInSeedling + daysInVeg + daysInBloom,
       daysInVeg,
       daysInBloom,
+      daysInSeedling,
       stage: plant.stage
     };
   }

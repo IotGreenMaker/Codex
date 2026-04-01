@@ -22,6 +22,7 @@ import type { Locale } from "@/lib/i18n";
 type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
 
 type GrowChartProps = {
+  plantId: string;
   logs: GrowLogEntry[];
   wateringData: WateringEntry[];
   climateData: ClimateEntry[];
@@ -38,6 +39,7 @@ type GrowChartProps = {
 };
 
 export function GrowChart({
+  plantId,
   logs: _logs,
   wateringData,
   climateData,
@@ -49,6 +51,54 @@ export function GrowChart({
   labels
 }: GrowChartProps) {
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("WEEK");
+
+  const deleteWateringEntry = async (wateringId: string) => {
+    try {
+      const response = await fetch("/api/plants", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete-watering",
+          wateringId,
+          plantId
+        })
+      });
+      const result = (await response.json()) as { ok: boolean; error?: string };
+      if (result.ok) {
+        onWateringDataChange(wateringData.filter((row) => row.id !== wateringId));
+      } else {
+        console.error("Failed to delete watering entry:", result.error);
+        alert("Failed to delete watering entry");
+      }
+    } catch (error) {
+      console.error("Error deleting watering entry:", error);
+      alert("Error deleting watering entry");
+    }
+  };
+
+  const deleteClimateEntry = async (climateId: string) => {
+    try {
+      const response = await fetch("/api/plants", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete-climate",
+          climateId,
+          plantId
+        })
+      });
+      const result = (await response.json()) as { ok: boolean; error?: string };
+      if (result.ok) {
+        onClimateDataChange(climateData.filter((row) => row.id !== climateId));
+      } else {
+        console.error("Failed to delete climate entry:", result.error);
+        alert("Failed to delete climate entry");
+      }
+    } catch (error) {
+      console.error("Error deleting climate entry:", error);
+      alert("Error deleting climate entry");
+    }
+  };
 
   const filteredClimate = useMemo(() => {
     const now = Date.now();
@@ -284,7 +334,7 @@ export function GrowChart({
                     <td className="px-3 py-2 text-right">
                       <button
                         type="button"
-                        onClick={() => onClimateDataChange(climateData.filter((row) => row.id !== entry.id))}
+                        onClick={() => deleteClimateEntry(entry.id)}
                         className="rounded-full border border-red-300/20 bg-red-400/10 p-1 text-red-100"
                         title="Delete row"
                       >
@@ -479,7 +529,7 @@ export function GrowChart({
                   <td className="px-3 py-2 text-right">
                     <button
                       type="button"
-                      onClick={() => onWateringDataChange(wateringData.filter((row) => row.id !== entry.id))}
+                      onClick={() => deleteWateringEntry(entry.id)}
                       className="rounded-full border border-red-300/20 bg-red-400/10 p-1 text-red-100"
                       title="Delete row"
                     >
