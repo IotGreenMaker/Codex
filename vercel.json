@@ -22,8 +22,8 @@
   ],
   "env": {
     "INWORLD_API_KEY": "INWORLD_API_KEY",
-    "GROQ_API_KEY": "@groq_api_key",
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY": "@next_public_supabase_publishable_default_key"
+    "GROQ_API_KEY": "GROQ_API_KEY",
+    "NEXT_PUBLIC_SUPABASE_URL": "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY": "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"
   }
 }
