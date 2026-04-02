@@ -54,10 +54,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 8%, rgba(158, 255, 102, 0.14), transparent 28%),
-    radial-gradient(circle at 86% 18%, rgba(178, 107, 255, 0.18), transparent 26%),
-    radial-gradient(circle at 70% 88%, rgba(250, 149, 76, 0.12), transparent 24%),
-    linear-gradient(180deg, #07060c 0%, #0b0911 36%, #05040a 100%);
+    radial-gradient(circle at 12% 8%, rgba(158, 255, 102, 0.363), transparent 28%),
+    radial-gradient(circle at 86% 18%, rgba(179, 107, 255, 0.322), transparent 26%),
+    radial-gradient(circle at 70% 88%, rgba(250, 148, 76, 0.315), transparent 24%),
+    linear-gradient(180deg, #17122e 0%, #130c25 36%, #241570 100%);
   color: #f4ffe7;
 }
 
@@ -94,9 +94,9 @@ th,
 .glass-panel {
   border: 1px solid rgba(158, 255, 102, 0.18);
   background:
-    linear-gradient(180deg, rgba(16, 14, 24, 0.92), rgba(7, 6, 12, 0.92)),
-    radial-gradient(circle at 18% 12%, rgba(158, 255, 102, 0.08), transparent 34%);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+    linear-gradient(180deg, rgba(16, 14, 24, 0.452), rgba(7, 6, 12, 0.507)),
+    radial-gradient(circle at 18% 12%, rgba(68, 185, 1, 0.445), transparent 34%);
+  box-shadow: 0 18px 60px rgba(0, 97, 37, 0.158);
 }
 
 .spectral-bar {
@@ -140,4 +140,10 @@ th,
 
 *::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.28);
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

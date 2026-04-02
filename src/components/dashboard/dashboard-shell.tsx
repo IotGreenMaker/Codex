@@ -218,12 +218,24 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   const vpdBand = getVpdBand(activePlant.stage, liveVpd);
   const lastWateredLabel = new Intl.DateTimeFormat(locale, {
     month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
+    day: "numeric"
   }).format(new Date(activePlant.lastWateredAt));
   const wateringCountdown = getWateringCountdown(activePlant.lastWateredAt, activePlant.wateringIntervalDays);
   const wateringProgress = getDrybackPercent(activePlant.lastWateredAt, activePlant.wateringIntervalDays);
+  
+  // Calculate next watering date based on latest watering entry (matches bottom table)
+  const sortedWateringData = [...activePlant.wateringData].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+  const latestWateringEntry = sortedWateringData[0];
+  const nextWateringDate = latestWateringEntry
+    ? new Date(new Date(latestWateringEntry.timestamp).getTime() + activePlant.wateringIntervalDays * 24 * 60 * 60 * 1000)
+    : new Date(new Date(activePlant.lastWateredAt).getTime() + activePlant.wateringIntervalDays * 24 * 60 * 60 * 1000);
+  const nextWateringLabel = new Intl.DateTimeFormat(locale, {
+    month: "short",
+    day: "numeric"
+  }).format(nextWateringDate);
+  
   const lightsOnNow = isLightsOnNow(activePlant.lightsOn, activePlant.lightsOff, now);
   const ppfd =
     typeof activePlant.lightDimmerPercent === "number"
@@ -347,14 +359,14 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
+        <div className="grid gap-4 xl:grid-cols-[2fr_0.95fr]">
           <div className="glass-panel rounded-[2rem] p-5 lg:p-6">
              <div className="flex flex-wrap items-start justify-between gap-4">
                <div className="">
                 <p className="font-mono text-[11px] uppercase tracking-[0.34em] text-lime-200">G-Buddy</p>
               </div>
              </div>
-            <div className=" items-start justify-between gap-4">
+            <div className=" items-start justify-between gap-4 mt-4">
               <div className="rounded-2xl border border-lime-300/20 bg-lime-300/10 px-4 py-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.24em]  text-slate-100">{t.activePlant}</p>
                 <div className="mt-2 flex items-center gap-3">
@@ -514,7 +526,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
             <div className="mt-3 rounded-2xl border border-white/8 bg-black/20 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-lime-200">Watering</p>
-                <p className="text-sm font-semibold text-lime-100">{wateringCountdown}</p>
+                
                 <span className="text-xs text-lime-100/75">
                   Last{" "}
                   <EditableDateTime
@@ -534,58 +546,17 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                     }}
                     displayValue={lastWateredLabel}
                   />
+
+                 
                 </span>
                 <span className="text-xs text-lime-100/75">
-                  Next{" "}
-                  {new Date(
-                    new Date().getTime() + activePlant.wateringIntervalDays * 24 * 60 * 60 * 1000
-                  ).toLocaleDateString(locale, {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                  Next <span className="text-left text-sm text-lime-100">{nextWateringLabel}</span>
                 </span>
-                <div className="ml-auto flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => patchActivePlant({ wateringIntervalDays: Math.max(1, activePlant.wateringIntervalDays - 1) })}
-                    className="rounded-full border border-white/10 bg-white/8 p-1.5 text-slate-200"
-                    title="Decrease interval"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="text-xs text-lime-100/80">{activePlant.wateringIntervalDays}d</span>
-                  <button
-                    type="button"
-                    onClick={() => patchActivePlant({ wateringIntervalDays: activePlant.wateringIntervalDays + 1 })}
-                    className="rounded-full border border-white/10 bg-white/8 p-1.5 text-slate-200"
-                    title="Increase interval"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      patchWateringData([
-                        ...activePlant.wateringData,
-                        {
-                          id: generateUUID(),
-                          timestamp: new Date().toISOString(),
-                          amountMl: activePlant.waterInputMl,
-                          ph: activePlant.waterPh,
-                          ec: activePlant.waterEc
-                        }
-                      ])
-                    }
-                    className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1.5 text-lime-100"
-                    title="Water now / reset timer"
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                  </button>
-                </div>
+                 <p className="text-sm font-semibold text-lime-100"> {wateringCountdown}</p>
               </div>
-              <div className="mt-3 h-4 w-full overflow-hidden rounded-full bg-white/10">
+              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-4 rounded-full bg-gradient-to-r from-amber-500/90 via-sky-300/70 to-sky-500/90 transition-all duration-700"
+                  className="h-2 rounded-full bg-gradient-to-r from-amber-500/90 via-sky-300/70 to-sky-500/90 transition-all duration-700"
                   style={{ width: `${wateringProgress}%` }}
                 />
               </div>
@@ -734,7 +705,20 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
             wateringIntervalDays={activePlant.wateringIntervalDays}
             onWateringDataChange={patchWateringData}
             onClimateDataChange={patchClimateData}
-            labels={{ progression: t.progression, climateDrift: t.climateDrift, tempHumidityVpd: t.tempHumidityVpd }}
+            onUpdateInterval={(days) => patchActivePlant({ wateringIntervalDays: days })}
+            onWaterNow={() =>
+              patchWateringData([
+                ...activePlant.wateringData,
+                {
+                  id: generateUUID(),
+                  timestamp: new Date().toISOString(),
+                  amountMl: activePlant.waterInputMl,
+                  ph: activePlant.waterPh,
+                  ec: activePlant.waterEc
+                }
+              ])
+            }
+            labels={{ progression: t.progression, tempHumidityVpd: t.tempHumidityVpd }}
           />
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">

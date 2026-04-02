@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Minus, RotateCcw } from "lucide-react";
 import { useState, useMemo } from "react";
 import {
   Area,
@@ -31,9 +31,10 @@ type GrowChartProps = {
   wateringIntervalDays: number;
   onWateringDataChange: (next: WateringEntry[]) => void;
   onClimateDataChange: (next: ClimateEntry[]) => void;
+  onUpdateInterval?: (intervalDays: number) => void;
+  onWaterNow?: () => void;
   labels: {
     progression: string;
-    climateDrift: string;
     tempHumidityVpd: string;
   };
 };
@@ -48,6 +49,8 @@ export function GrowChart({
   wateringIntervalDays,
   onWateringDataChange,
   onClimateDataChange,
+  onUpdateInterval,
+  onWaterNow,
   labels
 }: GrowChartProps) {
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("WEEK");
@@ -173,20 +176,20 @@ export function GrowChart({
     });
   }
 
-  // Calculate watering progress percentage
+  // Calculate watering progress percentage (dryback: 100% when wet, 0% when dry)
   const wateringProgressPercent = latestWatering && projectedNextWatering
     ? Math.min(
         100,
         Math.max(
           0,
-          ((Date.now() - new Date(latestWatering.timestamp).getTime()) /
+          100 - ((Date.now() - new Date(latestWatering.timestamp).getTime()) /
             (new Date(projectedNextWatering.timestamp).getTime() - new Date(latestWatering.timestamp).getTime())) * 100
         )
       )
     : 0;
 
   const idealVpd = getIdealVpd(stage);
-  const nextWateringLabel = projectedNextWatering ? formatDateTime(projectedNextWatering.timestamp, locale) : "";
+  const nextWateringLabel = projectedNextWatering ? formatShortDate(projectedNextWatering.timestamp, locale) : "";
 
   return (
     <div className="grid gap-4">
@@ -194,7 +197,7 @@ export function GrowChart({
         <div className="mb-3 flex items-center justify-between">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-lime-300/80">{labels.progression}</p>
-            <h3 className="mt-2 text-lg font-semibold text-white">{labels.climateDrift}</h3>
+           
           </div>
           <div className="flex items-center gap-2">
             {(["DAY", "WEEK", "MONTH", "ALL"] as const).map((period) => (
@@ -290,7 +293,7 @@ export function GrowChart({
                             )
                           )
                         }
-                        className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                        className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-3 py-1 text-xs text-lime-100 outline-none"
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -320,13 +323,13 @@ export function GrowChart({
                             )
                           )
                         }
-                        className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                        className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                       />
                     </td>
                     <td className="px-3 py-2">
                       <span
                         title={getVpdTooltip(stage, calculateVpd(entry.tempC, entry.humidity))}
-                        className={`rounded-full px-2 py-1 ${getVpdPillClass(stage, calculateVpd(entry.tempC, entry.humidity))}`}
+                        className={`rounded-full px-3 py-2 ${getVpdPillClass(stage, calculateVpd(entry.tempC, entry.humidity))}`}
                       >
                         {calculateVpd(entry.tempC, entry.humidity).toFixed(2)} kPa
                       </span>
@@ -400,7 +403,7 @@ export function GrowChart({
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-sm text-amber-200/90">{projectedNextWatering ? `Next watering projected: ${nextWateringLabel}` : ""}</p>
+        <p className="mt-2 text-sm text-amber-500/90">{projectedNextWatering ? `Next watering projected: ${nextWateringLabel}` : ""}</p>
 
         {/* Watering progress bar */}
         {projectedNextWatering && (
@@ -411,6 +414,37 @@ export function GrowChart({
             />
           </div>
         )}
+
+        {/* Interval controls */}
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onUpdateInterval?.(Math.max(1, wateringIntervalDays - 1))}
+              className="rounded-full border border-white/10 bg-white/8 p-1.5 text-slate-200 hover:bg-white/12"
+              title="Decrease interval"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+            <span className="text-xs text-lime-100/80 font-semibold">{wateringIntervalDays}d</span>
+            <button
+              type="button"
+              onClick={() => onUpdateInterval?.(wateringIntervalDays + 1)}
+              className="rounded-full border border-white/10 bg-white/8 p-1.5 text-slate-200 hover:bg-white/12"
+              title="Increase interval"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => onWaterNow?.()}
+            className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1.5 text-lime-100 hover:bg-lime-300/20"
+            title="Water now / reset timer"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
+        </div>
 
         <div className="mt-3 rounded-2xl bg-black/20 overflow-auto max-h-[30vh]">
           <table className="w-full border-collapse text-xs text-lime-100">
@@ -452,7 +486,7 @@ export function GrowChart({
                           )
                         )
                       }
-                      className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                      className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -466,7 +500,7 @@ export function GrowChart({
                           )
                         )
                       }
-                      className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                      className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                     />
                   </td>
                   {/* <td className="px-3 py-2">{(entry.amountMl / 1000).toFixed(2)}</td> */}
@@ -480,7 +514,7 @@ export function GrowChart({
                           wateringData.map((row) => (row.id === entry.id ? { ...row, ph: Number(event.target.value) || 0 } : row))
                         )
                       }
-                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -493,7 +527,7 @@ export function GrowChart({
                           wateringData.map((row) => (row.id === entry.id ? { ...row, ec: Number(event.target.value) || 0 } : row))
                         )
                       }
-                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -508,7 +542,7 @@ export function GrowChart({
                           )
                         )
                       }
-                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -523,7 +557,7 @@ export function GrowChart({
                           )
                         )
                       }
-                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                     />
                   </td>
                   <td className="px-3 py-2 text-right">

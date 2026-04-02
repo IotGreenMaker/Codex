@@ -399,14 +399,137 @@
           "tempC": 23,
           "humidity": 46,
           "timestamp": "2026-04-01T19:01:24.771Z"
+        },
+        {
+          "id": "2149b4d9-0420-4ecf-8fac-c2580c6ca10d",
+          "tempC": 25,
+          "humidity": 48,
+          "timestamp": "2026-04-02T08:13:00.000Z"
+        },
+        {
+          "id": "955927fd-9cd6-4e12-966d-6022e7c0be36",
+          "tempC": 24,
+          "humidity": 61,
+          "timestamp": "2026-04-02T11:59:48.251Z"
+        },
+        {
+          "id": "6100b7ba-a374-451d-89a7-7c8a4f40b6a2",
+          "tempC": 24,
+          "humidity": 56,
+          "timestamp": "2026-04-02T12:23:20.222Z"
+        },
+        {
+          "id": "a4bcea72-53fd-4404-897a-30e6a9ed9d92",
+          "tempC": 25.4,
+          "humidity": 50,
+          "timestamp": "2026-04-02T14:01:12.166Z"
+        },
+        {
+          "id": "41245a65-8331-42bf-ace3-9c9abf0d8675",
+          "tempC": 24.7,
+          "humidity": 60,
+          "timestamp": "2026-04-02T14:17:30.787Z"
+        },
+        {
+          "id": "9fa8c3e7-2029-46c8-9411-8b72ca324826",
+          "tempC": 24.7,
+          "humidity": 57,
+          "timestamp": "2026-04-02T15:14:29.826Z"
+        },
+        {
+          "id": "caa897b8-64e5-4adf-9629-bbf0a4c7bc42",
+          "tempC": 24,
+          "humidity": 49,
+          "timestamp": "2026-04-02T15:43:56.345Z"
+        },
+        {
+          "id": "a9213737-0bb0-4df1-bc5e-12542a3a1293",
+          "tempC": 24,
+          "humidity": 58,
+          "timestamp": "2026-04-02T15:52:26.290Z"
+        },
+        {
+          "id": "00c9e489-faba-482e-a180-e7a91a4cd99a",
+          "tempC": 24,
+          "humidity": 54,
+          "timestamp": "2026-04-02T18:21:21.615Z"
+        },
+        {
+          "id": "31fa55e4-df6a-4fa3-8f97-d530917d2671",
+          "timestamp": "2026-04-02T19:01:12.735Z",
+          "tempC": 23,
+          "humidity": 63
         }
       ],
-      "growHumidity": 46,
+      "growHumidity": 63,
       "mediaVolumeL": 10,
       "outsideTempC": 16.7,
       "vegStartedAt": "2026-04-01T18:58:14.228Z",
       "waterInputMl": 1000,
       "wateringData": [
+        {
+          "ec": 0.315,
+          "id": "19ac3137-309a-4e6f-abcb-46c64fecbca6",
+          "ph": 5.9,
+          "amountMl": 100,
+          "timestamp": "2026-01-15T08:30:00.000Z"
+        },
+        {
+          "ec": 0.85,
+          "id": "f63cecfc-ea06-4a5b-93a9-f2041246fa3a",
+          "ph": 5.9,
+          "amountMl": 100,
+          "timestamp": "2026-01-18T15:46:00.000Z"
+        },
+        {
+          "ec": 0.85,
+          "id": "d22eabae-f8cd-40d3-8d82-778c28bd37c4",
+          "ph": 5.9,
+          "amountMl": 200,
+          "timestamp": "2026-01-21T15:47:00.000Z"
+        },
+        {
+          "ec": 0.85,
+          "id": "8f146897-f8c9-4ae9-a914-3c2d2fd32763",
+          "ph": 5.9,
+          "amountMl": 200,
+          "timestamp": "2026-01-24T15:22:00.000Z"
+        },
+        {
+          "ec": 0.85,
+          "id": "1d74d4ab-3082-44ac-af1b-2534c1fb6f03",
+          "ph": 5.9,
+          "amountMl": 300,
+          "timestamp": "2026-01-26T15:51:00.000Z"
+        },
+        {
+          "ec": 0.85,
+          "id": "66144019-f97a-4c46-9057-5997fa3b7279",
+          "ph": 5.9,
+          "amountMl": 500,
+          "timestamp": "2026-01-29T13:27:00.000Z"
+        },
+        {
+          "ec": 0.6,
+          "id": "9b22f204-30c0-4ddf-9d28-ef40905e95d6",
+          "ph": 5.9,
+          "amountMl": 500,
+          "timestamp": "2026-02-01T15:53:00.000Z"
+        },
+        {
+          "ec": 0.6,
+          "id": "a33c2a5f-582c-42d1-baca-3f45777a18e4",
+          "ph": 5.9,
+          "amountMl": 600,
+          "timestamp": "2026-02-04T16:47:00.000Z"
+        },
+        {
+          "id": "e20a6bad-2b07-410c-8b0e-9f8ee1e5522e",
+          "timestamp": "2026-02-07T20:08:00.000Z",
+          "amountMl": 600,
+          "ph": 5.9,
+          "ec": 0.6
+        },
         {
           "ec": 0.906,
           "id": "a6ea37a9-7894-4224-af07-de3ff820a460",
@@ -445,13 +568,6 @@
           "ph": 5.9,
           "amountMl": 1000,
           "timestamp": "2026-03-17T10:08:00.000Z"
-        },
-        {
-          "ec": 0.915,
-          "id": "19ac3137-309a-4e6f-abcb-46c64fecbca6",
-          "ph": 5.9,
-          "amountMl": 1000,
-          "timestamp": "2026-03-20T08:30:00.000Z"
         },
         {
           "ec": 0.98,
@@ -502,7 +618,7 @@
       "waterEc": 0.45,
       "waterPh": 6,
       "lightsOn": "06:00",
-      "growTempC": 21.4,
+      "growTempC": 25,
       "lightType": "blurple_40w",
       "lightsOff": "00:00",
       "mediaType": "Soil",
@@ -535,9 +651,15 @@
           "tempC": 25,
           "humidity": 60,
           "timestamp": "2026-03-24T21:09:28.351Z"
+        },
+        {
+          "id": "90670f6e-9ebc-4006-a98e-d7aaf32920ac",
+          "tempC": 25,
+          "humidity": 58,
+          "timestamp": "2026-04-02T12:20:07.972Z"
         }
       ],
-      "growHumidity": 62,
+      "growHumidity": 58,
       "mediaVolumeL": 13,
       "outsideTempC": 16.7,
       "waterInputMl": 300,
@@ -677,18 +799,18 @@
     },
     {
       "id": "b2e6f826-9efa-42ac-8694-169cfb8ac74b",
-      "stage": "Seedling",
+      "stage": "Veg",
       "waterEc": 0.5,
       "waterPh": 5.8,
       "lightsOn": "03:00",
-      "growTempC": 24,
+      "growTempC": 25,
       "lightType": "blurple_40w",
       "lightsOff": "22:00",
       "mediaType": "Other",
       "stageDays": {
         "veg": 0,
         "bloom": 0,
-        "seedling": 8
+        "seedling": 13
       },
       "startedAt": "2026-03-20T09:00:00.000Z",
       "feedRecipe": {
@@ -738,9 +860,39 @@
           "tempC": 24,
           "humidity": 70,
           "timestamp": "2026-04-01T14:34:43.691Z"
+        },
+        {
+          "id": "eb2943e1-7673-4bab-abf9-48b6fb165ed0",
+          "tempC": 25,
+          "humidity": 57,
+          "timestamp": "2026-04-02T12:20:24.718Z"
+        },
+        {
+          "id": "2aa817ea-7b51-4c93-8154-5a0a16cbc730",
+          "tempC": 25,
+          "humidity": 59,
+          "timestamp": "2026-04-02T14:57:22.449Z"
+        },
+        {
+          "id": "73a4d0c3-79c0-4854-8d8b-3fdbd934f612",
+          "tempC": 25,
+          "humidity": 56,
+          "timestamp": "2026-04-02T15:15:34.446Z"
+        },
+        {
+          "id": "dc712923-c4dc-4bad-bb59-52808de1537d",
+          "tempC": 24,
+          "humidity": 46,
+          "timestamp": "2026-04-02T15:43:22.067Z"
+        },
+        {
+          "id": "cfc58725-96f3-41f8-bd1a-2302af4d1820",
+          "timestamp": "2026-04-02T19:20:26.917Z",
+          "tempC": 25,
+          "humidity": 56
         }
       ],
-      "growHumidity": 70,
+      "growHumidity": 56,
       "mediaVolumeL": 0.2,
       "outsideTempC": 15.1,
       "waterInputMl": 10,
@@ -783,7 +935,7 @@
       "stageDays": {
         "veg": 0,
         "bloom": 0,
-        "seedling": 3
+        "seedling": 13
       },
       "startedAt": "2026-03-20T09:00:00.000Z",
       "feedRecipe": {
