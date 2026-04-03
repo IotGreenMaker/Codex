@@ -293,7 +293,7 @@ export function GrowChart({
                             )
                           )
                         }
-                        className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-3 py-1 text-xs text-lime-100 outline-none"
+                        className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -308,7 +308,7 @@ export function GrowChart({
                             )
                           )
                         }
-                        className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                        className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
                       />
                     </td>
                     <td className="px-3 py-2">

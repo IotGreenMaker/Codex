@@ -70,7 +70,7 @@ export async function appendConversationMessages({
   const next: ConversationState = {
     ...current,
     updatedAt: new Date().toISOString(),
-    messages: [...current.messages, ...messages].slice(-400)
+    messages: [...current.messages, ...messages].slice(-5)
   };
   const file = getConversationFile(plantId, assistantKey);
   await writeFile(file, JSON.stringify(next, null, 2), "utf-8");

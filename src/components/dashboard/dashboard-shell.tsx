@@ -6,10 +6,12 @@ import { GrowChart } from "@/components/charts/grow-chart";
 import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel-livekit";
 import { VPDChart } from "@/components/dashboard/vpd-chart";
 import { PlantTimelineCalendar } from "@/components/dashboard/plant-timeline-calendar";
+import { FilePicker } from "@/components/dashboard/file-picker";
 import { calculateVpd, getCycleSummary, getDetailedCycleSummary, getVpdBand } from "@/lib/grow-math";
 import { Locale, translations } from "@/lib/i18n";
 import { dailyLogs, createNewPlant } from "@/lib/mock-data";
 import { generateUUID } from "@/lib/uuid";
+import { readExcelFile, saveAllData, hasFileAccess } from "@/lib/excel-storage";
 import type { GrowStage, PlantProfile } from "@/lib/types";
 
 type DashboardShellProps = {

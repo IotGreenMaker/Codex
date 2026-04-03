@@ -429,31 +429,23 @@ export function AiAssistantPanel({
         <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">
           {t.aiConversation}
         </p>
-
-        <div className="flex items-center gap-2">
-          {/* Speaker indicator */}
-          {isPlaying && (
-            <div className="animate-pulse">
-              <Volume2 className="h-6 w-6 text-lime-300/70" />
-            </div>
-          )}
-
-        
-        </div>
       </div>
 
       <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-4">
-        <div className="flex items-center justify-between gap-3 mb-3">
+        {/* <div className="flex items-center justify-between gap-3 mb-3">
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-200">
             Conversation
           </p>
-        </div>
+        </div> */}
 
         {/* Error message */}
         {micError && <p className="mb-2 text-xs text-amber-300">{micError}</p>}
 
         {/* Chat messages */}
-        <div className="mt-3 max-h-[36rem] space-y-3 overflow-y-auto pr-1" ref={chatContainerRef}>
+        <div
+          className="mt-3 max-h-[36rem] space-y-3 overflow-y-auto pr-1"
+          ref={chatContainerRef}
+        >
           {messages.length === 0 ? (
             <p className="text-xs text-slate-400 italic">
               Click the microphone to start a natural conversation...
@@ -471,25 +463,36 @@ export function AiAssistantPanel({
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                   {message.role === "assistant" ? "🤖 Assistant " : "You"}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-slate-100">{message.content}</p>
+                <p className="mt-1 text-sm leading-6 text-slate-100">
+                  {message.content}
+                </p>
               </div>
             ))
           )}
         </div>
-          {/* Connection status */}
-          <span
-            className={`rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest ${
-              connectionState === "connected"
-                ? "bg-lime-300/14 text-lime-100"
-                : connectionState === "failed"
-                  ? "bg-red-400/12 text-red-100"
-                  : connectionState === "connecting"
-                    ? "bg-white/10 text-slate-200"
-                    : "bg-white/6 text-slate-400"
-            }`}
-          >
-            {connectionState}
-          </span>
+        {/* Connection status */}
+        <span 
+          className={` flex rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest ${
+            connectionState === "connected"
+              ? "bg-lime-300/14 text-lime-100"
+              : connectionState === "failed"
+                ? "bg-red-400/12 text-red-100"
+                : connectionState === "connecting"
+                  ? "bg-white/10 text-slate-200"
+                  : "bg-white/6 text-slate-400"
+          }`}
+        >
+          {connectionState}
+
+          <div className="flex items-center gap-2">
+            {/* Speaker indicator */}
+            {isPlaying && (
+              <div className="animate-pulse">
+                <Volume2 className="h-4 w-4 text-green-500/60" />
+              </div>
+            )}
+          </div>
+        </span>
       </div>
 
       {/* Quick text input with integrated voice */}
@@ -530,7 +533,7 @@ export function AiAssistantPanel({
                     background:
                       "radial-gradient(circle at 60% 40%, rgba(158,255,102,0.22) 40%, rgba(178,107,255,0.18) 100%)",
                     boxShadow:
-                      "0 0 30px 8px rgba(178,107,255,0.12), 0 0 60px 16px rgba(158,255,102,0.12)"
+                      "0 0 30px 8px rgba(178,107,255,0.12), 0 0 60px 16px rgba(158,255,102,0.12)",
                   }}
                 />
                 <Mic className="relative h-4 w-4" />

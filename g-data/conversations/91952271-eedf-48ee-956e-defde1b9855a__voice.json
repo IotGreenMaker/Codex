@@ -1,7 +1,7 @@
 {
   "plantId": "91952271-eedf-48ee-956e-defde1b9855a",
   "assistantKey": "voice",
-  "updatedAt": "2026-04-01T21:34:08.740Z",
+  "updatedAt": "2026-04-02T21:08:33.230Z",
   "messages": [
     {
       "id": "user-1775074707918",
@@ -185,6 +185,74 @@
       "createdAt": "2026-04-01T21:34:08.715Z",
       "role": "assistant",
       "content": "The last watering was 2 days ago, with 1000ml of water, pH 5.9, and EC 0.85.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1775163432972",
+      "createdAt": "2026-04-02T20:57:12.972Z",
+      "role": "user",
+      "content": "hey what's up do you hear me",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1775163433974",
+      "createdAt": "2026-04-02T20:57:15.109Z",
+      "role": "assistant",
+      "content": "I'm here and ready to help with your Sour Diesel plant. Everything looks good so far, with optimal VPD and the last watering 3 days ago. What's on your mind, do you need any advice or want to make some adjustments?",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1775163889326",
+      "createdAt": "2026-04-02T21:04:49.326Z",
+      "role": "user",
+      "content": "hey what's up do you hear me okay",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1775163890329",
+      "createdAt": "2026-04-02T21:04:50.936Z",
+      "role": "assistant",
+      "content": "I can hear you just fine. Your Sour Diesel is currently in the bloom stage, and considering the high VPD, you may want to monitor the temperature and humidity closely to ensure optimal conditions.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1775164070677",
+      "createdAt": "2026-04-02T21:07:50.677Z",
+      "role": "user",
+      "content": "where's the current selected plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1775164071679",
+      "createdAt": "2026-04-02T21:07:52.316Z",
+      "role": "assistant",
+      "content": "The current selected plant is Sour Diesel, which is in the Bloom stage. It's been 77 days since the start of the grow, but the exact number of days in the Bloom stage is not specified.",
+      "source": "voice",
+      "meta": {
+        "model": "llama-3.3-70b-versatile (Groq)"
+      }
+    },
+    {
+      "id": "user-1775164111305",
+      "createdAt": "2026-04-02T21:08:31.305Z",
+      "role": "user",
+      "content": "what can you tell me about the current selected plant",
+      "source": "voice"
+    },
+    {
+      "id": "assistant-1775164112307",
+      "createdAt": "2026-04-02T21:08:33.223Z",
+      "role": "assistant",
+      "content": "The currently selected plant, Sour Diesel, is in the Bloom stage and has been in this stage for 34 days, given it's been 77 days since the start. It's being grown in a 10L Light Mix container and is receiving light from a Phlizon PL1000 at 75% dimmer setting, on a 12/12 schedule.",
       "source": "voice",
       "meta": {
         "model": "llama-3.3-70b-versatile (Groq)"
