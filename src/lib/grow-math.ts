@@ -1,20 +1,37 @@
 import type { GrowStage, NutrientMix, PlantProfile } from "@/lib/types";
+import { VPD_TARGETS } from "@/lib/config";
 
+/**
+ * Calculate Vapor Pressure Deficit (VPD) using the Magnus formula
+ * 
+ * VPD is the difference between the amount of moisture in the air and how much
+ * moisture the air can hold when saturated. It's a critical metric for plant growth.
+ * 
+ * Formula:
+ * - SVP (Saturation Vapor Pressure) = 0.6108 * exp((17.27 * T) / (T + 237.3))
+ * - VP (Actual Vapor Pressure) = SVP * (RH / 100)
+ * - VPD = SVP - VP
+ * 
+ * Constants:
+ * - 0.6108: Saturation vapor pressure at 0°C in kPa
+ * - 17.27: Dimensionless coefficient for water vapor
+ * - 237.3: Temperature offset in °C
+ * 
+ * @param tempC - Temperature in Celsius
+ * @param humidity - Relative humidity as percentage (0-100)
+ * @returns VPD in kPa (kilopascals)
+ */
 export function calculateVpd(tempC: number, humidity: number) {
+  // Magnus formula for saturation vapor pressure
   const saturationVaporPressure = 0.6108 * Math.exp((17.27 * tempC) / (tempC + 237.3));
+  // Actual vapor pressure based on relative humidity
   const vaporPressure = saturationVaporPressure * (humidity / 100);
+  // VPD = difference between saturated and actual
   return Number((saturationVaporPressure - vaporPressure).toFixed(2));
 }
 
 export function getVpdBand(stage: GrowStage, vpd: number) {
-  const targets: Record<GrowStage, [number, number]> = {
-    Seedling: [0.4, 0.8],
-    Veg: [0.8, 1.2],
-    Bloom: [1.2, 1.5],
-    Dry: [0.9, 1.2],
-    Cure: [0.6, 1]
-  };
-
+  const targets = VPD_TARGETS as Record<GrowStage, [number, number]>;
   const [min, max] = targets[stage];
 
   if (vpd < min) {
@@ -36,74 +53,73 @@ export function getDaysSinceStart(startedAt: string) {
 }
 
 export function getCycleSummary(plant: PlantProfile) {
-  if (plant.stageDays) {
-    const totalDays = Math.max(0, plant.stageDays.seedling) + Math.max(0, plant.stageDays.veg) + Math.max(0, plant.stageDays.bloom);
-    const stageMap = {
-      Seedling: Math.max(0, plant.stageDays.seedling),
-      Veg: Math.max(0, plant.stageDays.veg),
-      Bloom: Math.max(0, plant.stageDays.bloom),
-      Dry: 0,
-      Cure: 0
-    } as const;
-    return {
-      totalDays,
-      daysInStage: stageMap[plant.stage]
-    };
+  // Always calculate from timestamps for consistency
+  const now = new Date();
+  const startedAt = new Date(plant.startedAt);
+  const totalDays = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24)));
+
+  // Calculate days in current stage from timestamps
+  if (plant.stage === "Seedling" || !plant.vegStartedAt) {
+    return { totalDays, daysInStage: totalDays };
   }
 
-  const totalDays = typeof plant.totalDaysOverride === "number" ? Math.max(0, Math.floor(plant.totalDaysOverride)) : getDaysSinceStart(plant.startedAt);
-  const stageThresholds: Record<GrowStage, number> = {
-    Seedling: 14,
-    Veg: 42,
-    Bloom: 63,
-    Dry: 14,
-    Cure: 21
-  };
+  if (plant.stage === "Veg") {
+    const vegStarted = new Date(plant.vegStartedAt);
+    const daysInVeg = Math.max(0, Math.floor((now.getTime() - vegStarted.getTime()) / (1000 * 60 * 60 * 24)));
+    return { totalDays, daysInStage: daysInVeg };
+  }
 
-  const daysInStage = Math.min(totalDays, stageThresholds[plant.stage]);
+  if (plant.stage === "Bloom") {
+    if (plant.bloomStartedAt) {
+      const bloomStarted = new Date(plant.bloomStartedAt);
+      const daysInBloom = Math.max(0, Math.floor((now.getTime() - bloomStarted.getTime()) / (1000 * 60 * 60 * 24)));
+      return { totalDays, daysInStage: daysInBloom };
+    }
+  }
 
-  return {
-    totalDays,
-    daysInStage
-  };
+  return { totalDays, daysInStage: 0 };
 }
 
 export function getDetailedCycleSummary(plant: PlantProfile) {
-  if (plant.stageDays) {
-    const daysInSeedling = Math.max(0, plant.stageDays.seedling);
-    const daysInVeg = Math.max(0, plant.stageDays.veg);
-    const daysInBloom = Math.max(0, plant.stageDays.bloom);
+  // Always calculate from timestamps for consistency
+  const now = new Date();
+  const startedAt = new Date(plant.startedAt);
+  const totalDays = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24)));
 
-    return {
-      totalDays: daysInSeedling + daysInVeg + daysInBloom,
-      daysInVeg,
-      daysInBloom,
-      daysInSeedling,
-      stage: plant.stage
-    };
+  let seedlingDays = 0;
+  let vegDays = 0;
+  let bloomDays = 0;
+
+  // Seedling: from startedAt to vegStartedAt (or now if veg never started)
+  if (plant.vegStartedAt) {
+    const vegStarted = new Date(plant.vegStartedAt);
+    seedlingDays = Math.max(0, Math.floor((vegStarted.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24)));
+  } else {
+    seedlingDays = totalDays;
   }
 
-  const totalDays = typeof plant.totalDaysOverride === "number" ? Math.max(0, Math.floor(plant.totalDaysOverride)) : getDaysSinceStart(plant.startedAt);
-  const bloomStart = plant.bloomStartedAt ? new Date(plant.bloomStartedAt) : null;
-  const start = new Date(plant.startedAt);
-  const now = new Date();
+  // Veg: from vegStartedAt to bloomStartedAt (or now if bloom never started)
+  if (plant.vegStartedAt) {
+    const vegStarted = new Date(plant.vegStartedAt);
+    if (plant.bloomStartedAt) {
+      const bloomStarted = new Date(plant.bloomStartedAt);
+      vegDays = Math.max(0, Math.floor((bloomStarted.getTime() - vegStarted.getTime()) / (1000 * 60 * 60 * 24)));
+    } else {
+      vegDays = Math.max(0, Math.floor((now.getTime() - vegStarted.getTime()) / (1000 * 60 * 60 * 24)));
+    }
+  }
 
-  let daysInBloom = 0;
-  let daysInVeg = 0;
-
-  if (bloomStart && !Number.isNaN(bloomStart.getTime())) {
-    daysInBloom = Math.max(0, Math.floor((now.getTime() - bloomStart.getTime()) / (1000 * 60 * 60 * 24)));
-    daysInVeg = Math.max(0, Math.floor((bloomStart.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
-  } else if (plant.stage === "Bloom") {
-    daysInBloom = totalDays;
-  } else {
-    daysInVeg = totalDays;
+  // Bloom: from bloomStartedAt to now
+  if (plant.bloomStartedAt) {
+    const bloomStarted = new Date(plant.bloomStartedAt);
+    bloomDays = Math.max(0, Math.floor((now.getTime() - bloomStarted.getTime()) / (1000 * 60 * 60 * 24)));
   }
 
   return {
-    totalDays,
-    daysInVeg,
-    daysInBloom,
+    totalDays: seedlingDays + vegDays + bloomDays,
+    daysInVeg: vegDays,
+    daysInBloom: bloomDays,
+    daysInSeedling: seedlingDays,
     stage: plant.stage
   };
 }

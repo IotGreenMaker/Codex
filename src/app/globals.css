@@ -53,12 +53,91 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(158, 255, 102, 0.363), transparent 28%),
-    radial-gradient(circle at 86% 18%, rgba(179, 107, 255, 0.322), transparent 26%),
-    radial-gradient(circle at 70% 88%, rgba(250, 148, 76, 0.315), transparent 24%),
-    linear-gradient(180deg, #17122e 0%, #130c25 36%, #241570 100%);
+  background: linear-gradient(180deg, #17122e 0%, #130c25 36%, #241570 100%);
   color: #f4ffe7;
+  overflow-x: hidden;
+}
+
+/* Animated gradient orbs - positioned behind all content */
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+.bg-orb--green {
+  width: 500px;
+  height: 500px;
+  background: rgba(158, 255, 102, 0.363);
+  top: 8%;
+  left: 12%;
+  animation: orb-float-green 20s ease-in-out infinite;
+}
+
+.bg-orb--purple {
+  width: 550px;
+  height: 550px;
+  background: rgba(179, 107, 255, 0.322);
+  top: 18%;
+  right: 14%;
+  animation: orb-float-purple 25s ease-in-out infinite;
+}
+
+.bg-orb--orange {
+  width: 450px;
+  height: 450px;
+  background: rgba(250, 148, 76, 0.315);
+  bottom: 12%;
+  left: 30%;
+  animation: orb-float-orange 18s ease-in-out infinite;
+}
+
+@keyframes orb-float-green {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(80px, 40px) scale(1.08);
+  }
+  50% {
+    transform: translate(40px, 100px) scale(0.95);
+  }
+  75% {
+    transform: translate(-30px, 50px) scale(1.05);
+  }
+}
+
+@keyframes orb-float-purple {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-60px, 70px) scale(1.06);
+  }
+  50% {
+    transform: translate(-100px, 20px) scale(0.92);
+  }
+  75% {
+    transform: translate(-40px, -50px) scale(1.1);
+  }
+}
+
+@keyframes orb-float-orange {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(70px, -60px) scale(1.1);
+  }
+  50% {
+    transform: translate(120px, -20px) scale(0.96);
+  }
+  75% {
+    transform: translate(50px, 30px) scale(1.04);
+  }
 }
 
 a {

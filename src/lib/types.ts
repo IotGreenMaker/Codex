@@ -1,4 +1,35 @@
-export type GrowStage = "Seedling" | "Veg" | "Bloom" | "Dry" | "Cure";
+export type GrowStage = "Seedling" | "Veg" | "Bloom";
+
+export type LightType = "blurple_40w" | "panel_100w" | "custom_led" | "custom_hps" | "other";
+
+export type LightProfile = {
+  id: string;
+  type: string;
+  watts: number;
+  hasDimmer: boolean;
+  dimmerPercent?: number;
+  ppfdEstimated?: number;
+  ppfdMin?: number;
+  ppfdMax?: number;
+  lightsOn: string;
+  lightsOff: string;
+};
+
+export const LIGHT_TYPE_LABELS: Record<LightType, string> = {
+  blurple_40w: "Blurple 40W (Veg)",
+  panel_100w: "Panel 100W (Bloom)",
+  custom_led: "Custom LED",
+  custom_hps: "Custom HPS/MH",
+  other: "Other Light"
+};
+
+export const LIGHT_TYPE_DEFAULT_WATTS: Record<LightType, number> = {
+  blurple_40w: 40,
+  panel_100w: 100,
+  custom_led: 100,
+  custom_hps: 600,
+  other: 100
+};
 
 export type WateringEntry = {
   id: string;
@@ -49,6 +80,8 @@ export type PlantProfile = {
   lightDimmerPercent?: number;
   lightLampName?: string;
   lightLampWatts?: number;
+  lights?: LightProfile[];
+  activeLightId?: string;
   totalDaysOverride?: number;
   containerVolumeL: number;
   mediaVolumeL: number;

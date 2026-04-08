@@ -14,9 +14,7 @@ export interface VPDInfo {
 const VPD_RANGES: Record<GrowStage, [number, number]> = {
   Seedling: [0.4, 0.8],
   Veg: [0.8, 1.2],
-  Bloom: [1.2, 1.5],
-  Dry: [0.9, 1.2],
-  Cure: [0.6, 1.0]
+  Bloom: [1.2, 1.5]
 };
 
 export function getVPDStatus(vpd: number, stage: GrowStage): VPDInfo {

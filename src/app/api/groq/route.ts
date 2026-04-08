@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get response from Groq
+    // Get response from Groq (plantContext is already built by the caller)
     const response = await getAIResponseFromGroq(
       message,
       history,
