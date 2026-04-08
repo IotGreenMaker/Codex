@@ -21,23 +21,24 @@ import type { Locale } from "@/lib/i18n";
 
 type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
 
-type GrowChartProps = {
-  plantId: string;
-  logs: GrowLogEntry[];
-  wateringData: WateringEntry[];
-  climateData: ClimateEntry[];
-  stage: GrowStage;
-  locale: Locale;
-  wateringIntervalDays: number;
-  onWateringDataChange: (next: WateringEntry[]) => void;
-  onClimateDataChange: (next: ClimateEntry[]) => void;
-  onUpdateInterval?: (intervalDays: number) => void;
-  onWaterNow?: () => void;
-  labels: {
-    progression: string;
-    tempHumidityVpd: string;
+  type GrowChartProps = {
+    plantId: string;
+    logs: GrowLogEntry[];
+    wateringData: WateringEntry[];
+    climateData: ClimateEntry[];
+    stage: GrowStage;
+    locale: Locale;
+    wateringIntervalDays: number;
+    onWateringDataChange: (next: WateringEntry[]) => void;
+    onClimateDataChange: (next: ClimateEntry[]) => void;
+    onUpdateInterval?: (intervalDays: number) => void;
+    onWaterNow?: () => void;
+    onOpenVpdChart?: () => void;
+    labels: {
+      progression: string;
+      tempHumidityVpd: string;
+    };
   };
-};
 
 export function GrowChart({
   plantId,
@@ -51,6 +52,7 @@ export function GrowChart({
   onClimateDataChange,
   onUpdateInterval,
   onWaterNow,
+  onOpenVpdChart,
   labels
 }: GrowChartProps) {
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("WEEK");
@@ -200,6 +202,16 @@ export function GrowChart({
            
           </div>
           <div className="flex items-center gap-2">
+            {onOpenVpdChart && (
+              <button
+                type="button"
+                onClick={onOpenVpdChart}
+                className="rounded-lg px-2 py-1 ml-5 text-xs font-semibold  border border-lime-300/20 bg-slate-300/20 text-lime-200/50 hover:bg-lime-300/25 transition flex items-center gap-1"
+                title="Open VPD Chart"
+              >
+                VPD CHART
+              </button>
+            )}
             {(["DAY", "WEEK", "MONTH", "ALL"] as const).map((period) => (
               <button
                 key={period}
@@ -226,10 +238,10 @@ export function GrowChart({
                   }
                 ])
               }
-              className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1.5 text-lime-100"
+              className="rounded-lg border-2 font-bold  border-lime-300/70 bg-lime-300/20 p-3 text-slate-300 hover:bg-lime-300/60"
               title="Add climate datapoint"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 " />
             </button>
           </div>
         </div>
@@ -268,7 +280,7 @@ export function GrowChart({
 
         <div className="mt-4 rounded-2xl bg-black/20 overflow-auto max-h-[30vh]">
           <table className="w-full border-collapse text-xs text-lime-100">
-            <thead className="bg-black/25">
+            <thead className="bg-black/25 sticky top-0 z-10">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
                 <th className="px-3 py-2">Weather</th>
                 <th className="px-3 py-2">Temp C</th>
@@ -368,7 +380,7 @@ export function GrowChart({
                 }
               ])
             }
-            className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1.5 text-lime-100"
+            className="rounded-lg border-2 font-bold  border-lime-300/70 bg-lime-300/20 p-3 text-slate-300 hover:bg-lime-300/60"
             title="Add watering datapoint"
           >
             <Plus className="h-4 w-4" />
@@ -448,7 +460,7 @@ export function GrowChart({
 
         <div className="mt-3 rounded-2xl bg-black/20 overflow-auto max-h-[30vh]">
           <table className="w-full border-collapse text-xs text-lime-100">
-            <thead className="bg-black/25">
+            <thead className="bg-black/25 sticky top-0 z-10">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
                 <th className="px-3 py-2">Time</th>
                 <th className="px-3 py-2">ml</th>
@@ -590,9 +602,7 @@ function getIdealVpd(stage: GrowStage) {
   const map: Record<GrowStage, { min: number; max: number }> = {
     Seedling: { min: 0.4, max: 0.8 },
     Veg: { min: 0.8, max: 1.2 },
-    Bloom: { min: 1.2, max: 1.5 },
-    Dry: { min: 0.9, max: 1.2 },
-    Cure: { min: 0.6, max: 1.0 }
+    Bloom: { min: 1.2, max: 1.5 }
   };
   return map[stage];
 }

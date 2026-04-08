@@ -1,4 +1,5 @@
 import Groq from "groq-sdk";
+import type { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -22,6 +23,11 @@ You can READ all plant data shown above and WRITE updates when the user requests
 - Plant changes (stage, strain, light settings)
 - Timing adjustments (watering intervals, light schedule)
 - You can SWITCH between plants when the user mentions a plant name
+- You can CREATE new plants when the user asks to add a plant
+- You can READ and UPDATE the number of days in each stage (seedling, veg, bloom)
+  - When user asks "how many days in veg" or similar, respond with the current value
+  - When user says "mark 24 days in veg" or "set veg to 24 days", update stageDays.veg
+  - Stage is determined by which stageDays value is > 0 (seedling if only seedling > 0, veg if veg > 0, bloom if bloom > 0)
 
 ## HOW TO RESPOND WITH DATA:
 Always respond with natural language. When updating data, include a JSON block with the updates.
@@ -45,7 +51,7 @@ When user mentions watering or recording water measurements:
 When user provides temperature/humidity readings:
 \`\`\`json
 {
-  "message": "Growing room conditions recorded: 25°C and 62% humidity - perfect VPD!",
+  "message": "Growing room conditions recorded: 25C and 62% humidity - perfect VPD!",
   "climate": {
     "tempC": 25,
     "humidity": 62
@@ -68,14 +74,77 @@ When user asks to change stage, light settings, or other plant properties:
 }
 \`\`\`
 
-### 4. SWITCHING PLANTS:
+### 3b. UPDATING STAGE DAYS:
+When user asks to set or update the number of days in a stage (e.g., "mark 24 days in veg", "set seedling to 15 days"):
+\`\`\`json
+{
+  "message": "I've updated vegging to 24 days. Your plant is now in Veg stage.",
+  "plant": {
+    "stageDays": {
+      "seedling": 14,
+      "veg": 24,
+      "bloom": 0
+    },
+    "stage": "Veg",
+    "vegStartedAt": "2024-01-15T09:00:00.000Z"
+  }
+}
+\`\`\`
+Note: When setting veg or bloom days > 0 for the first time, also set the stage accordingly and include vegStartedAt or bloomStartedAt with the current date.
+
+### 4. CREATING NEW PLANTS:
+When user asks to add/create a new plant, create it with the given name. DEFAULT to "Seedling" stage unless the user explicitly specifies a different stage (e.g., "in Bloom", "in Veg").
+\`\`\`json
+{
+  "message": "New plant added: Sour Diesel in Seedling stage.",
+  "createPlant": {
+    "strainName": "Sour Diesel",
+    "stage": "Seedling"
+  }
+}
+\`\`\`
+
+If the user specifies a stage, use that stage:
+\`\`\`json
+{
+  "message": "New plant added: Sour Diesel in Bloom stage.",
+  "createPlant": {
+    "strainName": "Sour Diesel",
+    "stage": "Bloom"
+  }
+}
+\`\`\`
+
+### 5. SWITCHING PLANTS:
 When user mentions a different plant by name, switch to it:
 \`\`\`json
 {
-  "message": "Switched to My First Plant. This plant is currently in Seedling stage.",
+  "message": "I've switched to My First Plant. This plant is currently in Seedling stage.",
   "selectPlant": "My First Plant"
 }
 \`\`\`
+
+### 6. TOGGLING NOTIFICATIONS:
+When user asks to turn on/off watering notifications or asks about notification status:
+- To enable notifications:
+\`\`\`json
+{
+  "message": "Watering reminders are now enabled! I'll remind you when it's time to water.",
+  "notifications": {
+    "enabled": true
+  }
+}
+\`\`\`
+- To disable notifications:
+\`\`\`json
+{
+  "message": "Watering reminders have been turned off.",
+  "notifications": {
+    "enabled": false
+  }
+}
+\`\`\`
+- When user asks about notification status, respond naturally and include the current state (no JSON needed unless they want to change it).
 
 ## GUIDELINES:
 - ALWAYS provide natural language response first
@@ -85,6 +154,8 @@ When user mentions a different plant by name, switch to it:
 - Suggest adjustments based on VPD ranges and plant stage
 - Only log data explicitly mentioned or asked for
 - When switching plants, use the plant name exactly as shown in AVAILABLE PLANTS
+- When creating plants, ALWAYS default to "Seedling" stage unless the user explicitly says otherwise (e.g., "in Bloom", "in Veg")
+- Do NOT ask the user what stage to use - just use Seedling by default
 
 ## EXAMPLE CONVERSATION:
 User: "I just watered 1200ml, pH is 5.8, EC 1.35"
@@ -96,6 +167,19 @@ You:
     "amountMl": 1200,
     "ph": 5.8,
     "ec": 1.35
+  }
+}
+\`\`\`
+
+## EXAMPLE PLANT CREATION:
+User: "Add a new plant called Sour Diesel"
+You:
+\`\`\`json
+{
+  "message": "New plant added: Sour Diesel in Seedling stage.",
+  "createPlant": {
+    "strainName": "Sour Diesel",
+    "stage": "Seedling"
   }
 }
 \`\`\`
@@ -125,7 +209,7 @@ You:
     const response = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       max_tokens: 512,
-      messages: messages as any,
+      messages: messages as ChatCompletionMessageParam[],
     });
 
     const content = response.choices[0]?.message?.content;

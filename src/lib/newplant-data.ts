@@ -13,7 +13,9 @@ const defaultFeedRecipe = {
   additives: [{ id: generateUUID(), label: "Silica", amountMl: 5 }]
 };
 
-function createFeedRecipe(overrides?: Partial<typeof defaultFeedRecipe>) {
+export { defaultFeedRecipe };
+
+export function createFeedRecipe(overrides?: Partial<typeof defaultFeedRecipe>) {
   return {
     ...defaultFeedRecipe,
     ...overrides,
@@ -21,14 +23,18 @@ function createFeedRecipe(overrides?: Partial<typeof defaultFeedRecipe>) {
   };
 }
 
-// Template for creating new plants (NOT auto-created)
+// Template for creating new plants
 export function createNewPlant(overrides?: Partial<PlantProfile>): PlantProfile {
+  const now = new Date();
+  const today = now.toISOString();
+  
   return {
     id: generateUUID(),
     strainName: "New Plant",
-    startedAt: new Date().toISOString(),
+    startedAt: today,
     stage: "Seedling",
-    bloomStartedAt: "",
+    vegStartedAt: undefined,
+    bloomStartedAt: undefined,
     lightSchedule: "18 / 6",
     lightsOn: "06:00",
     lightsOff: "00:00",
@@ -41,15 +47,14 @@ export function createNewPlant(overrides?: Partial<PlantProfile>): PlantProfile 
     mediaType: "Soil",
     outsideTempC: 20,
     outsideHumidity: 50,
-    growTempC: 24,
-    growHumidity: 60,
+    growTempC: 25,
+    growHumidity: 45,
     waterInputMl: 500,
     waterPh: 6.0,
     waterEc: 1.0,
-    lastWateredAt: new Date().toISOString(),
+    lastWateredAt: today,
     wateringIntervalDays: 2,
     stageDays: { seedling: 1, veg: 0, bloom: 0 },
-    seedlingStartedAt: new Date().toISOString(),
     wateringData: [],
     climateData: [],
     feedRecipe: createFeedRecipe(),
@@ -57,11 +62,25 @@ export function createNewPlant(overrides?: Partial<PlantProfile>): PlantProfile 
   };
 }
 
-// DO NOT auto-create plants - loading from Supabase/local storage only
-export const plantProfiles: PlantProfile[] = [];
+// Sample daily log entry
+export const dailyLogs: GrowLogEntry[] = [
+  {
+    id: generateUUID(),
+    timestamp: new Date().toISOString(),
+    outsideTempC: 22,
+    outsideHumidity: 55,
+    growTempC: 25,
+    growHumidity: 60,
+    vpdKpa: calculateVpd(25, 60),
+    waterInputMl: 500,
+    waterPh: 6.0,
+    waterEc: 1.2,
+    note: "Sample log entry"
+  }
+];
 
-export const dailyLogs: GrowLogEntry[] = [];
-
+// Sample voice interactions (empty for now)
 export const voiceInteractions: VoiceInteraction[] = [];
 
+// Sample nutrient mix
 export const vegMix = calculateNutrientPlan("Veg", 10);

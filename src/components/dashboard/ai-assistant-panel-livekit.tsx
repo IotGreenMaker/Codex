@@ -6,7 +6,6 @@ import type { Locale } from "@/lib/i18n";
 import { translations } from "@/lib/i18n";
 import { speak } from "@/lib/tts";
 import { buildGrowContext } from "@/lib/buildGrowContext";
-import { getPreviousContext } from "@/lib/supabase-client";
 import { generateUUID } from "@/lib/uuid";
 import type { PlantProfile } from "@/lib/types";
 
@@ -28,7 +27,9 @@ export function AiAssistantPanel({
   onPatchPlant,
   onSelectPlant,
   onUpdateWateringData,
-  onUpdateClimateData
+  onUpdateClimateData,
+  onToggleNotification,
+  notificationsEnabled = false
 }: {
   locale: Locale;
   plant: PlantProfile;
@@ -39,6 +40,8 @@ export function AiAssistantPanel({
   onSelectPlant?: (plantId: string) => void;
   onUpdateWateringData?: (data: PlantProfile["wateringData"]) => void;
   onUpdateClimateData?: (data: PlantProfile["climateData"]) => void;
+  onToggleNotification?: (enabled: boolean) => void;
+  notificationsEnabled?: boolean;
 }) {
   const t = translations[locale];
   const [isConnected, setIsConnected] = useState(false);
@@ -177,7 +180,7 @@ export function AiAssistantPanel({
       const latestClimate = plant.climateData?.[plant.climateData.length - 1];
       const latestWatering = plant.wateringData?.[plant.wateringData.length - 1];
       
-      const plantContext = buildGrowContext(plant, plants);
+      const plantContext = buildGrowContext(plant, plants, notificationsEnabled);
 
       // Use Groq API for AI response
       const response = await fetch("/api/groq", {
@@ -277,6 +280,11 @@ export function AiAssistantPanel({
             onSelectPlant(selectedPlant.id);
           }
         }
+
+        // Handle notification toggle
+        if (parsedData.notifications && typeof parsedData.notifications.enabled === "boolean" && onToggleNotification) {
+          onToggleNotification(parsedData.notifications.enabled);
+        }
       }
 
       const aiMessage: ChatMessage = {
@@ -347,24 +355,6 @@ export function AiAssistantPanel({
 
   async function loadConversation() {
     try {
-      // Try to load from Supabase first
-      try {
-        const supabaseHistory = await getPreviousContext(plant.id, 50);
-        if (supabaseHistory && supabaseHistory.length > 0) {
-          const restored = supabaseHistory.map((msg: any) => ({
-            id: `${msg.role}-${msg.created_at}`,
-            role: msg.role as "user" | "assistant",
-            content: msg.content,
-            source: "voice" as const,
-            createdAt: msg.created_at
-          })) satisfies ChatMessage[];
-          setMessages(restored);
-          return;
-        }
-      } catch (supabaseError) {
-        console.log("Supabase not available, falling back to local API");
-      }
-
       // Fallback to local API
       const response = await fetch(
         `/api/conversations?plantId=${encodeURIComponent(plant.id)}&assistantKey=voice`,
@@ -432,18 +422,12 @@ export function AiAssistantPanel({
       </div>
 
       <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-4">
-        {/* <div className="flex items-center justify-between gap-3 mb-3">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-200">
-            Conversation
-          </p>
-        </div> */}
-
         {/* Error message */}
         {micError && <p className="mb-2 text-xs text-amber-300">{micError}</p>}
 
-        {/* Chat messages */}
+        {/* Chat messages - responsive height */}
         <div
-          className="mt-3 max-h-[36rem] space-y-3 overflow-y-auto pr-1"
+          className="mt-3 max-h-[50vh] sm:max-h-[36rem] space-y-3 overflow-y-auto pr-1"
           ref={chatContainerRef}
         >
           {messages.length === 0 ? (
