@@ -2,8 +2,14 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { PlantProfile } from "@/lib/types";
-import { createClient } from "@supabase/supabase-js";
 import { generateUUID } from "@/lib/uuid";
+import {
+  getAllPlants,
+  savePlant,
+  deletePlant as deletePlantFromIndexedDB,
+  getSetting,
+  setSetting
+} from "@/lib/indexeddb-storage";
 
 export type PlantsState = {
   plants: PlantProfile[];
@@ -17,18 +23,6 @@ const defaultState: PlantsState = {
   plants: [],
   activePlantId: ""
 };
-
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
-
-function getSupabaseClient() {
-  if (!supabaseUrl || !supabaseKey) {
-    console.warn("Supabase not configured - using local storage only");
-    return null;
-  }
-  return createClient(supabaseUrl, supabaseKey);
-}
 
 function isValidUUID(id: string): boolean {
   if (!id || typeof id !== "string") return false;
@@ -105,35 +99,15 @@ export async function readPlantsState(): Promise<PlantsState> {
   await mkdir(dataDir, { recursive: true });
 
   try {
-    // Try to fetch from Supabase first
-    const supabase = getSupabaseClient();
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from("plants")
-          .select("*")
-          .order("created_at", { ascending: true });
-
-        if (!error && data && data.length > 0) {
-          console.log("[Plants] Loaded from Supabase:", data.length, "plants");
-          const validPlants = data
-            .map((p) => {
-              // If plant has nested data object, extract it
-              const plantData = p.data && typeof p.data === "object" ? p.data : p;
-              return sanitizePlantData(plantData);
-            })
-            .filter((p) => p !== null) as PlantProfile[];
-          
-          if (validPlants.length > 0) {
-            return {
-              plants: validPlants,
-              activePlantId: validPlants[0]?.id || ""
-            };
-          }
-        }
-      } catch (err) {
-        console.warn("[Plants] Supabase read failed, falling back to local:", err);
-      }
+    // Try to load from IndexedDB first
+    const indexedPlants = await getAllPlants();
+    if (indexedPlants && indexedPlants.length > 0) {
+      console.log("[Plants] Loaded from IndexedDB:", indexedPlants.length, "plants");
+      const activePlantId = await getSetting("activePlantId");
+      return {
+        plants: indexedPlants,
+        activePlantId: activePlantId || indexedPlants[0]?.id || ""
+      };
     }
 
     // Fallback to local JSON
@@ -149,8 +123,17 @@ export async function readPlantsState(): Promise<PlantsState> {
       ? parsed.activePlantId
       : plants[0]?.id ?? "";
 
+    // Sync local JSON to IndexedDB if we loaded from JSON
+    if (plants.length > 0 && indexedPlants.length === 0) {
+      for (const plant of plants) {
+        await savePlant(plant);
+      }
+      await setSetting("activePlantId", activePlantId);
+      console.log("[Plants] Synced local JSON to IndexedDB");
+    }
+
     if (plants.length > 0) {
-      console.log("[Plants] Loaded from local storage:", plants.length, "plants with valid timestamps");
+      console.log("[Plants] Loaded from local storage:", plants.length, "plants");
     }
 
     return { plants, activePlantId };
@@ -168,157 +151,49 @@ export async function writePlantsState(state: PlantsState) {
     activePlantId: state.activePlantId || state.plants?.[0]?.id || ""
   };
 
-  // Always save to local JSON as fallback
+  // Save to IndexedDB
+  for (const plant of safeState.plants) {
+    try {
+      await savePlant(plant);
+    } catch (err) {
+      console.error(`[Plants] Failed to save plant ${plant.id}:`, err);
+    }
+  }
+  await setSetting("activePlantId", safeState.activePlantId);
+
+  // Also save to local JSON as fallback/backup
   try {
     await writeFile(stateFile, JSON.stringify(safeState, null, 2), "utf-8");
-    console.log("[Plants] Saved to local storage");
+    console.log("[Plants] Saved to local storage and IndexedDB");
   } catch (err) {
     console.error("[Plants] Failed to save local:", err);
-  }
-
-  // Try to sync to Supabase
-  const supabase = getSupabaseClient();
-  if (supabase && safeState.plants.length > 0) {
-    try {
-      for (const plant of safeState.plants) {
-        // Upsert plants (using id as primary key)
-        const { error: plantError } = await supabase
-          .from("plants")
-          .upsert(
-            {
-              id: plant.id,
-              user_id: "default-user",
-              strain_name: plant.strainName,
-              started_at: plant.startedAt,
-              stage: plant.stage,
-              data: plant // Store full plant data as JSONB
-            },
-            { onConflict: "id" }
-          );
-
-        if (plantError) {
-          console.error(`[Plants] Failed to sync plant ${plant.id}:`, plantError);
-        } else {
-          console.log(`[Plants] Synced to Supabase: ${plant.id}`);
-        }
-
-        // Sync watering logs
-        if (plant.wateringData && plant.wateringData.length > 0) {
-          let wateringSynced = 0;
-          for (const watering of plant.wateringData) {
-            const { error: wateringError } = await supabase
-              .from("watering_log")
-              .upsert(
-                {
-                  id: watering.id,
-                  plant_id: plant.id,
-                  amount_ml: watering.amountMl,
-                  ph: watering.ph ?? null,
-                  ec: watering.ec ?? null,
-                  runoff_ph: watering.runoffPh ?? null,
-                  runoff_ec: watering.runoffEc ?? null,
-                  created_at: watering.timestamp
-                },
-                { onConflict: "id" }
-              );
-            
-            if (wateringError) {
-              console.error(`[Watering] Failed to sync ${watering.id}:`, wateringError);
-            } else {
-              wateringSynced++;
-            }
-          }
-          console.log(`[Watering] Synced ${wateringSynced}/${plant.wateringData.length} records for plant ${plant.id}`);
-        }
-
-        // Sync climate logs
-        if (plant.climateData && plant.climateData.length > 0) {
-          let climateSynced = 0;
-          for (const climate of plant.climateData) {
-            const { error: climateError } = await supabase
-              .from("climate_log")
-              .upsert(
-                {
-                  id: climate.id,
-                  plant_id: plant.id,
-                  temp_c: climate.tempC,
-                  humidity: climate.humidity,
-                  created_at: climate.timestamp
-                },
-                { onConflict: "id" }
-              );
-            
-            if (climateError) {
-              console.error(`[Climate] Failed to sync ${climate.id}:`, climateError);
-            } else {
-              climateSynced++;
-            }
-          }
-          console.log(`[Climate] Synced ${climateSynced}/${plant.climateData.length} records for plant ${plant.id}`);
-        }
-      }
-      console.log("[Plants] All data synced to Supabase");
-    } catch (err) {
-      console.error("[Plants] Supabase sync failed:", err);
-    }
   }
 }
 
 export async function deleteWateringLogById(wateringId: string, plantId: string): Promise<boolean> {
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    console.warn("[Watering] Supabase not configured - cannot delete from database");
-    return true;
-  }
-
-  try {
-    const { error } = await supabase
-      .from("watering_log")
-      .delete()
-      .eq("id", wateringId);
-
-    if (error) {
-      console.error(`[Watering] Failed to delete watering log ${wateringId}:`, error);
-      return false;
-    } else {
-      console.log(`[Watering] Deleted from Supabase: ${wateringId}`);
-      return true;
-    }
-  } catch (err) {
-    console.error("[Watering] Delete failed:", err);
-    return false;
-  }
+  // Only uses IndexedDB now - Supabase removed
+  console.log("[Watering] Delete via IndexedDB only (Supabase removed)");
+  return true;
 }
 
 export async function deleteClimateLogById(climateId: string, plantId: string): Promise<boolean> {
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    console.warn("[Climate] Supabase not configured - cannot delete from database");
-    return true;
-  }
-
-  try {
-    const { error } = await supabase
-      .from("climate_log")
-      .delete()
-      .eq("id", climateId);
-
-    if (error) {
-      console.error(`[Climate] Failed to delete climate log ${climateId}:`, error);
-      return false;
-    } else {
-      console.log(`[Climate] Deleted from Supabase: ${climateId}`);
-      return true;
-    }
-  } catch (err) {
-    console.error("[Climate] Delete failed:", err);
-    return false;
-  }
+  // Only uses IndexedDB now - Supabase removed
+  console.log("[Climate] Delete via IndexedDB only (Supabase removed)");
+  return true;
 }
 
 export async function deletePlantById(plantId: string): Promise<boolean> {
   try {
-    // Delete from local storage
+    // Delete from IndexedDB
+    await deletePlantFromIndexedDB(plantId);
+    
+    // Delete chat messages for this plant
+    const { deleteChatMessagesForPlant } = await import("@/lib/indexeddb-storage");
+    await deleteChatMessagesForPlant(plantId);
+
+    console.log(`[Plants] Deleted from IndexedDB: ${plantId}`);
+
+    // Also update local JSON
     const current = await readPlantsState();
     const updated = current.plants.filter((p) => p.id !== plantId);
     let newActivePlantId = current.activePlantId;
@@ -333,66 +208,7 @@ export async function deletePlantById(plantId: string): Promise<boolean> {
       activePlantId: newActivePlantId
     });
 
-    console.log(`[Plants] Deleted locally: ${plantId}`);
-
-    // Delete from Supabase (cascade will handle related records)
-    const supabase = getSupabaseClient();
-    if (supabase) {
-      try {
-        // Delete conversations
-        const { error: conversationsError } = await supabase
-          .from("conversations")
-          .delete()
-          .eq("plant_id", plantId);
-
-        if (conversationsError) {
-          console.warn(`[Conversations] Failed to delete for plant ${plantId}:`, conversationsError);
-        } else {
-          console.log(`[Conversations] Deleted for plant ${plantId}`);
-        }
-
-        // Delete climate logs
-        const { error: climateError } = await supabase
-          .from("climate_log")
-          .delete()
-          .eq("plant_id", plantId);
-
-        if (climateError) {
-          console.warn(`[Climate] Failed to delete for plant ${plantId}:`, climateError);
-        } else {
-          console.log(`[Climate] Deleted for plant ${plantId}`);
-        }
-
-        // Delete watering logs
-        const { error: wateringError } = await supabase
-          .from("watering_log")
-          .delete()
-          .eq("plant_id", plantId);
-
-        if (wateringError) {
-          console.warn(`[Watering] Failed to delete for plant ${plantId}:`, wateringError);
-        } else {
-          console.log(`[Watering] Deleted for plant ${plantId}`);
-        }
-
-        // Delete the plant itself
-        const { error: plantError } = await supabase
-          .from("plants")
-          .delete()
-          .eq("id", plantId);
-
-        if (plantError) {
-          console.error(`[Plants] Failed to delete plant ${plantId}:`, plantError);
-          return false;
-        } else {
-          console.log(`[Plants] Deleted from Supabase: ${plantId}`);
-        }
-      } catch (err) {
-        console.error("[Plants] Supabase delete failed:", err);
-        return false;
-      }
-    }
-
+    console.log(`[Plants] Updated local storage: ${plantId}`);
     return true;
   } catch (error) {
     console.error("Error deleting plant:", error);

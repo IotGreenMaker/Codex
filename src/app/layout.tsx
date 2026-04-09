@@ -1,13 +1,26 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
+};
+
 export const metadata: Metadata = {
-  title: "G-Buddy",
-  description: "AI grow companion for voice logging, monitoring, and cultivation insights.",
+  title: "G-Buddy - AI Grow Companion",
+  description: "Your AI-powered grow companion. 100% private. 100% offline. No account needed.",
+  manifest: "/manifest.json",
   icons: {
-    icon: "/gbuddy-icon.svg",
-    shortcut: "/gbuddy-icon.svg",
-    apple: "/gbuddy-icon.svg"
+    icon: "/g-icon.png",
+    shortcut: "/g-icon.png",
+    apple: "/g-icon.png"
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "G-Buddy"
   }
 };
 
@@ -18,7 +31,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#84cc16" />
+        <link rel="apple-touch-icon" href="/g-icon.png" />
+        <link rel="icon" type="image/png" href="/g-icon.png" />
+      </head>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

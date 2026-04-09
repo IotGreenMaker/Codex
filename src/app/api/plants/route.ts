@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readPlantsState, writePlantsState, deletePlantById, deleteWateringLogById, deleteClimateLogById } from "@/lib/plants-store";
+import { readExcelFile, saveAllData, hasFileAccess } from "@/lib/excel-storage";
 import type { PlantProfile } from "@/lib/types";
+import { generateUUID } from "@/lib/uuid";
 
 type Body = {
   plants?: PlantProfile[];
@@ -12,8 +13,20 @@ type Body = {
 };
 
 export async function GET() {
-  const state = await readPlantsState();
-  return NextResponse.json({ ok: true, ...state });
+  try {
+    const data = await readExcelFile();
+    if (!data) {
+      return NextResponse.json({ ok: false, error: "No data file loaded" }, { status: 404 });
+    }
+
+    const activePlantId = data.settings?.activePlantId || data.plants[0]?.id || "";
+    return NextResponse.json({ ok: true, plants: data.plants, activePlantId });
+  } catch (error) {
+    return NextResponse.json(
+      { ok: false, error: error instanceof Error ? error.message : "Failed to read plants." },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PUT(request: NextRequest) {
@@ -23,10 +36,61 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "Invalid plants payload." }, { status: 400 });
     }
 
-    await writePlantsState({
+    const data = await readExcelFile();
+    if (!data) {
+      return NextResponse.json({ ok: false, error: "No data file loaded" }, { status: 404 });
+    }
+
+    // Convert plants to watering and climate logs
+    const wateringLogs: any[] = [];
+    const climateLogs: any[] = [];
+
+    for (const plant of body.plants) {
+      // Add watering data
+      if (plant.wateringData) {
+        for (const w of plant.wateringData) {
+          wateringLogs.push({
+            id: w.id,
+            plantId: plant.id,
+            timestamp: w.timestamp,
+            amountMl: w.amountMl,
+            ph: w.ph,
+            ec: w.ec,
+            runoffPh: w.runoffPh,
+            runoffEc: w.runoffEc,
+          });
+        }
+      }
+
+      // Add climate data
+      if (plant.climateData) {
+        for (const c of plant.climateData) {
+          climateLogs.push({
+            id: c.id,
+            plantId: plant.id,
+            timestamp: c.timestamp,
+            tempC: c.tempC,
+            humidity: c.humidity,
+          });
+        }
+      }
+    }
+
+    // Save all data
+    const success = await saveAllData({
       plants: body.plants,
-      activePlantId: body.activePlantId
+      wateringLogs,
+      climateLogs,
+      settings: {
+        ...data.settings,
+        activePlantId: body.activePlantId,
+      },
     });
+
+    if (!success) {
+      return NextResponse.json({ ok: false, error: "Failed to save data" }, { status: 500 });
+    }
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json(
@@ -41,11 +105,35 @@ export async function DELETE(request: NextRequest) {
     const body = (await request.json()) as Body;
     const action = body.action || "delete-plant";
 
+    const data = await readExcelFile();
+    if (!data) {
+      return NextResponse.json({ ok: false, error: "No data file loaded" }, { status: 404 });
+    }
+
     if (action === "delete-plant") {
       if (!body.plantId || typeof body.plantId !== "string") {
         return NextResponse.json({ ok: false, error: "Missing or invalid plantId." }, { status: 400 });
       }
-      const success = await deletePlantById(body.plantId);
+
+      const updatedPlants = data.plants.filter((p) => p.id !== body.plantId);
+      const updatedWateringLogs = data.wateringLogs.filter((l) => l.plantId !== body.plantId);
+      const updatedClimateLogs = data.climateLogs.filter((l) => l.plantId !== body.plantId);
+
+      let newActivePlantId = data.settings?.activePlantId || "";
+      if (newActivePlantId === body.plantId) {
+        newActivePlantId = updatedPlants[0]?.id || "";
+      }
+
+      const success = await saveAllData({
+        plants: updatedPlants,
+        wateringLogs: updatedWateringLogs,
+        climateLogs: updatedClimateLogs,
+        settings: {
+          ...data.settings,
+          activePlantId: newActivePlantId,
+        },
+      });
+
       return NextResponse.json({ ok: success });
     } else if (action === "delete-watering") {
       if (!body.wateringId || typeof body.wateringId !== "string") {
@@ -54,7 +142,13 @@ export async function DELETE(request: NextRequest) {
       if (!body.plantId || typeof body.plantId !== "string") {
         return NextResponse.json({ ok: false, error: "Missing or invalid plantId." }, { status: 400 });
       }
-      const success = await deleteWateringLogById(body.wateringId, body.plantId);
+
+      const updatedWateringLogs = data.wateringLogs.filter((l) => l.id !== body.wateringId);
+      const success = await saveAllData({
+        ...data,
+        wateringLogs: updatedWateringLogs,
+      });
+
       return NextResponse.json({ ok: success });
     } else if (action === "delete-climate") {
       if (!body.climateId || typeof body.climateId !== "string") {
@@ -63,7 +157,13 @@ export async function DELETE(request: NextRequest) {
       if (!body.plantId || typeof body.plantId !== "string") {
         return NextResponse.json({ ok: false, error: "Missing or invalid plantId." }, { status: 400 });
       }
-      const success = await deleteClimateLogById(body.climateId, body.plantId);
+
+      const updatedClimateLogs = data.climateLogs.filter((l) => l.id !== body.climateId);
+      const success = await saveAllData({
+        ...data,
+        climateLogs: updatedClimateLogs,
+      });
+
       return NextResponse.json({ ok: success });
     } else {
       return NextResponse.json({ ok: false, error: "Invalid action." }, { status: 400 });

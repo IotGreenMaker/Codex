@@ -27,64 +27,65 @@ Add an LLM service layer with two modes:
 
 For citations, keep a separate retrieval pipeline so answers are grounded and inspectable.
 
-## Storage recommendation
+## Storage Architecture
 
-Use SQLite as the primary source of truth.
+### Primary Storage: IndexedDB
+All data is stored client-side in IndexedDB for complete privacy and offline functionality.
 
-### Suggested tables
+### Data Structure
+- **plants** - Plant profiles with complete grow data
+- **watering_logs** - Watering events with plantId reference
+- **climate_logs** - Climate data with plantId reference
+- **chat_messages** - User/AI conversation history per plant
+- **settings** - App settings and active plant
 
-- `plants`
-- `grow_logs`
-- `voice_interactions`
-- `nutrient_plans`
-- `environment_snapshots`
-- `light_schedules`
-
-### Export strategy
-
-Support:
-
+### Export Strategy
 - CSV export for logs
-- XLSX export for people who want spreadsheet compatibility
+- XLSX export for spreadsheet compatibility
 - JSON backup for full-fidelity restore
 
-This is much safer than storing raw app state directly in spreadsheets.
+This architecture ensures 100% local data storage with no cloud dependencies.
 
-## Data flow
+## Data Flow
 
 1. User records voice note in the dashboard
 2. Speech-to-text produces transcript
 3. Transcript is sent to the LLM extraction layer
 4. Structured data is validated against schemas
-5. Valid data is stored in SQLite
+5. Valid data is stored in IndexedDB
 6. Dashboard queries local data and renders charts
 7. Optional cloud sync can be added later
 
-## Domain examples
+## Domain Examples
 
-### Environmental data
+### Environmental Data
+- Outside temperature
+- Outside humidity
+- Grow temperature
+- Grow humidity
+- VPD (Vapor Pressure Deficit)
 
-- outside temperature
-- outside humidity
-- grow temperature
-- grow humidity
-- VPD
+### Irrigation Data
+- Water input in milliliters
+- Input pH
+- Input EC (Electrical Conductivity)
+- Runoff pH
+- Runoff EC
 
-### Irrigation data
+### Grow Lifecycle Data
+- Plant start date
+- Current stage
+- Stage duration
+- Total grow days
+- Light on/off times
 
-- water input in milliliters
-- input pH
-- input EC
-- runoff pH
-- runoff EC
-
-### Grow lifecycle data
-
-- plant start date
-- current stage
-- stage duration
-- total grow days
-- light on/off times
+### AI Chat Functionalities
+- Voice input (Web Speech API)
+- Text input
+- AI responses with citations
+- Plant-specific context switching
+- Grow log extraction from conversations
+- Real-time environmental data integration
 
 ## Maintainability rules
 
@@ -94,8 +95,8 @@ This is much safer than storing raw app state directly in spreadsheets.
 - treat citations as first-class response data
 - export data freely, but keep SQLite as the authoritative store
 
-## Suggested future packages
+## Suggested Future Packages
 
-- `drizzle-orm` and `better-sqlite3` for local persistence
 - `zod` for schema validation
 - `xlsx` for spreadsheet export
+- `localForage` for enhanced IndexedDB operations

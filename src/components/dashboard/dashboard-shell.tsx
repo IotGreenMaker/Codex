@@ -1,16 +1,39 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Droplets, Leaf, Lightbulb, Minus, Plus, RotateCcw, Thermometer, Waves, X } from "lucide-react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { BookOpen, Download, Droplets, Flower, Info, Leaf, Lightbulb, Minus, Plus, RotateCcw, Settings, Sprout, Thermometer, Waves, X, Wheat, Cannabis } from "lucide-react";
 import { GrowChart } from "@/components/charts/grow-chart";
 import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel-livekit";
 import { VPDChart } from "@/components/dashboard/vpd-chart";
 import { PlantTimelineCalendar } from "@/components/dashboard/plant-timeline-calendar";
+import { CalendarConfigModal, CalendarConfig, loadCalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import { STAGE_TARGETS as DEFAULT_STAGE_TARGETS } from "@/lib/config";
+import { FilePicker } from "@/components/dashboard/file-picker";
+import { AiAssistantTutorialModal } from "@/components/dashboard/ai-assistant-tutorial-modal";
+import { LightConfigModal } from "@/components/dashboard/light-config-modal";
+import { ConfirmationModal, ConfirmationOptions } from "@/components/dashboard/confirmation-modal";
+import { NutrientChecker } from "@/components/dashboard/nutrient-checker";
 import { calculateVpd, getCycleSummary, getDetailedCycleSummary, getVpdBand } from "@/lib/grow-math";
+import { STAGE_TARGETS, SAVE_DEBOUNCE_DELAY, WEATHER_REFRESH_INTERVAL, VALIDATION_RANGES } from "@/lib/config";
 import { Locale, translations } from "@/lib/i18n";
-import { dailyLogs, createNewPlant } from "@/lib/mock-data";
+import { dailyLogs, createNewPlant } from "@/lib/newplant-data";
+import { EmptyStateOnboarding } from "@/components/onboarding/empty-state-onboarding";
 import { generateUUID } from "@/lib/uuid";
-import type { GrowStage, PlantProfile } from "@/lib/types";
+import { 
+  openDB, 
+  getAllPlants, 
+  savePlant, 
+  deletePlant, 
+  getSetting, 
+  setSetting,
+  initializeDB,
+  seedTestPlants
+} from "@/lib/indexeddb-storage";
+import { exportToExcel } from "@/lib/excel-export";
+import type { GrowStage, PlantProfile, LightProfile, LightType } from "@/lib/types";
+import { LIGHT_TYPE_LABELS, LIGHT_TYPE_DEFAULT_WATTS } from "@/lib/types";
+import { AiChatModal } from "@/components/dashboard/ai-chat-modal";
+import { MessageCircle } from "lucide-react";
 
 type DashboardShellProps = {
   heading: string;
@@ -28,13 +51,80 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   const [nutrientLiters, setNutrientLiters] = useState(10);
   const [nutrientTargetEc, setNutrientTargetEc] = useState(1.6);
   const [nutrientPeriodKey, setNutrientPeriodKey] = useState("veg_phase_2");
+  const [isVpdChartOpen, setIsVpdChartOpen] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [isLightModalOpen, setIsLightModalOpen] = useState(false);
+  const [isCalendarConfigOpen, setIsCalendarConfigOpen] = useState(false);
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [calendarConfig, setCalendarConfig] = useState<CalendarConfig | null>(null);
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    options: ConfirmationOptions | null;
+    resolve: ((value: boolean) => void) | null;
+  }>({ isOpen: false, options: null, resolve: null });
+  const [nutrientView, setNutrientView] = useState<"classic" | "checker">("classic");
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const t = translations[locale];
+
+  // Confirmation dialog helper
+  const showConfirmation = (options: ConfirmationOptions): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setConfirmState({ isOpen: true, options, resolve });
+    });
+  };
+
+  const handleConfirm = () => {
+    confirmState.resolve?.(true);
+    setConfirmState({ isOpen: false, options: null, resolve: null });
+  };
+
+  const handleCancel = () => {
+    confirmState.resolve?.(false);
+    setConfirmState({ isOpen: false, options: null, resolve: null });
+  };
+
+  // Seed test plants
+  const handleSeedTestData = async () => {
+    const confirmed = await showConfirmation({
+      title: "Seed Test Data",
+      message: "This will add 3 test plants (Baby Green, Green Machine, Purple Haze) to your database. Existing plants won't be affected.",
+      confirmLabel: "Add Test Plants",
+      cancelLabel: "Cancel",
+      variant: "info"
+    });
+    if (confirmed) {
+      await seedTestPlants();
+      // Reload plants list
+      const loadedPlants = await getAllPlants();
+      setPlants(loadedPlants);
+      if (loadedPlants.length > 0) {
+        setActivePlantId(loadedPlants[0].id);
+      }
+    }
+  };
+
+  // Refs for debounced save and latest plant state
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const plantsRef = useRef<PlantProfile[]>([]);
+  const activePlantIdRef = useRef<string>("");
+
+  // Keep refs in sync
+  useEffect(() => {
+    plantsRef.current = plants;
+  }, [plants]);
+
+  useEffect(() => {
+    activePlantIdRef.current = activePlantId;
+  }, [activePlantId]);
+
+  // Stage duration targets imported from config
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1_000);
     return () => window.clearInterval(timer);
   }, []);
 
+  // Weather - increased refresh to 5 minutes (was 60s)
   useEffect(() => {
     let ignore = false;
 
@@ -62,11 +152,23 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     };
 
     void loadWeather();
-    const weatherTimer = window.setInterval(() => void loadWeather(), 60_000);
+    const weatherTimer = window.setInterval(() => void loadWeather(), WEATHER_REFRESH_INTERVAL);
     return () => {
       ignore = true;
       window.clearInterval(weatherTimer);
     };
+  }, []);
+
+  // Load calendar config for progress bar targets
+  useEffect(() => {
+    loadCalendarConfig().then((config) => setCalendarConfig(config));
+  }, []);
+
+  // Load notification preference
+  useEffect(() => {
+    getSetting("wateringNotification").then((val) => {
+      setNotificationsEnabled(val === "true");
+    });
   }, []);
 
   useEffect(() => {
@@ -74,27 +176,25 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
     const loadState = async () => {
       try {
-        const response = await fetch("/api/plants", { cache: "no-store" });
-        const data = (await response.json()) as {
-          ok: boolean;
-          plants?: PlantProfile[];
-          activePlantId?: string;
-        };
+        await initializeDB();
+        const loadedPlants = await getAllPlants();
+        const savedActivePlantId = await getSetting("activePlantId");
 
-        if (!ignore && data.ok && Array.isArray(data.plants) && data.plants.length) {
-          setPlants(data.plants);
-          if (!data.activePlantId) {
-            // Set active plant to first in list order (by startedAt)
-            const sorted = [...data.plants].sort((a, b) => {
+        if (!ignore && loadedPlants.length > 0) {
+          setPlants(loadedPlants);
+          if (!savedActivePlantId) {
+            const sorted = [...loadedPlants].sort((a, b) => {
               const aDate = new Date(a.startedAt).getTime();
               const bDate = new Date(b.startedAt).getTime();
               return aDate - bDate;
             });
-            setActivePlantId(sorted[0]?.id || data.plants[0].id);
+            setActivePlantId(sorted[0]?.id || loadedPlants[0].id);
           } else {
-            setActivePlantId(data.activePlantId);
+            setActivePlantId(savedActivePlantId);
           }
         }
+      } catch (error) {
+        console.error("Error loading from IndexedDB:", error);
       } finally {
         if (!ignore) {
           setLoadedFromServer(true);
@@ -108,24 +208,36 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     };
   }, []);
 
+  // Debounced save to IndexedDB - prevents excessive writes on rapid edits
   useEffect(() => {
-    if (!loadedFromServer) {
-      return;
+    if (!loadedFromServer) return;
+
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
 
-    void fetch("/api/plants", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        plants,
-        activePlantId
-      })
-    });
+    // Debounce: wait configured delay after last change before saving
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        for (const plant of plants) {
+          await savePlant(plant);
+        }
+        await setSetting("activePlantId", activePlantId);
+      } catch (error) {
+        console.error("Error saving to IndexedDB:", error);
+      }
+    }, SAVE_DEBOUNCE_DELAY);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
   }, [activePlantId, loadedFromServer, plants]);
 
-  const getFirstPlantByList = () => {
+  // Memoized: get first plant sorted by date
+  const getFirstPlantByList = useCallback(() => {
     if (plants.length === 0) return undefined;
     const sorted = [...plants].sort((a, b) => {
       const aDate = new Date(a.startedAt).getTime();
@@ -133,12 +245,54 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
       return aDate - bDate;
     });
     return sorted[0];
-  };
+  }, [plants]);
 
   const activePlant = useMemo(
     () => plants.find((entry) => entry.id === activePlantId) ?? getFirstPlantByList(),
-    [plants, activePlantId]
+    [plants, activePlantId, getFirstPlantByList]
   );
+
+  // Helper: calculate elapsed days from timestamps for the active plant
+  const calculateElapsedDays = useCallback((plant: PlantProfile) => {
+    const now = new Date();
+    const startedAt = new Date(plant.startedAt);
+    const totalDaysElapsed = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24)));
+
+    let seedlingDays = 0;
+    let vegDays = 0;
+    let bloomDays = 0;
+
+    // Seedling: from startedAt to vegStartedAt (or now if veg never started)
+    if (plant.vegStartedAt) {
+      const vegStarted = new Date(plant.vegStartedAt);
+      seedlingDays = Math.max(0, Math.floor((vegStarted.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24)));
+    } else {
+      seedlingDays = totalDaysElapsed;
+    }
+
+    // Veg: from vegStartedAt to bloomStartedAt (or now if bloom never started)
+    if (plant.vegStartedAt) {
+      const vegStarted = new Date(plant.vegStartedAt);
+      if (plant.bloomStartedAt) {
+        const bloomStarted = new Date(plant.bloomStartedAt);
+        vegDays = Math.max(0, Math.floor((bloomStarted.getTime() - vegStarted.getTime()) / (1000 * 60 * 60 * 24)));
+      } else {
+        vegDays = Math.max(0, Math.floor((now.getTime() - vegStarted.getTime()) / (1000 * 60 * 60 * 24)));
+      }
+    }
+
+    // Bloom: from bloomStartedAt to now
+    if (plant.bloomStartedAt) {
+      const bloomStarted = new Date(plant.bloomStartedAt);
+      bloomDays = Math.max(0, Math.floor((now.getTime() - bloomStarted.getTime()) / (1000 * 60 * 60 * 24)));
+    }
+
+    return { seedlingDays, vegDays, bloomDays, totalDaysElapsed };
+  }, []);
+
+  // NOTE: Removed auto-update effect that was overwriting stageDays.
+  // Day counts are now calculated directly from timestamps via calculateElapsedDays
+  // and displayed as read-only values to avoid conflicts with manual edits.
 
   const addPlant = () => {
     const nextIndex = plants.length + 1;
@@ -166,26 +320,20 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   };
 
   const removePlant = async (plantId: string) => {
-    if (confirm("Are you sure you want to delete this plant? This action cannot be undone.")) {
+    const confirmed = await showConfirmation({
+      title: "Delete Plant",
+      message: "Are you sure you want to delete this plant? This action cannot be undone.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      variant: "danger"
+    });
+    if (confirmed) {
       try {
-        const response = await fetch("/api/plants", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ plantId })
-        });
-
-        const result = (await response.json()) as { ok: boolean; error?: string };
-        if (result.ok) {
-          setPlants((current) => current.filter((p) => p.id !== plantId));
-          if (activePlantId === plantId) {
-            const remaining = plants.filter((p) => p.id !== plantId);
-            setActivePlantId(remaining[0]?.id || "");
-          }
-        } else {
-          console.error("Failed to delete plant:", result.error);
-          alert("Failed to delete plant. Check console for details.");
+        await deletePlant(plantId);
+        setPlants((current) => current.filter((p) => p.id !== plantId));
+        if (activePlantId === plantId) {
+          const remaining = plants.filter((p) => p.id !== plantId);
+          setActivePlantId(remaining[0]?.id || "");
         }
       } catch (error) {
         console.error("Error deleting plant:", error);
@@ -196,16 +344,13 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
   if (!activePlant) {
     return (
-      <main className="min-h-screen bg-hero-grid flex items-center justify-center">
-        <div className="glass-panel rounded-3xl p-8 max-w-md text-center">
-          <p className="text-xl font-semibold text-lime-100 mb-4">No Plants Yet</p>
-          <p className="text-lime-100/70 mb-6">Create your first plant to get started tracking growth, climate, and nutrition.</p>
-          <button
-            onClick={addPlant}
-            className="rounded-lg bg-lime-400/20 border border-lime-300/30 hover:bg-lime-400/30 px-6 py-3 font-semibold text-lime-100 transition"
-          >
-            Create First Plant
-          </button>
+      <main className="min-h-screen bg-hero-grid relative flex items-center justify-center">
+        {/* Animated background orbs - behind all content */}
+        <div className="bg-orb bg-orb--green" aria-hidden="true" />
+        <div className="bg-orb bg-orb--purple" aria-hidden="true" />
+        <div className="bg-orb bg-orb--orange" aria-hidden="true" />
+        <div className="relative z-10">
+          <EmptyStateOnboarding onCreatePlant={addPlant} />
         </div>
       </main>
     );
@@ -213,7 +358,9 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
   const cycle = getCycleSummary(activePlant);
   const cycleDetailed = getDetailedCycleSummary(activePlant);
-  const daysSeedling = Math.max(0, cycleDetailed.totalDays - cycleDetailed.daysInVeg - cycleDetailed.daysInBloom);
+  
+  // Calculate elapsed days from timestamps for accurate progress
+  const { seedlingDays: elapsedSeedling, vegDays: elapsedVeg, bloomDays: elapsedBloom, totalDaysElapsed } = calculateElapsedDays(activePlant);
   const liveVpd = calculateVpd(activePlant.growTempC, activePlant.growHumidity);
   const vpdBand = getVpdBand(activePlant.stage, liveVpd);
   const lastWateredLabel = new Intl.DateTimeFormat(locale, {
@@ -247,10 +394,41 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   };
 
   const patchActivePlant = (patch: Partial<PlantProfile>) => {
-    onPlantUpdate({
-      ...activePlant,
-      ...patch
+    setPlants((current) => {
+      // Use ref value to avoid stale closure race condition
+      const currentActivePlantId = activePlantIdRef.current;
+      const activePlant = current.find((entry) => entry.id === currentActivePlantId) ?? current[0];
+      if (!activePlant) return current;
+      return current.map((entry) => 
+        entry.id === activePlant.id ? { ...entry, ...patch } : entry
+      );
     });
+  };
+
+  const createPlant = (plantData: { strainName: string; stage: string }) => {
+    const nextIndex = plants.length + 1;
+    const newPlant = createNewPlant({
+      strainName: plantData.strainName,
+      stage: plantData.stage as GrowStage,
+      // Copy settings from active plant if available
+      ...(activePlant ? {
+        lightSchedule: activePlant.lightSchedule,
+        lightsOn: activePlant.lightsOn,
+        lightsOff: activePlant.lightsOff,
+        lightType: activePlant.lightType,
+        lightDimmerPercent: activePlant.lightDimmerPercent,
+        containerVolumeL: activePlant.containerVolumeL,
+        mediaVolumeL: activePlant.mediaVolumeL,
+        mediaType: activePlant.mediaType,
+        wateringIntervalDays: activePlant.wateringIntervalDays,
+        feedRecipe: {
+          ...activePlant.feedRecipe,
+          additives: activePlant.feedRecipe.additives.map((entry) => ({ ...entry, id: generateUUID() }))
+        }
+      } : {})
+    });
+    setPlants((current) => [...current, newPlant]);
+    setActivePlantId(newPlant.id);
   };
 
   const handleStageChange = (newStage: GrowStage) => {
@@ -322,14 +500,237 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     });
   };
 
+  // Notification toggle handler for AI assistant
+  const handleToggleNotification = async (enabled: boolean) => {
+    setNotificationsEnabled(enabled);
+    await setSetting("wateringNotification", String(enabled));
+  };
+
+  // Light management functions
+  const activeLights = activePlant.lights ?? [];
+  const activeLightId = activePlant.activeLightId ?? activeLights[0]?.id;
+  const activeLight = activeLights.find((l) => l.id === activeLightId) ?? activeLights[0];
+
+  const handleSaveLight = (light: LightProfile) => {
+    const updatedLights = [...(activePlant.lights ?? []), light];
+    patchActivePlant({
+      lights: updatedLights,
+      activeLightId: light.id,
+      lightsOn: light.lightsOn,
+      lightsOff: light.lightsOff,
+      lightDimmerPercent: light.dimmerPercent,
+      lightLampWatts: light.watts
+    });
+  };
+
+  const handleDeleteLight = (id: string) => {
+    const updatedLights = (activePlant.lights ?? []).filter((l) => l.id !== id);
+    const newActiveLightId = activePlant.activeLightId === id ? updatedLights[0]?.id : activePlant.activeLightId;
+    const newActiveLight = updatedLights.find((l) => l.id === newActiveLightId);
+    patchActivePlant({
+      lights: updatedLights,
+      activeLightId: newActiveLightId,
+      ...(newActiveLight ? {
+        lightsOn: newActiveLight.lightsOn,
+        lightsOff: newActiveLight.lightsOff,
+        lightDimmerPercent: newActiveLight.dimmerPercent,
+        lightLampWatts: newActiveLight.watts
+      } : {})
+    });
+  };
+
+  const handleSelectLight = (id: string) => {
+    const light = activeLights.find((l) => l.id === id);
+    if (light) {
+      patchActivePlant({
+        activeLightId: id,
+        lightsOn: light.lightsOn,
+        lightsOff: light.lightsOff,
+        lightDimmerPercent: light.dimmerPercent,
+        lightLampWatts: light.watts
+      });
+    }
+  };
+
+  // DLI calculation (regular functions, not hooks, to avoid conditional hook calls)
+  const getLightHours = () => {
+    const lightsOn = activeLight?.lightsOn ?? activePlant.lightsOn;
+    const lightsOff = activeLight?.lightsOff ?? activePlant.lightsOff;
+    const onMinutes = parseTimeToMinutes(lightsOn);
+    const offMinutes = parseTimeToMinutes(lightsOff);
+    if (onMinutes === null || offMinutes === null) return 0;
+    if (onMinutes < offMinutes) {
+      return (offMinutes - onMinutes) / 60;
+    }
+    return (24 * 60 - onMinutes + offMinutes) / 60;
+  };
+
+  const getCurrentPpfd = () => {
+    if (!activeLight) return null;
+    if (activeLight.ppfdEstimated !== undefined && activeLight.ppfdEstimated !== null) {
+      return activeLight.ppfdEstimated;
+    }
+    if (activeLight.hasDimmer && activeLight.ppfdMin !== undefined && activeLight.ppfdMax !== undefined) {
+      const dimmer = activeLight.dimmerPercent ?? 100;
+      const t = Math.max(0, Math.min(1, (dimmer - 10) / 90));
+      return Math.round(activeLight.ppfdMin + (activeLight.ppfdMax - activeLight.ppfdMin) * t);
+    }
+    return null;
+  };
+
+  const calculateDLI = () => {
+    const ppfd = getCurrentPpfd();
+    const hours = getLightHours();
+    if (ppfd === null || hours === 0) return null;
+    return (ppfd * hours * 3600) / 1_000_000;
+  };
+
+  const getDLIStatus = () => {
+    const dli = calculateDLI();
+    if (dli === null) return { label: "No data", color: "bg-slate-600", tone: "text-lime-100/60" };
+    
+    const stage = activePlant.stage;
+    const targets: Record<string, { low: number; high: number }> = {
+      Seedling: { low: 12, high: 18 },
+      Veg: { low: 25, high: 40 },
+      Bloom: { low: 32, high: 45 }
+    };
+    
+    const target = targets[stage];
+    if (!target) return { label: `DLI: ${dli.toFixed(1)}`, color: "bg-slate-600", tone: "text-lime-100/60" };
+    
+    if (dli < target.low) {
+      return { label: `DLI: ${dli.toFixed(1)} - Low`, color: "bg-amber-500", tone: "text-amber-400" };
+    }
+    if (dli > target.high) {
+      return { label: `DLI: ${dli.toFixed(1)} - High`, color: "bg-red-500", tone: "text-red-400" };
+    }
+    return { label: `DLI: ${dli.toFixed(1)} - Good`, color: "bg-green-500", tone: "text-green-400" };
+  };
+
+  const dliStatus = getDLIStatus();
+  const currentPpfd = getCurrentPpfd();
+
+  // DLI Tooltip content based on plant stage
+  const getDLITooltip = () => {
+    const stage = activePlant.stage;
+    const targets: Record<string, { dli: string; ppfd: string; description: string }> = {
+      Seedling: { dli: "12-18", ppfd: "300-600", description: "Gentle light for young plants" },
+      Veg: { dli: "25-40", ppfd: "400-600", description: "Higher light for vegetative growth" },
+      Bloom: { dli: "32-45", ppfd: "600-900", description: "Maximum light for flowering" }
+    };
+    const target = targets[stage];
+    if (!target) return null;
+    return {
+      title: `${stage} Stage`,
+      dli: `Recommended DLI: ${target.dli} mol/m²/day`,
+      ppfd: `Recommended PPFD: ${target.ppfd} μmol/m²/s`,
+      description: target.description
+    };
+  };
+
+  const dliTooltip = getDLITooltip();
+
+  // Light schedule helpers
+  const getExpectedLightHours = (stage: GrowStage): number => {
+    if (stage === "Bloom") return 12;
+    return 18; // Veg, Seedling
+  };
+
+  const calculateLightsOff = (lightsOn: string, hoursOn: number): string => {
+    const match = lightsOn.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return "22:00";
+    const onHours = Number(match[1]);
+    const onMinutes = Number(match[2]);
+    const offTotalMinutes = (onHours + hoursOn) * 60 + onMinutes;
+    const offHours = Math.floor(offTotalMinutes / 60) % 24;
+    const offMinutes = offTotalMinutes % 60;
+    return `${String(offHours).padStart(2, "0")}:${String(offMinutes).padStart(2, "0")}`;
+  };
+
+  const getScheduleDisplay = (lightsOn: string, lightsOff: string, stage: GrowStage) => {
+    const onMin = parseTimeToMinutes(lightsOn);
+    const offMin = parseTimeToMinutes(lightsOff);
+    if (onMin === null || offMin === null) return { text: "--/--", color: "text-lime-100/60" };
+    
+    const hoursOn = onMin < offMin ? (offMin - onMin) / 60 : (24 * 60 - onMin + offMin) / 60;
+    const hoursOff = 24 - hoursOn;
+    const text = `${Math.round(hoursOn)}/${Math.round(hoursOff)}`;
+    
+    const expectedHours = getExpectedLightHours(stage);
+    const isStandard = Math.abs(hoursOn - expectedHours) < 0.5;
+    
+    let color = "text-amber-500"; // custom/non-standard
+    if (isStandard) {
+      color = stage === "Bloom" ? "text-indigo-500" : "text-green-500";
+    }
+    
+    return { text, color };
+  };
+
+  const handleLightsOnChange = (value: string, isLightProfile: boolean) => {
+    const hours = getExpectedLightHours(activePlant.stage);
+    const autoOff = calculateLightsOff(value, hours);
+    if (isLightProfile && activeLight) {
+      const updatedLights = activeLights.map((l) =>
+        l.id === activeLightId ? { ...l, lightsOn: value, lightsOff: autoOff } : l
+      );
+      patchActivePlant({ lights: updatedLights, lightsOn: value, lightsOff: autoOff });
+    } else {
+      patchActivePlant({ lightsOn: value, lightsOff: autoOff });
+    }
+  };
+
+  const handleStageChangeWithLightUpdate = (newStage: GrowStage) => {
+    const now = new Date().toISOString();
+    const patch: Partial<PlantProfile> = { stage: newStage };
+
+    // Auto-adjust light schedule based on stage
+    const currentOn = activeLight?.lightsOn ?? activePlant.lightsOn;
+    const newOff = calculateLightsOff(currentOn, getExpectedLightHours(newStage));
+    patch.lightsOff = newOff;
+    if (activeLight) {
+      const updatedLights = activeLights.map((l) =>
+        l.id === activeLightId ? { ...l, lightsOff: newOff } : l
+      );
+      patch.lights = updatedLights;
+    }
+
+    // Stage timing logic
+    if (newStage === "Veg" && activePlant.stageDays.veg === 0 && !activePlant.vegStartedAt) {
+      patch.vegStartedAt = now;
+      patch.stageDays = { ...activePlant.stageDays, veg: 1 };
+    }
+    if (newStage === "Bloom" && activePlant.stageDays.bloom === 0 && !activePlant.bloomStartedAt) {
+      patch.bloomStartedAt = now;
+      patch.stageDays = { ...activePlant.stageDays, bloom: 1 };
+    }
+
+    patchActivePlant(patch);
+  };
+
+  const scheduleDisplay = getScheduleDisplay(
+    activeLight?.lightsOn ?? activePlant.lightsOn,
+    activeLight?.lightsOff ?? activePlant.lightsOff,
+    activePlant.stage
+  );
+
   return (
-    <main className="min-h-screen bg-hero-grid">
-      <section className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 lg:px-6">
+    <main className="min-h-screen bg-hero-grid relative">
+      {/* Animated background orbs - behind all content */}
+      <div className="bg-orb bg-orb--green" aria-hidden="true" />
+      <div className="bg-orb bg-orb--purple" aria-hidden="true" />
+      <div className="bg-orb bg-orb--orange" aria-hidden="true" />
+
+      <section className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 lg:px-6">
+        {/* Header Panel - Responsive Layout */}
         <div className="glass-panel rounded-3xl p-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-200">Live Clock</p>
-              <p className="mt-1 text-2xl font-semibold text-lime-100">
+          {/* Mobile: stacked layout, Desktop: horizontal */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            {/* Clock Block */}
+            <div className="flex-1 w-full sm:w-auto">
+              <p className="font-mono text-xs sm:text-[11px] uppercase tracking-[0.22em] text-lime-200">Live Clock</p>
+              <p className="mt-1 text-xl sm:text-2xl font-semibold text-lime-100">
                 {new Intl.DateTimeFormat(locale, {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -337,7 +738,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   hour12: false
                 }).format(new Date(now))}
               </p>
-              <p className="text-xs text-lime-100/75">
+              <p className="text-xs text-lime-100/75 text-sm sm:text-xs">
                 {new Intl.DateTimeFormat(locale, {
                   weekday: "long",
                   month: "long",
@@ -346,20 +747,32 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 }).format(new Date(now))}
               </p>
             </div>
-            <div className="rounded-2xl border border-lime-300/15 bg-lime-300/8 px-4 py-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Outside Weather</p>
-              <p className="mt-1 text-lg font-semibold text-lime-100">
-                {weather?.temperatureC !== null && weather?.temperatureC !== undefined ? `${weather.temperatureC} C` : "-- C"}
-              </p>
-              <p className="text-xs text-lime-100/80">
-                Humidity: {weather?.humidity !== null && weather?.humidity !== undefined ? `${weather.humidity}%` : "--%"}
-              </p>
-              {/* location intentionally hidden */}
+            
+            {/* Controls Block */}
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={() => setIsTutorialOpen(true)}
+                className="rounded-full border border-lime-300/25 bg-lime-300/12 p-2 sm:p-2.5 text-lime-200 hover:bg-lime-300/22 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+                title="AI Assistant Guide"
+                aria-label="Open AI Assistant Guide"
+              >
+                <BookOpen className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+              </button>
+              <div className="rounded-2xl border border-lime-300/15 bg-lime-300/8 px-3 sm:px-4 py-2 sm:py-3 flex-1 sm:flex-initial">
+                <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-lime-200">Outside Weather</p>
+                <p className="mt-1 text-base sm:text-lg font-semibold text-lime-100">
+                  {weather?.temperatureC !== null && weather?.temperatureC !== undefined ? `${weather.temperatureC} C` : "-- C"}
+                </p>
+                <p className="text-xs text-lime-100/80">
+                  Humidity: {weather?.humidity !== null && weather?.humidity !== undefined ? `${weather.humidity}%` : "--%"}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[2fr_0.95fr]">
+        <div className="grid gap-4 md:grid-cols-1 xl:grid-cols-[2fr_0.95fr]">
           <div className="glass-panel rounded-[2rem] p-5 lg:p-6">
              <div className="flex flex-wrap items-start justify-between gap-4">
                <div className="">
@@ -375,7 +788,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                     className="text-xl font-semibold text-slate-100"
                     onSave={(value) => patchActivePlant({ strainName: value })}
                   />
-                  <Leaf className={`h-4 w-4 ${getStageLeafTone(activePlant.stage)}`} />
+                  {getStageIcon(activePlant.stage)}
                   <span className="text-xs text-lime-100/80">
                     Started{" "}
                     <EditableDate
@@ -389,12 +802,12 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 <div className="mt-3">
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Progress</p>
                   <StageProgressBar
-                    seedlingDays={daysSeedling}
-                    vegDays={cycleDetailed.daysInVeg}
-                    bloomDays={cycleDetailed.daysInBloom}
-                    seedlingTarget={Math.max(1, activePlant.stageDays.seedling)}
-                    vegTarget={Math.max(1, activePlant.stageDays.veg)}
-                    bloomTarget={45}
+                    seedlingDays={elapsedSeedling}
+                    vegDays={elapsedVeg}
+                    bloomDays={elapsedBloom}
+                    seedlingTarget={calendarConfig?.seedlingDuration ?? DEFAULT_STAGE_TARGETS.seedling}
+                    vegTarget={calendarConfig?.vegDuration ?? DEFAULT_STAGE_TARGETS.veg}
+                    bloomTarget={calendarConfig?.bloomDuration ?? DEFAULT_STAGE_TARGETS.bloom}
                   />
                 </div>
               </div>
@@ -404,14 +817,35 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
             <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-3">
               <div className="flex items-center justify-between">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-lime-200">Plant list</p>
-                <button
-                  type="button"
-                  onClick={addPlant}
-                  className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"
-                  title="Add plant"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => exportToExcel({ plants, activePlantId })}
+                    className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"
+                    title="Export to Excel"
+                    aria-label="Export to Excel"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSeedTestData}
+                    className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"
+                    title="Seed Test Plants"
+                    aria-label="Add test plants"
+                  >
+                    <Sprout className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={addPlant}
+                    className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"
+                    title="Add plant"
+                    aria-label="Add new plant"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {plants
@@ -428,7 +862,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                       }`}
                     >
                       <span className="inline-flex items-center gap-2">
-                        <Leaf className={`h-4 w-4 ${getStageLeafTone(entry.stage)}`} />
+                        {getStageIcon(entry.stage)}
                         {entry.strainName}
                       </span>
                     </button>
@@ -437,6 +871,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                       onClick={() => removePlant(entry.id)}
                       className="absolute -top-2 -right-2 rounded-full bg-red-500/90 hover:bg-red-600 p-0.5 text-white opacity-0 group-hover:opacity-100 transition"
                       title={`Delete ${entry.strainName}`}
+                      aria-label={`Delete ${entry.strainName}`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -513,7 +948,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
               <CompactMetric
                 label={t.cycle}
-                icon={<Leaf className="h-4 w-4" />}
+                icon={getStageIcon(activePlant.stage)}
                 value={<span className="text-xl font-semibold text-lime-100">{cycle.daysInStage} days</span>}
                 helper={
                   <span className="text-xs text-lime-100/70">
@@ -566,136 +1001,230 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
               <MiniInfo
                 label={t.lightHours}
                 value={
-                  <div className="space-y-1">
-                    
+                  <div className="space-y-3">
+                    {/* Light Schedule Row */}
                     <div className="flex items-center justify-between gap-3 text-xs text-lime-100/80">
-
-                     <EditableText
-                      value={activePlant.lightSchedule}
-                      className="text-sm font-semibold text-lime-100"
-                      onSave={(value) => patchActivePlant({ lightSchedule: value })}
-                      />
+                      <span className={`text-sm font-semibold ${scheduleDisplay.color}`}>
+                        {scheduleDisplay.text}
+                      </span>
                       <span>
-                        On {" "}
-                        <EditableText
-                          value={activePlant.lightsOn}
-                          className="font-semibold text-lime-100"
-                          onSave={(value) => patchActivePlant({ lightsOn: value })}
+                        On{" "}
+                        <input
+                          type="time"
+                          value={activeLight?.lightsOn ?? activePlant.lightsOn}
+                          onChange={(e) => handleLightsOnChange(e.target.value, !!activeLight)}
+                          className="rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none"
                         />
                       </span>
                       <span>
-                        Off {" "}
-                        <EditableText
-                          value={activePlant.lightsOff}
-                          className="font-semibold text-lime-100"
-                          onSave={(value) => patchActivePlant({ lightsOff: value })}
+                        Off{" "}
+                        <input
+                          type="time"
+                          value={activeLight?.lightsOff ?? activePlant.lightsOff}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (activeLight) {
+                              const updatedLights = activeLights.map((l) =>
+                                l.id === activeLightId ? { ...l, lightsOff: value } : l
+                              );
+                              patchActivePlant({ lights: updatedLights, lightsOff: value });
+                            } else {
+                              patchActivePlant({ lightsOff: value });
+                            }
+                          }}
+                          className="rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none"
                         />
                       </span>
-                      <span className="ml-auto flex items-center gap-2">
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${
-                            lightsOnNow ? "bg-green-500 shadow-[0_0_10px_rgba(158,255,102,0.9)]" : "bg-slate-600"
-                          }`}
-                        />
-                        {lightsOnNow ? "Lights ON" : "Lights OFF"}
+                      <span className=" flex items-center gap-3">
+                        {/* DLI Status Indicator with Tooltip */}
+                        {currentPpfd !== null && dliTooltip && (
+                          <span className="group relative flex items-center gap-1.5">
+                            <span className={`h-2.5 w-2.5 rounded-full ${dliStatus.color} shadow-[0_0_8px_currentColor]`} />
+                            <span className={`text-xs font-medium ${dliStatus.tone}`}>{dliStatus.label}</span>
+                            <Info className="h-3.5 w-3.5 text-lime-100/50 cursor-help" />
+                            {/* Tooltip */}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 rounded-xl border border-lime-300/20 bg-slate-900/95 p-3 text-xs opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-lg">
+                              <p className="font-semibold text-lime-100 mb-1">{dliTooltip.title}</p>
+                              <p className="text-lime-100/80">{dliTooltip.dli}</p>
+                              <p className="text-lime-100/80">{dliTooltip.ppfd}</p>
+                              <p className="text-lime-100/60 mt-1 italic">{dliTooltip.description}</p>
+                              {/* Arrow */}
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+                                <div className="h-2 w-2 rotate-45 border-r border-b border-lime-300/20 bg-slate-900/95"></div>
+                              </div>
+                            </div>
+                          </span>
+                        )}
+                        {/* Lights ON/OFF Indicator */}
+                        <span className="flex items-center gap-2">
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              lightsOnNow ? "bg-green-500 shadow-[0_0_10px_rgba(158,255,102,0.9)]" : "bg-slate-600"
+                            }`}
+                          />
+                          {lightsOnNow ? "Lights ON" : "Lights OFF"}
+                        </span>
                       </span>
                     </div>
-                    {/* <div className="mt-2 rounded-2xl border border-white/8 bg-black/20 p-3"> */}
-                      {/* <div className="flex items-center justify-between gap-2">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Light</p>
-                        <div className="rounded-xl border border-lime-300/20 bg-lime-300/10 p-2 text-lime-200">
-                          <Lightbulb className="h-4 w-4" />
-                        </div>
-                      </div> */}
+
+                    {/* Light Selection Row */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <p className="text-[11px] text-lime-100/65 mb-1">Active Light</p>
+                        {activeLights.length > 0 ? (
+                          <div className="relative">
+                            <select
+                              value={activeLightId ?? ""}
+                              onChange={(e) => handleSelectLight(e.target.value)}
+                              className="w-full rounded-lg border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 outline-none"
+                            >
+                              {activeLights.map((light) => (
+                                <option key={light.id} value={light.id}>
+                                  {light.type}{light.hasDimmer ? ` (${light.dimmerPercent}%)` : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-lime-100/40 italic">No lights configured</p>
+                        )}
+                      </div>
+                      <div className="pt-5">
+                        <button
+                          type="button"
+                          onClick={() => setIsLightModalOpen(true)}
+                          className="rounded-full border border-lime-300/20 bg-lime-300/12 p-2 text-lime-100 hover:bg-lime-300/22 transition"
+                          title="Add light"
+                          aria-label="Add new light"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Light Details Row */}
+                    {activeLight && (
                       <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                        <div className="sm:col-span-1">
-                          <p className="text-[11px] text-lime-100/65">Lamp name</p>
-                          <EditableText
-                            value={activePlant.lightLampName ?? ""}
-                            className="text-sm font-semibold text-lime-100"
-                            onSave={(value) => patchActivePlant({ lightLampName: value })}
-                          />
+                        <div>
+                          <p className="text-[11px] text-lime-100/65">Type</p>
+                          <p className="text-sm font-semibold text-lime-100">{activeLight.type}</p>
                         </div>
                         <div>
                           <p className="text-[11px] text-lime-100/65">Watts</p>
-                          <EditableNumber
-                            suffix=" W"
-                            value={activePlant.lightLampWatts ?? (activePlant.lightType === "blurple_40w" ? 40 : 100)}
-                            onSave={(value) => patchActivePlant({ lightLampWatts: value })}
-                          />
-                        </div>
-                         <div className="sm:col-span-1">
-                          <p className="text-[11px] text-lime-100/65"> PPFD</p>
-                          <p className="text-sm font-semibold text-lime-100">
-                            {ppfd === null ? "--" : `${ppfd}  PPFD`}
-                          </p>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <p className="text-[11px] text-lime-100/65">Type</p>
-                          <select
-                            value={activePlant.lightType ?? "panel_100w"}
-                            onChange={(event) => patchActivePlant({ lightType: event.target.value as "blurple_40w" | "panel_100w" })}
-                            className="mt-1 w-full rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none"
-                          >
-                            <option value="blurple_40w">Vegging Light</option>
-                            <option value="panel_100w">Bloom Light </option>
-                          </select>
+                          <p className="text-sm font-semibold text-lime-100">{activeLight.watts} W</p>
                         </div>
                         <div>
-                          <p className="text-[11px] text-lime-100/65">%</p>
-                          <input
-                            type="number"
-                            min={1}
-                            max={100}
-                            value={typeof activePlant.lightDimmerPercent === "number" ? activePlant.lightDimmerPercent : ""}
-                            onChange={(event) => {
-                              const raw = event.target.value;
-                              if (!raw) {
-                                patchActivePlant({ lightDimmerPercent: undefined });
-                                return;
-                              }
-                              patchActivePlant({
-                                lightDimmerPercent: Math.max(1, Math.min(100, Number(raw) || 1))
-                              });
-                            }}
-                            className="mt-1 w-full rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none"
-                            disabled={(activePlant.lightType ?? "panel_100w") === "blurple_40w"}
-                          />
+                          <p className="text-[11px] text-lime-100/65">PPFD</p>
+                          <p className="text-sm font-semibold text-lime-100">
+                            {currentPpfd !== null ? `${currentPpfd} μmol/m²/s` : "--"}
+                          </p>
                         </div>
-                       
+                        {activeLight.hasDimmer && (
+                          <div className="sm:col-span-3 pb-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <p className="text-[11px] text-lime-100/65">Dimmer</p>
+                              <span className="text-lg font-bold text-lime-100">{activeLight.dimmerPercent ?? 100}%</span>
+                            </div>
+                            <div className="relative">
+                              <div className="h-2 rounded-full bg-gradient-to-r from-green-500/30 to-indigo-500/30" />
+                              <div 
+                                className="absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r from-green-400/60 to-indigo-400/60 transition-all"
+                                style={{ width: `${activeLight.dimmerPercent ?? 100}%` }}
+                              />
+                              <div 
+                                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-lg shadow-green-500/30 pointer-events-none transition-all z-20"
+                                style={{ left: `calc(${activeLight.dimmerPercent ?? 100}% - 6px)` }}
+                              />
+                              <input
+                                type="range"
+                                min={1}
+                                max={100}
+                                value={activeLight.dimmerPercent ?? 100}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  const updatedLights = activeLights.map((l) =>
+                                    l.id === activeLightId ? { ...l, dimmerPercent: val } : l
+                                  );
+                                  patchActivePlant({ lights: updatedLights, lightDimmerPercent: val });
+                                }}
+                                className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer z-10"
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  // </div>
+                    )}
+                  </div>
                 }
               />
             </div>
           </div>
 
-          <AiAssistantPanel 
-            locale={locale} 
-            plant={activePlant}
-            plants={plants}
-            weather={weather} 
-            onPlantUpdate={onPlantUpdate}
-            onPatchPlant={patchActivePlant}
-            onSelectPlant={setActivePlantId}
-            onUpdateWateringData={patchWateringData}
-            onUpdateClimateData={patchClimateData}
-          />
+          {/* AI Assistant Panel - hidden on mobile, shown on desktop */}
+          <div className="hidden md:block">
+            <AiAssistantPanel 
+              locale={locale} 
+              plant={activePlant}
+              plants={plants}
+              weather={weather} 
+              onPlantUpdate={onPlantUpdate}
+              onPatchPlant={patchActivePlant}
+              onSelectPlant={setActivePlantId}
+              onUpdateWateringData={patchWateringData}
+              onUpdateClimateData={patchClimateData}
+              onToggleNotification={handleToggleNotification}
+              notificationsEnabled={notificationsEnabled}
+            />
+          </div>
         </div>
 
         <div className="grid gap-4">
-          {/* VPD Chart */}
+          {/* Growth Progression Chart */}
           <VPDChart
             currentVpd={liveVpd}
             currentTemp={activePlant.growTempC}
             currentHumidity={activePlant.growHumidity}
             currentStage={activePlant.stage}
+            isOpen={isVpdChartOpen}
+            onClose={() => setIsVpdChartOpen(false)}
             onStageChange={(newStage) => patchActivePlant({ stage: newStage })}
           />
 
-          {/* Growth Progression Chart */}
+          {/* AI Assistant Tutorial Modal */}
+          <AiAssistantTutorialModal
+            isOpen={isTutorialOpen}
+            onClose={() => setIsTutorialOpen(false)}
+          />
+
+          {/* Confirmation Modal */}
+          <ConfirmationModal
+            isOpen={confirmState.isOpen}
+            options={confirmState.options}
+            onConfirm={handleConfirm}
+            onCancel={handleCancel}
+          />
+
+          {/* Light Configuration Modal */}
+          <LightConfigModal
+            isOpen={isLightModalOpen}
+            onClose={() => setIsLightModalOpen(false)}
+            onSave={handleSaveLight}
+            existingLights={activeLights}
+            onDeleteLight={handleDeleteLight}
+            onSelectLight={handleSelectLight}
+            activeLightId={activeLightId}
+            currentStage={activePlant.stage}
+          />
+
+          {/* Calendar Configuration Modal */}
+          <CalendarConfigModal
+            isOpen={isCalendarConfigOpen}
+            onClose={() => setIsCalendarConfigOpen(false)}
+            onSave={() => {}}
+          />
+
           <GrowChart
+            onOpenVpdChart={() => setIsVpdChartOpen(true)}
             plantId={activePlant.id}
             logs={dailyLogs}
             wateringData={activePlant.wateringData}
@@ -728,53 +1257,124 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-lime-200">{t.timeline}</p>
                   <h3 className="mt-2 text-lg font-semibold text-lime-100">{activePlant.strainName}</h3>
                 </div>
-                <CalendarDays className="h-4 w-4 text-lime-300" />
+                <button
+                  onClick={() => setIsCalendarConfigOpen(true)}
+                  className="p-2 hover:bg-white/10 border border-lime-300/20 rounded-lg transition"
+                  title="Timeline Settings"
+                >
+                  <Settings className="h-5 w-5 text-lime-300" />
+                </button>
               </div>
-              <div className="mt-4 flex  gap-2 sm:grid-cols-2">
-                <MiniInfo label={t.stage} value={<EditableStage value={activePlant.stage} onSave={handleStageChange} />} />
-                <MiniInfo label={t.totalDays} value={<span className="text-sm font-semibold text-lime-100">{cycleDetailed.totalDays}</span>} />
-                <MiniInfo
-                  label="Days Seedling"
-                  value={
-                    <EditableNumber
-                      value={activePlant.stageDays.seedling}
-                      onSave={(value) => patchActivePlant({ stageDays: { ...activePlant.stageDays, seedling: value } })}
-                    />
-                  }
-                />
-                <MiniInfo
-                  label="Days Vegging"
-                  value={
-                    <EditableNumber
-                      value={activePlant.stageDays.veg}
-                      onSave={(value) => {
-                        const wasInactive = activePlant.stageDays.veg === 0;
-                        const isActivating = wasInactive && value > 0;
-                        patchActivePlant({
-                          stageDays: { ...activePlant.stageDays, veg: value },
-                          ...(isActivating && !activePlant.vegStartedAt ? { vegStartedAt: new Date().toISOString() } : {})
-                        });
-                      }}
-                    />
-                  }
-                />
-                <MiniInfo
-                  label="Days Bloom"
-                  value={
-                    <EditableNumber
-                      value={activePlant.stageDays.bloom}
-                      onSave={(value) => {
-                        const wasInactive = activePlant.stageDays.bloom === 0;
-                        const isActivating = wasInactive && value > 0;
-                        patchActivePlant({
-                          stageDays: { ...activePlant.stageDays, bloom: value },
-                          ...(isActivating && !activePlant.bloomStartedAt ? { bloomStartedAt: new Date().toISOString() } : {})
-                        });
-                      }}
-                    />
-                  }
-                />
-              </div>
+               <div className="mt-4 flex  gap-2 sm:grid-cols-2">
+                 <MiniInfo label={t.stage} value={<EditableStage value={activePlant.stage} onSave={handleStageChange} />} />
+                 <MiniInfo label={t.totalDays} value={<span className="text-sm font-semibold text-lime-100">{elapsedSeedling + elapsedVeg + elapsedBloom} days</span>} />
+                 
+                 {/* Seedling Stage - Start Date (read-only days calculated from startedAt) */}
+                 <MiniInfo
+                   label={<span className="flex items-center gap-1.5"><Sprout className="h-3.5 w-3.5 text-sky-500" /> Seedling Start</span>}
+                   value={
+                     <EditableDate
+                       dateIso={activePlant.startedAt}
+                       locale={locale}
+                       onSave={(value) => patchActivePlant({ startedAt: `${value}T09:00:00.000Z` })}
+                       maxDate={new Date().toISOString().slice(0, 10)}
+                       disabled={!!activePlant.vegStartedAt}
+                     />
+                   }
+                 />
+                 <MiniInfo
+                   label="Days in Seedling"
+                   value={<span className="text-sm font-semibold text-lime-100">{elapsedSeedling} days</span>}
+                 />
+                 
+                 {/* Veg Stage - Date Picker (read-only days calculated from vegStartedAt) */}
+                 <MiniInfo
+                   label={<span className="flex items-center gap-1.5"><Cannabis className="h-3.5 w-3.5 text-green-500" /> Veg Start</span>}
+                   value={
+                     <EditableDate
+                       dateIso={activePlant.vegStartedAt || ""}
+                       locale={locale}
+                       onSave={(value) => {
+                         if (!value) {
+                           // Clearing veg date - reset to seedling and cascade
+                           const patch: Partial<PlantProfile> = {
+                             vegStartedAt: undefined,
+                             stage: "Seedling"
+                           };
+                           // Also clear bloom if it exists (can't have bloom without veg)
+                           if (activePlant.bloomStartedAt) {
+                             patch.bloomStartedAt = undefined;
+                           }
+                           patchActivePlant(patch);
+                         } else {
+                           const newVegDate = new Date(`${value}T09:00:00.000Z`).toISOString();
+                           const patch: Partial<PlantProfile> = {
+                             vegStartedAt: newVegDate
+                           };
+                           // Auto-update stage based on dates
+                           if (!activePlant.vegStartedAt) {
+                             // First time setting veg - move to veg stage
+                             patch.stage = "Veg";
+                           }
+                           // If bloom exists and is before new veg date, clear bloom
+                           if (activePlant.bloomStartedAt && new Date(activePlant.bloomStartedAt) < new Date(newVegDate)) {
+                             patch.bloomStartedAt = undefined;
+                             patch.stage = "Veg";
+                           }
+                           patchActivePlant(patch);
+                         }
+                       }}
+                       placeholder="Not set"
+                       minDate={activePlant.startedAt?.slice(0, 10) || ""}
+                       maxDate={activePlant.bloomStartedAt ? activePlant.bloomStartedAt.slice(0, 10) : new Date().toISOString().slice(0, 10)}
+                       disabled={!!activePlant.bloomStartedAt}
+                     />
+                   }
+                 />
+                 <MiniInfo
+                   label="Days in Veg"
+                   value={<span className="text-sm font-semibold text-lime-100">{elapsedVeg} days</span>}
+                 />
+                 
+                 {/* Bloom Stage - Date Picker (read-only days calculated from bloomStartedAt) */}
+                 <MiniInfo
+                   label={<span className="flex items-center gap-1.5"><Wheat className="h-3.5 w-3.5 text-indigo-500" /> Bloom Start</span>}
+                   value={
+                     <EditableDate
+                       dateIso={activePlant.bloomStartedAt || ""}
+                       locale={locale}
+                       onSave={(value) => {
+                         if (!value) {
+                           // Clearing bloom date - reset to veg stage
+                           const patch: Partial<PlantProfile> = {
+                             bloomStartedAt: undefined,
+                             stage: activePlant.vegStartedAt ? "Veg" : "Seedling"
+                           };
+                           patchActivePlant(patch);
+                         } else {
+                           const newBloomDate = new Date(`${value}T09:00:00.000Z`).toISOString();
+                           const patch: Partial<PlantProfile> = {
+                             bloomStartedAt: newBloomDate
+                           };
+                           // Auto-update stage based on dates
+                           if (!activePlant.bloomStartedAt) {
+                             // First time setting bloom - move to bloom stage
+                             patch.stage = "Bloom";
+                           }
+                           patchActivePlant(patch);
+                         }
+                       }}
+                       placeholder="Not set"
+                       minDate={activePlant.vegStartedAt ? activePlant.vegStartedAt.slice(0, 10) : activePlant.startedAt?.slice(0, 10) || ""}
+                       maxDate={new Date().toISOString().slice(0, 10)}
+                     />
+                   }
+                 />
+                 <MiniInfo
+                   label="Days in Bloom"
+                   value={<span className="text-sm font-semibold text-lime-100">{elapsedBloom} days</span>}
+                 />
+               </div>
 
               {/* Calendar View */}
               <div className="mt-6 border-t border-white/10 pt-6">
@@ -833,7 +1433,37 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
               </div>
 
               <div className="mt-4 rounded-2xl border border-white/8 bg-black/20 p-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Nutrient calculator</p>
+                {/* Toggle between Classic and Checker */}
+                <div className="flex items-center justify-between mb-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">Nutrient calculator</p>
+                  <div className="flex rounded-full border border-lime-300/20 bg-black/30 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setNutrientView("classic")}
+                      className={`rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-wider transition ${
+                        nutrientView === "classic"
+                          ? "bg-lime-300/20 text-lime-200"
+                          : "text-slate-400 hover:text-slate-300"
+                      }`}
+                    >
+                      Classic
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNutrientView("checker")}
+                      className={`rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-wider transition ${
+                        nutrientView === "checker"
+                          ? "bg-lime-300/20 text-lime-200"
+                          : "text-slate-400 hover:text-slate-300"
+                      }`}
+                    >
+                      Checker
+                    </button>
+                  </div>
+                </div>
+
+                {/* Classic Nutrient Calculator */}
+                <div className={nutrientView === "classic" ? "" : "hidden"}>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   <div className="sm:col-span-2">
                     <p className="text-[11px] text-lime-100/65">Period</p>
@@ -880,6 +1510,12 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                     targetEc: nutrientTargetEc
                   })}
                 </div>
+                </div>
+
+                {/* Smart Nutrient Checker */}
+                <div className={nutrientView === "checker" ? "" : "hidden"}>
+                  <NutrientChecker plant={activePlant} />
+                </div>
               </div>
 
               <div className="mt-3 rounded-2xl border border-white/8 bg-black/20 p-3">
@@ -904,6 +1540,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                     }
                     className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"
                     title="Add additive"
+                    aria-label="Add new additive"
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
@@ -947,6 +1584,33 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
           </div>
         </div>
       </section>
+
+      {/* Mobile Floating Action Button - only visible on mobile */}
+      <button
+        type="button"
+        onClick={() => setIsAiChatOpen(true)}
+        className="md:hidden fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-lime-300/40 bg-gradient-to-br from-lime-300/25 via-emerald-400/20 to-teal-300/25 text-lime-100 shadow-[0_0_30px_8px_rgba(178,255,102,0.18),0_0_50px_16px_rgba(16,185,129,0.12)] hover:from-lime-300/35 hover:via-emerald-400/30 hover:to-teal-300/35 transition-all hover:scale-105 active:scale-95"
+        aria-label="Open AI chat"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </button>
+
+      {/* AI Chat Modal - mobile only */}
+      <AiChatModal
+        isOpen={isAiChatOpen}
+        onClose={() => setIsAiChatOpen(false)}
+        locale={locale}
+        plant={activePlant}
+        plants={plants}
+        weather={weather}
+        onPlantUpdate={onPlantUpdate}
+        onPatchPlant={patchActivePlant}
+        onSelectPlant={setActivePlantId}
+        onUpdateWateringData={patchWateringData}
+        onUpdateClimateData={patchClimateData}
+        onToggleNotification={handleToggleNotification}
+        notificationsEnabled={notificationsEnabled}
+      />
     </main>
   );
 }
@@ -974,7 +1638,7 @@ function CompactMetric({
   );
 }
 
-function MiniInfo({ label, value }: { label: string; value: React.ReactNode }) {
+function MiniInfo({ label, value }: { label: React.ReactNode; value: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-white/8 bg-white/5 p-3">
       <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">{label}</p>
@@ -1025,14 +1689,25 @@ function EditableText({ value, onSave, className }: { value: string; onSave: (va
   );
 }
 
-function EditableDate({ dateIso, locale, onSave }: { dateIso: string; locale: Locale; onSave: (value: string) => void }) {
+function EditableDate({ dateIso, locale, onSave, placeholder, minDate, maxDate, disabled }: { dateIso: string; locale: Locale; onSave: (value: string) => void; placeholder?: string; minDate?: string; maxDate?: string; disabled?: boolean }) {
   const [editing, setEditing] = useState(false);
-  const formatted = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", year: "numeric" }).format(new Date(dateIso));
-  const inputValue = dateIso.slice(0, 10);
+  const hasDate = dateIso && dateIso.length > 0;
+  const formatted = hasDate 
+    ? new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", year: "numeric" }).format(new Date(dateIso))
+    : placeholder || "Not set";
+  const inputValue = hasDate ? dateIso.slice(0, 10) : "";
+
+  if (disabled) {
+    return (
+      <div className="text-left text-sm font-semibold text-lime-100/40 cursor-not-allowed" title="Locked: a later stage has started">
+        {formatted}
+      </div>
+    );
+  }
 
   if (!editing) {
     return (
-      <button type="button" onDoubleClick={() => setEditing(true)} className="text-left text-sm font-semibold text-lime-100" title="Double click to edit">
+      <button type="button" onDoubleClick={() => setEditing(true)} className={`text-left text-sm font-semibold ${hasDate ? "text-lime-100" : "text-lime-100/50 italic"}`} title="Double click to edit">
         {formatted}
       </button>
     );
@@ -1043,10 +1718,15 @@ function EditableDate({ dateIso, locale, onSave }: { dateIso: string; locale: Lo
       type="date"
       autoFocus
       defaultValue={inputValue}
+      min={minDate || ""}
+      max={maxDate || ""}
       onBlur={(event) => {
         setEditing(false);
         if (event.target.value) {
           onSave(event.target.value);
+        } else {
+          // Clear the date when input is emptied
+          onSave("");
         }
       }}
       onKeyDown={(event) => {
@@ -1055,7 +1735,11 @@ function EditableDate({ dateIso, locale, onSave }: { dateIso: string; locale: Lo
           setEditing(false);
           if (value) {
             onSave(value);
+          } else {
+            onSave("");
           }
+        } else if (event.key === "Escape") {
+          setEditing(false);
         }
       }}
       className="w-full rounded-lg border border-lime-300/30 bg-black/20 px-2 py-1 text-sm text-lime-100 outline-none"
@@ -1085,10 +1769,8 @@ function EditableStage({ value, onSave }: { value: GrowStage; onSave: (value: Gr
       className="w-full rounded-lg border border-lime-300/30 bg-black/20 px-2 py-1 text-sm text-lime-100 outline-none"
     >
       <option value="Seedling">Seedling</option>
-      <option value="Veg">Veg</option>
+      <option value="Veg">Vegging</option>
       <option value="Bloom">Bloom</option>
-      <option value="Dry">Dry</option>
-      <option value="Cure">Cure</option>
     </select>
   );
 }
@@ -1269,11 +1951,11 @@ function estimatePpfd(lightType: "blurple_40w" | "panel_100w", dimmerPercent: nu
   return points[points.length - 1][1];
 }
 
-function getStageLeafTone(stage: GrowStage) {
-  if (stage === "Seedling") return "text-green-500";
-  if (stage === "Veg") return "text-green-300";
-  if (stage === "Bloom") return "text-indigo-300";
-  return "text-indigo-500";
+function getStageIcon(stage: GrowStage) {
+  if (stage === "Seedling") return <Sprout className="h-4 w-4 text-sky-500" />;
+  if (stage === "Veg") return <Cannabis className="h-4 w-4 text-green-500" />;
+  if (stage === "Bloom") return <Wheat className="h-4 w-4 text-indigo-500" />;
+  return <Leaf className="h-4 w-4 text-lime-300" />;
 }
 
 function StageProgressBar({

@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Settings, Sprout, Cannabis, Wheat, Droplets, Bell } from "lucide-react";
 import type { PlantProfile } from "@/lib/types";
+import { STAGE_TARGETS } from "@/lib/config";
+import { TimelineEventFeed } from "@/components/dashboard/timeline-event-feed";
+import { CalendarConfigModal, CalendarConfig, loadCalendarConfig } from "@/components/dashboard/calendar-config-modal";
 
 type CalendarDay = {
   date: Date;
@@ -11,38 +14,100 @@ type CalendarDay = {
   hasVeg: boolean;
   hasBloom: boolean;
   wateringCount: number;
+  isSeedlingDay: boolean;
+  isVegDay: boolean;
+  isBloomDay: boolean;
+  isNextWateringDay: boolean;
 };
 
 export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
   const today = new Date();
   const [displayMonth, setDisplayMonth] = useState(today.getMonth());
   const [displayYear, setDisplayYear] = useState(today.getFullYear());
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [config, setConfig] = useState<CalendarConfig>({
+    seedlingDuration: STAGE_TARGETS.seedling,
+    vegDuration: STAGE_TARGETS.veg,
+    bloomDuration: STAGE_TARGETS.bloom,
+    showWatering: true,
+    showSeedling: true,
+    showVeg: true,
+    showBloom: true
+  });
 
-  const { days, monthName } = useMemo(() => {
+  // Load config on mount
+  useEffect(() => {
+    loadCalendarConfig().then(setConfig);
+  }, []);
+
+  // Use config values for stage durations
+  const seedlingDuration = config.seedlingDuration;
+  const vegDuration = config.vegDuration;
+  const bloomDuration = config.bloomDuration;
+
+  const { days, monthName, nextWateringDate } = useMemo(() => {
     const firstDay = new Date(displayYear, displayMonth, 1);
     const lastDay = new Date(displayYear, displayMonth + 1, 0);
     const prevLastDay = new Date(displayYear, displayMonth, 0);
 
-    // Calculate stage start dates based on durations (not elapsed time)
-    const seedlingStartDate = new Date(plant.startedAt);
-    const vegStartDate = new Date(seedlingStartDate);
-    vegStartDate.setDate(vegStartDate.getDate() + plant.stageDays.seedling);
-    const bloomStartDate = new Date(vegStartDate);
-    bloomStartDate.setDate(bloomStartDate.getDate() + plant.stageDays.veg);
+    // Calculate next watering date
+    let nextWateringDate: Date | null = null;
+    if (plant.wateringData.length > 0) {
+      const sorted = [...plant.wateringData].sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      const latest = sorted[0];
+      nextWateringDate = new Date(new Date(latest.timestamp).getTime() + plant.wateringIntervalDays * 24 * 60 * 60 * 1000);
+    }
+
+    // Calculate stage date ranges based on actual timestamps only
+    const startedAt = new Date(plant.startedAt);
+    const vegStartedAt = plant.vegStartedAt ? new Date(plant.vegStartedAt) : null;
+    const bloomStartedAt = plant.bloomStartedAt ? new Date(plant.bloomStartedAt) : null;
+
+    // Stage start dates from actual timestamps
+    const vegStartDate = vegStartedAt ? new Date(vegStartedAt) : null;
+    const bloomStartDate = bloomStartedAt ? new Date(bloomStartedAt) : null;
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+
+    // Calculate stage end dates based on configured durations
+    const seedlingEndFromDate = new Date(startedAt);
+    seedlingEndFromDate.setDate(seedlingEndFromDate.getDate() + seedlingDuration);
+    const seedlingEndDate = vegStartDate && vegStartDate < seedlingEndFromDate ? vegStartDate : seedlingEndFromDate;
+
+    let vegEndDate: Date | null = null;
+    if (vegStartDate) {
+      const vegEndFromDate = new Date(vegStartDate);
+      vegEndFromDate.setDate(vegEndFromDate.getDate() + vegDuration);
+      vegEndDate = bloomStartDate && bloomStartDate < vegEndFromDate ? bloomStartDate : vegEndFromDate;
+    }
+
+    let bloomEndDate: Date | null = null;
+    if (bloomStartDate) {
+      bloomEndDate = new Date(bloomStartDate);
+      bloomEndDate.setDate(bloomEndDate.getDate() + bloomDuration);
+    }
 
     const daysArray: CalendarDay[] = [];
 
     // Previous month days
     const startDate = firstDay.getDay();
     for (let i = startDate - 1; i >= 0; i--) {
-      const date = new Date(prevLastDay.getTime() - i * 24 * 60 * 60 * 1000);
+      const date = new Date(prevLastDay);
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
       daysArray.push({
         date,
         isCurrentMonth: false,
         hasSeedling: false,
         hasVeg: false,
         hasBloom: false,
-        wateringCount: 0
+        wateringCount: 0,
+        isSeedlingDay: false,
+        isVegDay: false,
+        isBloomDay: false,
+        isNextWateringDay: false
       });
     }
 
@@ -50,24 +115,33 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
     for (let i = 1; i <= lastDay.getDate(); i++) {
       const date = new Date(displayYear, displayMonth, i);
       const dateStr = date.toDateString();
+      const dateTime = date.getTime();
 
-      // Check for stage starts based on calculated dates
-      const hasSeedling = seedlingStartDate.toDateString() === dateStr;
-      const hasVeg = plant.stageDays.veg > 0 && vegStartDate.toDateString() === dateStr;
-      const hasBloom = plant.stageDays.bloom > 0 && bloomStartDate.toDateString() === dateStr;
+      const hasSeedling = startedAt.toDateString() === dateStr;
+      const hasVeg = vegStartDate && vegStartDate.toDateString() === dateStr;
+      const hasBloom = bloomStartDate && bloomStartDate.toDateString() === dateStr;
 
-      // Count waterings
+      const isSeedlingDay = dateTime >= startedAt.getTime() && dateTime < seedlingEndDate.getTime();
+      const isVegDay = vegStartDate !== null && vegEndDate !== null && dateTime >= vegStartDate.getTime() && dateTime < vegEndDate.getTime();
+      const isBloomDay = bloomStartDate !== null && bloomEndDate !== null && dateTime >= bloomStartDate.getTime() && dateTime < bloomEndDate.getTime();
+
       const wateringCount = plant.wateringData.filter(
         (w) => new Date(w.timestamp).toDateString() === dateStr
       ).length;
 
+      const isNextWateringDay = nextWateringDate !== null && nextWateringDate.toDateString() === dateStr;
+
       daysArray.push({
         date,
         isCurrentMonth: true,
-        hasSeedling,
-        hasVeg,
-        hasBloom,
-        wateringCount
+        hasSeedling: !!hasSeedling,
+        hasVeg: !!hasVeg,
+        hasBloom: !!hasBloom,
+        wateringCount,
+        isSeedlingDay,
+        isVegDay: !!isVegDay,
+        isBloomDay: !!isBloomDay,
+        isNextWateringDay
       });
     }
 
@@ -81,7 +155,11 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
         hasSeedling: false,
         hasVeg: false,
         hasBloom: false,
-        wateringCount: 0
+        wateringCount: 0,
+        isSeedlingDay: false,
+        isVegDay: false,
+        isBloomDay: false,
+        isNextWateringDay: false
       });
     }
 
@@ -102,9 +180,10 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
 
     return {
       days: daysArray,
-      monthName: `${monthNames[displayMonth]} ${displayYear}`
+      monthName: `${monthNames[displayMonth]} ${displayYear}`,
+      nextWateringDate
     };
-  }, [displayMonth, displayYear, plant]);
+  }, [displayMonth, displayYear, plant, seedlingDuration, vegDuration, bloomDuration]);
 
   const handlePrevMonth = () => {
     if (displayMonth === 0) {
@@ -130,118 +209,172 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
   };
 
   return (
-    <div className="glass-panel rounded-3xl p-4 w-[50%]">
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <button
-          onClick={handlePrevMonth}
-          className="p-2 hover:bg-white/10 rounded-lg transition"
-        >
-          <ChevronLeft className="h-5 w-5 text-lime-300" />
-        </button>
+    <>
+      <div className="glass-panel rounded-3xl p-4 sm:w-full m-auto">
+        {/* Calendar + Feed layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+          {/* Calendar section - 60% width on desktop */}
+          <div className="xl:col-span-7 min-w-0">
+            {/* Header with nav and settings */}
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <button
+                onClick={handlePrevMonth}
+                className="p-2 hover:bg-white/10 rounded-lg transition"
+              >
+                <ChevronLeft className="h-5 w-5 text-lime-300" />
+              </button>
 
-        <h2 className="text-center text-lg font-bold text-lime-100 min-w-48">
-          {monthName}
-        </h2>
+              <h2 className="text-center text-lg font-bold text-lime-100 min-w-48">
+                {monthName}
+              </h2>
 
-        <button
-          onClick={handleNextMonth}
-          className="p-2 hover:bg-white/10 rounded-lg transition"
-        >
-          <ChevronRight className="h-5 w-5 text-lime-300" />
-        </button>
-      </div>
-
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div
-            key={day}
-            className="text-center text-xs font-semibold text-lime-300/80 py-2"
-          >
-            {day}
-          </div>
-        ))}
-      </div>
-
-      {/* Calendar days */}
-      <div className="grid grid-cols-7 gap-1">
-        {days.map((day, idx) => {
-          const isToday = day.date.toDateString() === today.toDateString();
-          const hasEvents =
-            day.hasSeedling || day.hasVeg || day.hasBloom || day.wateringCount > 0;
-
-          return (
-            <div
-              key={idx}
-              className={`aspect-square  p-1 flex flex-col items-start justify-between text-sm transition ${
-                isToday
-                  ? "bg-lime-400/30 border-2 border-lime-300 font-bold text-lime-100"
-                  : day.isCurrentMonth
-                  ? "bg-white/5 border border-white/10 text-lime-100"
-                  : "bg-black/20 border border-white/5 text-lime-100/40"
-              }`}
-            >
-              <span className={isToday ? "font-bold" : ""}>
-                {day.date.getDate()}
-              </span>
-
-              {/* Event indicators */}
-              <div className="flex gap-0.5 flex-wrap justify-start w-full">
-                {day.hasSeedling && (
-                  <span className="text-[10px] bg-green-500/60 px-1 py-0.5 rounded text-white font-semibold">
-                    🌱
-                  </span>
-                )}
-                {day.hasVeg && (
-                  <span className="text-[10px] bg-green-400/60 px-1 py-0.5 rounded text-white font-semibold">
-                    🌿
-                  </span>
-                )}
-                {day.hasBloom && (
-                  <span className="text-[10px] bg-indigo-500/60 px-1 py-0.5 rounded text-white font-semibold">
-                    🌸
-                  </span>
-                )}
-                {day.wateringCount > 0 && (
-                  <span className="text-[10px] bg-blue-500/60 px-1 py-0.5 rounded text-white font-semibold">
-                    💧 
-                  </span>
-                )}
+              <div className="flex items-center gap-2">
+                {/* <button
+                  onClick={() => setIsConfigOpen(true)}
+                  className="p-2 hover:bg-white/10 rounded-lg transition"
+                  title="Timeline Settings"
+                >
+                  <Settings className="h-5 w-5 text-lime-300" />
+                </button> */}
+                <button
+                  onClick={handleNextMonth}
+                  className="p-2 hover:bg-white/10 rounded-lg transition"
+                >
+                  <ChevronRight className="h-5 w-5 text-lime-300" />
+                </button>
               </div>
             </div>
-          );
-        })}
-      </div>
 
-      {/* Today button and legend */}
-      <div className="mt-4 flex items-center justify-between">
-        <button
-          onClick={handleToday}
-          className="px-3 py-1 text-xs font-semibold bg-lime-300/20 border border-lime-300/40 rounded-lg hover:bg-lime-300/30 transition text-lime-200"
-        >
-          Today
-        </button>
+            {/* Weekday headers */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-xs font-semibold text-lime-300/80 py-2"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
 
-        <div className="flex gap-3 text-[10px]">
-          <div className="flex items-center gap-1">
-            <span className="text-xs">🌱</span>
-            <span className="text-lime-100/70">Seedling</span>
+            {/* Calendar days - horizontal scroll on mobile */}
+            <div className="overflow-x-auto -mx-1 sm:mx-0">
+              <div className=" min-w-[280px] sm:min-w-0">
+                <div className="grid grid-cols-7 gap-1 min-w-[280px] sm:min-w-0">
+                  {days.map((day, idx) => {
+                    const isToday = day.date.toDateString() === today.toDateString();
+
+                    let stageBorderClass = "border border-white/10";
+                    if (day.isCurrentMonth && !isToday) {
+                      if (day.isBloomDay) {
+                        stageBorderClass = "border-2 border-indigo-500/80";
+                      } else if (day.isVegDay) {
+                        stageBorderClass = "border-2 border-green-500/80";
+                      } else if (day.isSeedlingDay) {
+                        stageBorderClass = "border-2 border-sky-500/80";
+                      }
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`aspect-square p-1 flex flex-col items-start justify-between text-sm transition min-w-[36px] sm:min-w-0 ${
+                          isToday
+                            ? "bg-lime-400/30 border-2 border-lime-300 font-bold text-lime-100"
+                            : day.isCurrentMonth
+                            ? `bg-white/5 ${stageBorderClass} text-lime-100`
+                            : "bg-black/20 border border-white/5 text-lime-100/40"
+                        }`}
+                      >
+                        <span className={isToday ? "font-bold" : ""}>
+                          {day.date.getDate()}
+                        </span>
+
+                        {/* Event indicators */}
+                        <div className="flex gap-0.5 flex-wrap justify-start w-full">
+                          {day.isNextWateringDay && (
+                            <span className="text-[10px] bg-amber-500/60 px-1 py-0.5 rounded text-white font-semibold">
+                              <Bell className="h-3 w-3" />
+                            </span>
+                          )}
+                          {day.hasSeedling && (
+                            <span className="text-[10px] bg-sky-500/60 px-1 py-0.5 rounded text-white font-semibold">
+                              <Sprout className="h-3 w-3" />
+                            </span>
+                          )}
+                          {day.hasVeg && (
+                            <span className="text-[10px] bg-green-500/60 px-1 py-0.5 rounded text-white font-semibold">
+                              <Cannabis className="h-3 w-3" />
+                            </span>
+                          )}
+                          {day.hasBloom && (
+                            <span className="text-[10px] bg-indigo-500/60 px-1 py-0.5 rounded text-white font-semibold">
+                              <Wheat className="h-3 w-3" />
+                            </span>
+                          )}
+                          {day.wateringCount > 0 && (
+                            <span className="text-[10px] bg-blue-500/60 px-1 py-0.5 rounded text-white font-semibold">
+                              <Droplets className="h-3 w-3" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Today button and legend */}
+            <div className="mt-4 flex items-center justify-between">
+              <button
+                onClick={handleToday}
+                className="px-3 py-1 text-xs font-semibold bg-lime-300/20 border border-lime-300/40 rounded-lg hover:bg-lime-300/30 transition text-lime-200"
+              >
+                Today
+              </button>
+
+              <div className="flex gap-3 text-[10px] flex-wrap">
+                <div className="flex items-center gap-1">
+                  <Sprout className="h-3.5 w-3.5 text-sky-500" />
+                  <span className="text-lime-100/70">Seedling</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Cannabis className="h-3.5 w-3.5 text-green-500" />
+                  <span className="text-lime-100/70">Veg</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Wheat className="h-3.5 w-3.5 text-indigo-500" />
+                  <span className="text-lime-100/70">Bloom</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Droplets className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="text-lime-100/70">Watering</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Bell className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="text-lime-100/70">Next Watering</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs">🌿</span>
-            <span className="text-lime-100/70">Veg</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs">🌸</span>
-            <span className="text-lime-100/70">Bloom</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs">💧</span>
-            <span className="text-lime-100/70">Watering</span>
+
+          {/* Feed section - 40% width on desktop, 100% stacked on mobile */}
+          <div className="xl:col-span-5 flex flex-col">
+            <h3 className="text-sm text-center font-bold text-lime-100 mb-5 mt-3 uppercase tracking-wider">Activity Feed</h3>
+            <div className="flex-1 min-h-0">
+              <TimelineEventFeed plant={plant} config={config} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Config Modal */}
+      <CalendarConfigModal
+        isOpen={isConfigOpen}
+        onClose={() => setIsConfigOpen(false)}
+        onSave={(newConfig) => setConfig(newConfig)}
+      />
+    </>
   );
 }
-

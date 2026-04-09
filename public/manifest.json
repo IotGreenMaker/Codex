@@ -1,0 +1,38 @@
+{
+  "name": "G-Buddy - AI Grow Companion",
+  "short_name": "G-Buddy",
+  "description": "Your AI-powered grow companion. 100% private. 100% offline. No account needed.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#84cc16",
+  "orientation": "any",
+  "categories": ["utilities", "lifestyle"],
+  "icons": [
+    {
+      "src": "/g-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/g-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Open your grow dashboard"
+    }
+  ]
+}

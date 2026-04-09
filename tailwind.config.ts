@@ -31,6 +31,23 @@ const config: Config = {
       },
       backgroundSize: {
         "hero-grid": "auto, 32px 32px, 32px 32px"
+      },
+      keyframes: {
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" }
+        },
+        "stroke-cycle": {
+          "0%": { stroke: "#4ade80" },
+          "25%": { stroke: "#b26bff" },
+          "50%": { stroke: "#60a5fa" },
+          "75%": { stroke: "#f472b6" },
+          "100%": { stroke: "#4ade80" }
+        }
+      },
+      animation: {
+        "fade-in-up": "fade-in-up 0.3s ease-out forwards",
+        "stroke-cycle": "stroke-cycle 2s ease-in-out infinite"
       }
     }
   },

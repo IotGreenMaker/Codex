@@ -5,7 +5,8 @@ import type { PlantProfile } from '@/lib/types'
 
 export function buildGrowContext(
   plant: PlantProfile,
-  plants: PlantProfile[] = []
+  plants: PlantProfile[] = [],
+  notificationsEnabled: boolean = false
 ): string {
   // Calculate days since start
   const startDate = new Date(plant.startedAt)
@@ -83,8 +84,11 @@ ${waterLine}
 - Target EC: ${plant.waterEc}
 
 ## OTHER PLANTS IN ROOM
-${otherPlants || 'No other plants tagged.'}
+ ${otherPlants || 'No other plants tagged.'}
 
-Be concise (1-2 sentences) and focus on actionable advice based on the grow data above.
+## NOTIFICATIONS
+ - Watering notifications: ${notificationsEnabled ? 'ENABLED' : 'DISABLED'}
+
+ Be concise (1-2 sentences) and focus on actionable advice based on the grow data above.
 `.trim()
 }

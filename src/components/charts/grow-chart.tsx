@@ -21,23 +21,24 @@ import type { Locale } from "@/lib/i18n";
 
 type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
 
-type GrowChartProps = {
-  plantId: string;
-  logs: GrowLogEntry[];
-  wateringData: WateringEntry[];
-  climateData: ClimateEntry[];
-  stage: GrowStage;
-  locale: Locale;
-  wateringIntervalDays: number;
-  onWateringDataChange: (next: WateringEntry[]) => void;
-  onClimateDataChange: (next: ClimateEntry[]) => void;
-  onUpdateInterval?: (intervalDays: number) => void;
-  onWaterNow?: () => void;
-  labels: {
-    progression: string;
-    tempHumidityVpd: string;
+  type GrowChartProps = {
+    plantId: string;
+    logs: GrowLogEntry[];
+    wateringData: WateringEntry[];
+    climateData: ClimateEntry[];
+    stage: GrowStage;
+    locale: Locale;
+    wateringIntervalDays: number;
+    onWateringDataChange: (next: WateringEntry[]) => void;
+    onClimateDataChange: (next: ClimateEntry[]) => void;
+    onUpdateInterval?: (intervalDays: number) => void;
+    onWaterNow?: () => void;
+    onOpenVpdChart?: () => void;
+    labels: {
+      progression: string;
+      tempHumidityVpd: string;
+    };
   };
-};
 
 export function GrowChart({
   plantId,
@@ -51,6 +52,7 @@ export function GrowChart({
   onClimateDataChange,
   onUpdateInterval,
   onWaterNow,
+  onOpenVpdChart,
   labels
 }: GrowChartProps) {
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("WEEK");
@@ -200,6 +202,16 @@ export function GrowChart({
            
           </div>
           <div className="flex items-center gap-2">
+            {onOpenVpdChart && (
+              <button
+                type="button"
+                onClick={onOpenVpdChart}
+                className="rounded-lg px-2 py-1 ml-5 text-xs font-semibold  border border-lime-300/20 bg-slate-300/20 text-lime-200/50 hover:bg-lime-300/25 transition flex items-center gap-1"
+                title="Open VPD Chart"
+              >
+                VPD CHART
+              </button>
+            )}
             {(["DAY", "WEEK", "MONTH", "ALL"] as const).map((period) => (
               <button
                 key={period}
@@ -226,15 +238,15 @@ export function GrowChart({
                   }
                 ])
               }
-              className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1.5 text-lime-100"
+              className="rounded-lg border-2 font-bold  border-lime-300/70 bg-lime-300/20 p-3 text-slate-300 hover:bg-lime-300/60"
               title="Add climate datapoint"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 " />
             </button>
           </div>
         </div>
         <p className="mb-3 text-xs text-lime-100/70">{labels.tempHumidityVpd}</p>
-        <div className="h-52">
+        <div className="h-40 sm:h-52">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={climateChartData}>
               <defs>
@@ -248,9 +260,9 @@ export function GrowChart({
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-              <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="climate" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="vpd" orientation="right" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+              <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="climate" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="vpd" orientation="right" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
               <ReferenceArea yAxisId="vpd" y1={idealVpd.min} y2={idealVpd.max} fill="rgba(158,255,102,0.8)" />
               <Tooltip
                 contentStyle={{
@@ -266,15 +278,15 @@ export function GrowChart({
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-4 rounded-2xl bg-black/20 overflow-auto max-h-[30vh]">
-          <table className="w-full border-collapse text-xs text-lime-100">
-            <thead className="bg-black/25">
+        <div className="mt-4 rounded-2xl bg-black/20 overflow-x-auto max-h-[30vh]">
+          <table className="w-full border-collapse text-[10px] sm:text-xs text-lime-100 min-w-[400px]">
+            <thead className="bg-black/25 sticky top-0 z-10">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
-                <th className="px-3 py-2">Weather</th>
-                <th className="px-3 py-2">Temp C</th>
-                <th className="px-3 py-2">Humidity %</th>
-                <th className="px-3 py-2">VPD</th>
-                <th className="px-3 py-2 text-right">x</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">Weather</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">Temp C</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">Hum %</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">VPD</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">x</th>
               </tr>
             </thead>
             <tbody>
@@ -282,7 +294,7 @@ export function GrowChart({
                 .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                 .map((entry) => (
                   <tr key={entry.id} className="border-t border-black/30">
-                    <td className="px-3 py-2">
+                    <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                       <input
                         type="datetime-local"
                         value={toDatetimeLocal(entry.timestamp)}
@@ -293,10 +305,10 @@ export function GrowChart({
                             )
                           )
                         }
-                        className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-3 py-1 text-xs text-lime-100 outline-none"
+                        className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                       <input
                         type="number"
                         step="0.1"
@@ -308,10 +320,10 @@ export function GrowChart({
                             )
                           )
                         }
-                        className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 py-1 text-xs text-lime-100 outline-none"
+                        className="w-16 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                       <input
                         type="number"
                         step="0.1"
@@ -323,25 +335,25 @@ export function GrowChart({
                             )
                           )
                         }
-                        className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
+                        className="w-16 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                       />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                       <span
                         title={getVpdTooltip(stage, calculateVpd(entry.tempC, entry.humidity))}
-                        className={`rounded-full px-3 py-2 ${getVpdPillClass(stage, calculateVpd(entry.tempC, entry.humidity))}`}
+                        className={`rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs ${getVpdPillClass(stage, calculateVpd(entry.tempC, entry.humidity))}`}
                       >
                         {calculateVpd(entry.tempC, entry.humidity).toFixed(2)} kPa
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">
                       <button
                         type="button"
                         onClick={() => deleteClimateEntry(entry.id)}
-                        className="rounded-full border border-red-300/20 bg-red-400/10 p-1 text-red-100"
+                        className="rounded-full border border-red-300/20 bg-red-400/10 p-0.5 sm:p-1 text-red-100"
                         title="Delete row"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       </button>
                     </td>
                   </tr>
@@ -368,19 +380,19 @@ export function GrowChart({
                 }
               ])
             }
-            className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1.5 text-lime-100"
+            className="rounded-lg border-2 font-bold  border-lime-300/70 bg-lime-300/20 p-3 text-slate-300 hover:bg-lime-300/60"
             title="Add watering datapoint"
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
-        <div className="h-44">
+        <div className="h-40 sm:h-52">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={hydrationChartData}>
               <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-              <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="water" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="dryback" orientation="right" domain={[0, 100]} stroke="#fe9a00" tickLine={true} axisLine={false} tick={{ fontSize: 11 }} />
+              <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="water" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="dryback" orientation="right" domain={[0, 100]} stroke="#fe9a00" tickLine={true} axisLine={false} tick={{ fontSize: 10 }} />
               <YAxis yAxisId="ph" orientation="right" domain={[4.5, 7]} hide />
               <Tooltip
                 contentStyle={{
@@ -446,36 +458,36 @@ export function GrowChart({
           </button>
         </div>
 
-        <div className="mt-3 rounded-2xl bg-black/20 overflow-auto max-h-[30vh]">
-          <table className="w-full border-collapse text-xs text-lime-100">
-            <thead className="bg-black/25">
+        <div className="mt-3 rounded-2xl bg-black/20 overflow-x-auto max-h-[30vh]">
+          <table className="w-full border-collapse text-[10px] sm:text-xs text-lime-100 min-w-[400px]">
+            <thead className="bg-black/25 sticky top-0 z-10">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
-                <th className="px-3 py-2">Time</th>
-                <th className="px-3 py-2">ml</th>
-                {/* <th className="px-3 py-2">L</th> */}
-                <th className="px-3 py-2">pH in</th>
-                <th className="px-3 py-2">EC in</th>
-                <th className="px-3 py-2">pH Out</th>
-                <th className="px-3 py-2">EC Out</th>
-                <th className="px-3 py-2 text-right">x</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">Time</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">ml</th>
+                {/* <th className="px-2 sm:px-3 py-1.5 sm:py-2">L</th> */}
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">pH in</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">EC in</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">pH Out</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">EC Out</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">x</th>
               </tr>
             </thead>
             <tbody>
               {projectedNextWatering ? (
                 <tr className="border-t border-lime-300/80 bg-amber-300/12">
-                  <td className="px-3 py-2">{nextWateringLabel}</td>
-                  <td className="px-3 py-2">{projectedNextWatering.amountMl}</td>
-                  {/* <td className="px-3 py-2">{(projectedNextWatering.amountMl / 1000).toFixed(2)}</td> */}
-                  <td className="px-3 py-2">5.8-6.0</td>
-                  <td className="px-3 py-2"></td>
-                  <td className="px-3 py-2"></td>
-                  <td className="px-3 py-2"></td>
-                  <td className="px-3 py-2"></td>
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">{nextWateringLabel}</td>
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">{projectedNextWatering.amountMl}</td>
+                  {/* <td className="px-2 sm:px-3 py-1.5 sm:py-2">{(projectedNextWatering.amountMl / 1000).toFixed(2)}</td> */}
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">5.8-6.0</td>
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2"></td>
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2"></td>
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2"></td>
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2"></td>
                 </tr>
               ) : null}
               {newestFirstWatering.map((entry) => (
                 <tr key={entry.id} className="border-t border-black/30">
-                  <td className="px-3 py-2">
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                     <input
                       type="datetime-local"
                       value={toDatetimeLocal(entry.timestamp)}
@@ -486,10 +498,10 @@ export function GrowChart({
                           )
                         )
                       }
-                      className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
+                      className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                     />
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                     <input
                       type="number"
                       value={entry.amountMl}
@@ -500,11 +512,11 @@ export function GrowChart({
                           )
                         )
                       }
-                      className="w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
+                      className="w-16 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                     />
                   </td>
-                  {/* <td className="px-3 py-2">{(entry.amountMl / 1000).toFixed(2)}</td> */}
-                  <td className="px-3 py-2">
+                  {/* <td className="px-2 sm:px-3 py-1.5 sm:py-2">{(entry.amountMl / 1000).toFixed(2)}</td> */}
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                     <input
                       type="number"
                       step="0.01"
@@ -514,10 +526,10 @@ export function GrowChart({
                           wateringData.map((row) => (row.id === entry.id ? { ...row, ph: Number(event.target.value) || 0 } : row))
                         )
                       }
-                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
+                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                     />
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                     <input
                       type="number"
                       step="0.01"
@@ -527,10 +539,10 @@ export function GrowChart({
                           wateringData.map((row) => (row.id === entry.id ? { ...row, ec: Number(event.target.value) || 0 } : row))
                         )
                       }
-                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
+                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                     />
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                     <input
                       type="number"
                       step="0.01"
@@ -542,10 +554,10 @@ export function GrowChart({
                           )
                         )
                       }
-                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
+                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                     />
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
                     <input
                       type="number"
                       step="0.01"
@@ -557,17 +569,17 @@ export function GrowChart({
                           )
                         )
                       }
-                      className="w-16 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs text-lime-100 outline-none"
+                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                     />
                   </td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">
                     <button
                       type="button"
                       onClick={() => deleteWateringEntry(entry.id)}
-                      className="rounded-full border border-red-300/20 bg-red-400/10 p-1 text-red-100"
+                      className="rounded-full border border-red-300/20 bg-red-400/10 p-0.5 sm:p-1 text-red-100"
                       title="Delete row"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </button>
                   </td>
                 </tr>
@@ -590,9 +602,7 @@ function getIdealVpd(stage: GrowStage) {
   const map: Record<GrowStage, { min: number; max: number }> = {
     Seedling: { min: 0.4, max: 0.8 },
     Veg: { min: 0.8, max: 1.2 },
-    Bloom: { min: 1.2, max: 1.5 },
-    Dry: { min: 0.9, max: 1.2 },
-    Cure: { min: 0.6, max: 1.0 }
+    Bloom: { min: 1.2, max: 1.5 }
   };
   return map[stage];
 }

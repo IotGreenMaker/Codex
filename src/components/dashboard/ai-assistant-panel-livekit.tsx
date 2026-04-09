@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getChatMessages, saveAndTruncateChatMessage } from "@/lib/indexeddb-storage";
 import { Mic, Volume2, Send } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { translations } from "@/lib/i18n";
 import { speak } from "@/lib/tts";
 import { buildGrowContext } from "@/lib/buildGrowContext";
-import { getPreviousContext } from "@/lib/supabase-client";
 import { generateUUID } from "@/lib/uuid";
 import type { PlantProfile } from "@/lib/types";
 
@@ -28,7 +28,9 @@ export function AiAssistantPanel({
   onPatchPlant,
   onSelectPlant,
   onUpdateWateringData,
-  onUpdateClimateData
+  onUpdateClimateData,
+  onToggleNotification,
+  notificationsEnabled = false
 }: {
   locale: Locale;
   plant: PlantProfile;
@@ -39,6 +41,8 @@ export function AiAssistantPanel({
   onSelectPlant?: (plantId: string) => void;
   onUpdateWateringData?: (data: PlantProfile["wateringData"]) => void;
   onUpdateClimateData?: (data: PlantProfile["climateData"]) => void;
+  onToggleNotification?: (enabled: boolean) => void;
+  notificationsEnabled?: boolean;
 }) {
   const t = translations[locale];
   const [isConnected, setIsConnected] = useState(false);
@@ -177,7 +181,7 @@ export function AiAssistantPanel({
       const latestClimate = plant.climateData?.[plant.climateData.length - 1];
       const latestWatering = plant.wateringData?.[plant.wateringData.length - 1];
       
-      const plantContext = buildGrowContext(plant, plants);
+      const plantContext = buildGrowContext(plant, plants, notificationsEnabled);
 
       // Use Groq API for AI response
       const response = await fetch("/api/groq", {
@@ -277,6 +281,11 @@ export function AiAssistantPanel({
             onSelectPlant(selectedPlant.id);
           }
         }
+
+        // Handle notification toggle
+        if (parsedData.notifications && typeof parsedData.notifications.enabled === "boolean" && onToggleNotification) {
+          onToggleNotification(parsedData.notifications.enabled);
+        }
       }
 
       const aiMessage: ChatMessage = {
@@ -347,50 +356,15 @@ export function AiAssistantPanel({
 
   async function loadConversation() {
     try {
-      // Try to load from Supabase first
-      try {
-        const supabaseHistory = await getPreviousContext(plant.id, 50);
-        if (supabaseHistory && supabaseHistory.length > 0) {
-          const restored = supabaseHistory.map((msg: any) => ({
-            id: `${msg.role}-${msg.created_at}`,
-            role: msg.role as "user" | "assistant",
-            content: msg.content,
-            source: "voice" as const,
-            createdAt: msg.created_at
-          })) satisfies ChatMessage[];
-          setMessages(restored);
-          return;
-        }
-      } catch (supabaseError) {
-        console.log("Supabase not available, falling back to local API");
-      }
-
-      // Fallback to local API
-      const response = await fetch(
-        `/api/conversations?plantId=${encodeURIComponent(plant.id)}&assistantKey=voice`,
-        { cache: "no-store" }
-      );
-      const data = (await response.json()) as {
-        ok: boolean;
-        state?: {
-          messages?: Array<{
-            id: string;
-            role: "user" | "assistant";
-            content: string;
-            source: "text" | "voice";
-            createdAt: string;
-            meta?: Record<string, unknown>;
-          }>;
-        };
-      };
-      if (!data.ok) return;
-      const restored = (data.state?.messages ?? []).map((msg) => ({
+      // Load last 20 messages from IndexedDB (global)
+      const msgs = await getChatMessages("global", 20);
+      const restored = msgs.map((msg) => ({
         id: msg.id,
         role: msg.role,
         content: msg.content,
         source: msg.source as "text" | "voice",
         createdAt: msg.createdAt,
-        model: typeof msg.meta?.model === "string" ? msg.meta.model : undefined
+        model: msg.model
       })) satisfies ChatMessage[];
       setMessages(restored);
     } catch {
@@ -409,51 +383,41 @@ export function AiAssistantPanel({
     }>
   ) {
     try {
-      await fetch("/api/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plantId: plant.id,
-          assistantKey: "voice",
-          messages: payload
-        })
-      });
+      // Save each message to IndexedDB under global plantId
+      for (const msg of payload) {
+        const chatMessage = {
+          id: msg.id,
+          plantId: "global",
+          role: msg.role,
+          content: msg.content,
+          source: msg.source,
+          createdAt: msg.createdAt,
+          model: msg.meta?.model as string | undefined
+        };
+        await saveAndTruncateChatMessage(chatMessage, 20);
+      }
     } catch {
       // ignore
     }
   }
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-black/20 p-5">
+    <div className="rounded-2xl lg:h-[97vh] border border-white/8 bg-black/20 p-5">
       <div className="flex items-center justify-between gap-3">
         <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">
           {t.aiConversation}
         </p>
-
-        <div className="flex items-center gap-2">
-          {/* Speaker indicator */}
-          {isPlaying && (
-            <div className="animate-pulse">
-              <Volume2 className="h-6 w-6 text-lime-300/70" />
-            </div>
-          )}
-
-        
-        </div>
       </div>
 
       <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-4">
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-200">
-            Conversation
-          </p>
-        </div>
-
         {/* Error message */}
         {micError && <p className="mb-2 text-xs text-amber-300">{micError}</p>}
 
-        {/* Chat messages */}
-        <div className="mt-3 max-h-[36rem] space-y-3 overflow-y-auto pr-1" ref={chatContainerRef}>
+        {/* Chat messages - responsive height */}
+        <div
+          className="mt-3 max-h-[50vh] sm:max-h-[36rem] space-y-3 overflow-y-auto pr-1"
+          ref={chatContainerRef}
+        >
           {messages.length === 0 ? (
             <p className="text-xs text-slate-400 italic">
               Click the microphone to start a natural conversation...
@@ -471,25 +435,36 @@ export function AiAssistantPanel({
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                   {message.role === "assistant" ? "🤖 Assistant " : "You"}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-slate-100">{message.content}</p>
+                <p className="mt-1 text-sm leading-6 text-slate-100">
+                  {message.content}
+                </p>
               </div>
             ))
           )}
         </div>
-          {/* Connection status */}
-          <span
-            className={`rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest ${
-              connectionState === "connected"
-                ? "bg-lime-300/14 text-lime-100"
-                : connectionState === "failed"
-                  ? "bg-red-400/12 text-red-100"
-                  : connectionState === "connecting"
-                    ? "bg-white/10 text-slate-200"
-                    : "bg-white/6 text-slate-400"
-            }`}
-          >
-            {connectionState}
-          </span>
+        {/* Connection status */}
+        <span 
+          className={` flex rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest ${
+            connectionState === "connected"
+              ? "bg-lime-300/14 text-lime-100"
+              : connectionState === "failed"
+                ? "bg-red-400/12 text-red-100"
+                : connectionState === "connecting"
+                  ? "bg-white/10 text-slate-200"
+                  : "bg-white/6 text-slate-400"
+          }`}
+        >
+          {connectionState}
+
+          <div className="flex items-center gap-2">
+            {/* Speaker indicator */}
+            {isPlaying && (
+              <div className="animate-pulse">
+                <Volume2 className="h-4 w-4 text-green-500/60" />
+              </div>
+            )}
+          </div>
+        </span>
       </div>
 
       {/* Quick text input with integrated voice */}
@@ -530,7 +505,7 @@ export function AiAssistantPanel({
                     background:
                       "radial-gradient(circle at 60% 40%, rgba(158,255,102,0.22) 40%, rgba(178,107,255,0.18) 100%)",
                     boxShadow:
-                      "0 0 30px 8px rgba(178,107,255,0.12), 0 0 60px 16px rgba(158,255,102,0.12)"
+                      "0 0 30px 8px rgba(178,107,255,0.12), 0 0 60px 16px rgba(158,255,102,0.12)",
                   }}
                 />
                 <Mic className="relative h-4 w-4" />

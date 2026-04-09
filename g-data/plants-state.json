@@ -6,7 +6,7 @@
       "waterEc": 0.85,
       "waterPh": 5.9,
       "lightsOn": "05:00",
-      "growTempC": 23,
+      "growTempC": 22,
       "lightType": "panel_100w",
       "lightsOff": "17:00",
       "mediaType": "Light Mix",
@@ -456,12 +456,18 @@
         },
         {
           "id": "31fa55e4-df6a-4fa3-8f97-d530917d2671",
-          "timestamp": "2026-04-02T19:01:12.735Z",
           "tempC": 23,
-          "humidity": 63
+          "humidity": 63,
+          "timestamp": "2026-04-02T19:01:12.735Z"
+        },
+        {
+          "id": "8f73af42-4d20-4e1b-9a96-8cb783dc0732",
+          "tempC": 22,
+          "humidity": 54,
+          "timestamp": "2026-04-02T20:56:06.139Z"
         }
       ],
-      "growHumidity": 63,
+      "growHumidity": 54,
       "mediaVolumeL": 10,
       "outsideTempC": 16.7,
       "vegStartedAt": "2026-04-01T18:58:14.228Z",
@@ -524,11 +530,11 @@
           "timestamp": "2026-02-04T16:47:00.000Z"
         },
         {
+          "ec": 0.6,
           "id": "e20a6bad-2b07-410c-8b0e-9f8ee1e5522e",
-          "timestamp": "2026-02-07T20:08:00.000Z",
-          "amountMl": 600,
           "ph": 5.9,
-          "ec": 0.6
+          "amountMl": 600,
+          "timestamp": "2026-02-07T20:08:00.000Z"
         },
         {
           "ec": 0.906,
@@ -887,9 +893,9 @@
         },
         {
           "id": "cfc58725-96f3-41f8-bd1a-2302af4d1820",
-          "timestamp": "2026-04-02T19:20:26.917Z",
           "tempC": 25,
-          "humidity": 56
+          "humidity": 56,
+          "timestamp": "2026-04-02T19:20:26.917Z"
         }
       ],
       "growHumidity": 56,
