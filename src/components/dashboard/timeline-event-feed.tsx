@@ -1,14 +1,15 @@
 "use client";
 
-import { Droplets, Sprout, Cannabis, Wheat, Bell, BellOff } from "lucide-react";
-import type { PlantProfile, GrowStage } from "@/lib/types";
+import { Droplets, Sprout, Cannabis, Wheat, Bell, BellOff, Pencil, Send, X, Calendar } from "lucide-react";
+import type { PlantProfile, GrowStage, NoteEntry } from "@/lib/types";
+import { generateUUID } from "@/lib/uuid";
 import type { CalendarConfig } from "@/components/dashboard/calendar-config-modal";
 import { useState, useEffect, useCallback } from "react";
 import { getSetting, setSetting } from "@/lib/indexeddb-storage";
 
 type TimelineEvent = {
   id: string;
-  type: "watering" | "stage-change" | "watering-reminder";
+  type: "watering" | "stage-change" | "watering-reminder" | "note";
   stage?: GrowStage;
   timestamp: string;
   dateLabel: string;
@@ -18,11 +19,16 @@ type TimelineEvent = {
   amountMl?: number;
   stageFrom?: GrowStage | null;
   stageTo: GrowStage;
+  noteText?: string;
 };
 
 type TimelineEventFeedProps = {
   plant: PlantProfile;
   config?: CalendarConfig;
+  isAddingNote?: boolean;
+  onCancelNote?: () => void;
+  onUpdate?: (plant: PlantProfile) => void;
+  onDeleteNote?: (noteId: string) => void;
 };
 
 function getBorderClasses(type: TimelineEvent["type"], stage?: GrowStage): string {
@@ -31,6 +37,9 @@ function getBorderClasses(type: TimelineEvent["type"], stage?: GrowStage): strin
   }
   if (type === "watering") {
     return "border-l-[3px] border-sky-500/70";
+  }
+  if (type === "note") {
+    return "border-l-[3px] border-yellow-900/90";
   }
   switch (stage) {
     case "Seedling":
@@ -51,11 +60,14 @@ function getEventIcon(type: TimelineEvent["type"], stage?: GrowStage) {
   if (type === "watering") {
     return <Droplets className="h-5 w-5 text-sky-400" />;
   }
+  if (type === "note") {
+    return <Pencil className="h-4.5 w-4.5 text-yellow-500/90" />;
+  }
   switch (stage) {
     case "Seedling":
-      return <Sprout className="h-5 w-5  text-sky-400" />;
+      return <Sprout className="h-5 w-5  text-green-200" />;
     case "Veg":
-      return <Cannabis className="h-5 w-5 text-green-400" />;
+      return <Cannabis className="h-5 w-5 text-green-500" />;
     case "Bloom":
       return <Wheat className="h-5 w-5 text-indigo-400" />;
     default:
@@ -70,22 +82,33 @@ function getEventLabel(type: TimelineEvent["type"], stage?: GrowStage): string {
   if (type === "watering") {
     return "Watering";
   }
+  if (type === "note") {
+    return "Note";
+  }
   return `${stage || ""} Started`;
 }
 
 function formatDate(dateIso: string): { dateLabel: string; timeLabel: string } {
-  const date = new Date(dateIso);
-  const dateLabel = new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(date);
-  const timeLabel = new Intl.DateTimeFormat("en", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false
-  }).format(date);
-  return { dateLabel, timeLabel };
+  try {
+    const date = new Date(dateIso);
+    if (isNaN(date.getTime())) {
+      return { dateLabel: "Invalid Date", timeLabel: "--:--" };
+    }
+    const dateLabel = new Intl.DateTimeFormat("en", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }).format(date);
+    const timeLabel = new Intl.DateTimeFormat("en", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).format(date);
+    return { dateLabel, timeLabel };
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return { dateLabel: "Error", timeLabel: "--:--" };
+  }
 }
 
 type WateringReminderProps = {
@@ -141,8 +164,11 @@ function WateringReminder({ nextWateringDate, onToggleNotification, notification
   );
 }
 
-export function TimelineEventFeed({ plant, config }: TimelineEventFeedProps) {
+export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, onUpdate, onDeleteNote }: TimelineEventFeedProps) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const [noteDate, setNoteDate] = useState(new Date().toISOString().split("T")[0]);
+  const [isSaving, setIsSaving] = useState(false);
   // Default config: show everything
   const showWatering = config?.showWatering ?? true;
   const showSeedling = config?.showSeedling ?? true;
@@ -211,6 +237,22 @@ export function TimelineEventFeed({ plant, config }: TimelineEventFeedProps) {
     }
   }
 
+  // Collect note events
+  if (plant.notes) {
+    for (const note of plant.notes) {
+      const { dateLabel, timeLabel } = formatDate(note.timestamp);
+      events.push({
+        id: `note-${note.id}`,
+        type: "note",
+        timestamp: note.timestamp,
+        dateLabel,
+        timeLabel,
+        noteText: note.text,
+        stageTo: plant.stage // Defaulting to current stage when note was recorded could be better, but we don't store that.
+      });
+    }
+  }
+
   // Sort by timestamp descending (most recent first)
   events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
@@ -253,6 +295,34 @@ export function TimelineEventFeed({ plant, config }: TimelineEventFeedProps) {
     await setSetting("wateringNotification", String(enabled));
   }, []);
 
+  const handleAddNote = useCallback(async () => {
+    if (!noteText.trim() || !onUpdate) return;
+    setIsSaving(true);
+    try {
+      // Use the selected date but keep the current time for chronological sorting
+      const selectedDate = new Date(noteDate);
+      const currentTime = new Date();
+      selectedDate.setHours(currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds());
+      
+      const newNote: NoteEntry = {
+        id: generateUUID(),
+        timestamp: selectedDate.toISOString(),
+        text: noteText.trim()
+      };
+      
+      const updatedPlant: PlantProfile = {
+        ...plant,
+        notes: [newNote, ...(plant.notes || [])]
+      };
+      
+      onUpdate(updatedPlant);
+      setNoteText("");
+      if (onCancelNote) onCancelNote();
+    } finally {
+      setIsSaving(false);
+    }
+  }, [noteText, plant, onUpdate, onCancelNote]);
+
   if (events.length === 0 && !nextWateringDate) {
     return (
       <div className="glass-panel rounded-3xl p-4 flex items-center justify-center  min-h-[200px]">
@@ -285,7 +355,7 @@ export function TimelineEventFeed({ plant, config }: TimelineEventFeedProps) {
   }, [notificationsEnabled, nextWateringDate, plant.strainName]);
 
   return (
-    <div className="flex flex-col gap-3 max-h-[50vh] sm:max-h-[800px] overflow-y-auto pr-1 p-4 pt-0">
+    <div className="flex flex-col gap-3 max-h-[50vh] sm:max-h-[800px] overflow-y-auto overflow-x-hidden pr-1 p-4 pt-0">
       {/* Next Watering Reminder - Always first if exists */}
       {nextWateringDate && (
         <WateringReminder
@@ -295,11 +365,75 @@ export function TimelineEventFeed({ plant, config }: TimelineEventFeedProps) {
         />
       )}
 
+      {/* Add Note Form */}
+      {isAddingNote && (
+        <div className="glass-panel rounded-xl p-3 border border-white/10 bg-white/5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-lime-100 flex items-center gap-1.5">
+              <Pencil className="h-3.5 w-3.5 text-yellow-500" /> New Note
+            </span>
+            <button 
+              onClick={onCancelNote}
+              className="p-1 hover:bg-white/10 rounded-full transition"
+            >
+              <X className="h-4 w-4 text-lime-100/40" />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 bg-black/20 border border-white/5 rounded-lg px-2 py-1.5">
+              <Calendar className="h-3.5 w-3.5 text-lime-400/60" />
+              <input 
+                type="date"
+                value={noteDate}
+                onChange={(e) => setNoteDate(e.target.value)}
+                className="bg-transparent border-none text-xs text-lime-100 focus:outline-none w-full [color-scheme:dark]"
+              />
+            </div>
+            
+            <textarea
+              autoFocus
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Record plant progress, observations..."
+              className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-sm text-lime-100 placeholder:text-lime-100/30 focus:outline-none focus:border-lime-500/30 resize-none h-24"
+            />
+          </div>
+
+          <div className="flex justify-end mt-2">
+            <button
+              onClick={handleAddNote}
+              disabled={!noteText.trim() || isSaving}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-lime-300/25 bg-lime-300/12 text-lime-200 hover:bg-lime-300/22 text-xs font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Send className="h-3 w-3" />
+              {isSaving ? "Saving..." : "Save Note"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {events.map((event) => (
         <div
           key={event.id}
-          className={`glass-panel rounded-xl p-3 relative ${getBorderClasses(event.type, event.stage)} transition hover:bg-white/[0.08]`}
+          className={`glass-panel rounded-xl p-3 relative group ${getBorderClasses(event.type, event.stage)} transition hover:bg-white/[0.08]`}
         >
+          {/* Delete Button for Notes */}
+          {event.type === "note" && onDeleteNote && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const noteId = event.id.replace("note-", "");
+                onDeleteNote(noteId);
+              }}
+              className="absolute -top-1.5 -right-1.5 rounded-full bg-red-500/90 hover:bg-red-600 p-0.5 text-white opacity-0 group-hover:opacity-100 transition shadow-lg z-10"
+              title="Delete note"
+            >
+              <X className="h-2.5 w-2.5" />
+            </button>
+          )}
+
           {/* Icon on top-right */}
           <div className="absolute top-2 right-2 flex items-center gap-1.5">
             {getEventIcon(event.type, event.stage)}
@@ -334,6 +468,13 @@ export function TimelineEventFeed({ plant, config }: TimelineEventFeedProps) {
                 </span>
               )}
             </div>
+          )}
+
+          {/* Note details */}
+          {event.type === "note" && (
+            <p className="mt-2 text-sm text-lime-100/90 whitespace-pre-wrap leading-relaxed">
+              {event.noteText}
+            </p>
           )}
 
           {/* Stage change details */}

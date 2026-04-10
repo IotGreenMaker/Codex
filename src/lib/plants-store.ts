@@ -79,6 +79,20 @@ function sanitizePlantData(plant: any): PlantProfile | null {
           .filter((c: any) => c.timestamp)
       : [];
 
+    // Validate notes data and regenerate invalid IDs
+    const notes = Array.isArray(plant.notes)
+      ? plant.notes
+          .map((n: any) => {
+            const noteId = isValidUUID(n.id) ? n.id : generateUUID();
+            return {
+              ...n,
+              id: noteId,
+              timestamp: validateTimestamp(n.timestamp)
+            };
+          })
+          .filter((n: any) => n.timestamp)
+      : [];
+
     // Return sanitized plant with valid UUIDs
     return {
       ...plant,
@@ -87,7 +101,8 @@ function sanitizePlantData(plant: any): PlantProfile | null {
       bloomStartedAt: validateTimestamp(plant.bloomStartedAt) || "",
       lastWateredAt: validateTimestamp(plant.lastWateredAt) || new Date().toISOString(),
       wateringData,
-      climateData
+      climateData,
+      notes
     } as PlantProfile;
   } catch (err) {
     console.error("Error sanitizing plant data:", err);

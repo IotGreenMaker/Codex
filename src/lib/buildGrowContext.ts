@@ -8,12 +8,40 @@ export function buildGrowContext(
   plants: PlantProfile[] = [],
   notificationsEnabled: boolean = false
 ): string {
-  // Calculate days since start
+  // Calculate stage durations
   const startDate = new Date(plant.startedAt)
   const now = new Date()
   const daysSinceStart = Math.floor(
     (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
   )
+
+  let seedlingDays = 0;
+  let vegDays = 0;
+  let bloomDays = 0;
+
+  // Seedling: from startedAt to vegStartedAt (or now)
+  if (plant.vegStartedAt) {
+    seedlingDays = Math.floor((new Date(plant.vegStartedAt).getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  } else {
+    seedlingDays = daysSinceStart;
+  }
+
+  // Veg: from vegStartedAt to bloomStartedAt (or now)
+  if (plant.vegStartedAt) {
+    const vegStart = new Date(plant.vegStartedAt);
+    if (plant.bloomStartedAt) {
+      vegDays = Math.floor((new Date(plant.bloomStartedAt).getTime() - vegStart.getTime()) / (1000 * 60 * 60 * 24));
+    } else {
+      vegDays = Math.floor((now.getTime() - vegStart.getTime()) / (1000 * 60 * 60 * 24));
+    }
+  }
+
+  // Bloom: from bloomStartedAt to now
+  if (plant.bloomStartedAt) {
+    bloomDays = Math.floor((now.getTime() - new Date(plant.bloomStartedAt).getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  const daysInCurrentStage = plant.stage === 'Seedling' ? seedlingDays : plant.stage === 'Veg' ? vegDays : bloomDays;
 
   const latestClimate = plant.climateData?.[plant.climateData.length - 1]
   const latestWatering = plant.wateringData?.[plant.wateringData.length - 1]
@@ -66,7 +94,8 @@ export function buildGrowContext(
 
   return `
 ## ACTIVE PLANT — ${plant.strainName}
-- Stage: ${plant.stage} | Total days: ${daysSinceStart} | Days in stage: ?
+- Stage: ${plant.stage} | Total days: ${daysSinceStart} | Days in stage: ${daysInCurrentStage}
+- Days by Stage: Seedling: ${seedlingDays}d, Veg: ${vegDays}d, Bloom: ${bloomDays}d
 - Container: ${plant.containerVolumeL}L (${plant.mediaType})
 - Light: ${plant.lightLampName} (${plant.lightLampWatts}W) at ${plant.lightDimmerPercent}%
 - Schedule: ${plant.lightSchedule} (${plant.lightsOn}-${plant.lightsOff})
@@ -82,6 +111,13 @@ ${waterLine}
 - Interval: every ${plant.wateringIntervalDays} days
 - Target pH: ${plant.waterPh}
 - Target EC: ${plant.waterEc}
+
+## RECENT NOTES
+${(plant.notes || [])
+  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  .slice(0, 3)
+  .map((n) => `- [${new Date(n.timestamp).toLocaleDateString()}] ${n.text}`)
+  .join('\n') || 'No manual notes recorded.'}
 
 ## OTHER PLANTS IN ROOM
  ${otherPlants || 'No other plants tagged.'}

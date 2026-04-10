@@ -31,6 +31,12 @@ export const LIGHT_TYPE_DEFAULT_WATTS: Record<LightType, number> = {
   other: 100
 };
 
+export type NoteEntry = {
+  id: string;
+  timestamp: string;
+  text: string;
+};
+
 export type WateringEntry = {
   id: string;
   timestamp: string;
@@ -102,6 +108,7 @@ export type PlantProfile = {
   };
   wateringData: WateringEntry[];
   climateData: ClimateEntry[];
+  notes: NoteEntry[];
   feedRecipe: FeedRecipe;
 };
 

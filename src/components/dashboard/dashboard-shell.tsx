@@ -29,6 +29,7 @@ import {
   initializeDB,
   seedTestPlants
 } from "@/lib/indexeddb-storage";
+import { Settings as SettingsIcon } from "lucide-react";
 import { exportToExcel } from "@/lib/excel-export";
 import type { GrowStage, PlantProfile, LightProfile, LightType } from "@/lib/types";
 import { LIGHT_TYPE_LABELS, LIGHT_TYPE_DEFAULT_WATTS } from "@/lib/types";
@@ -319,6 +320,21 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     setActivePlantId(next.id);
   };
 
+  // Light management functions - Now with Universal Pool support
+  const allPoolLights = useMemo(() => {
+    const lightsMap = new Map<string, LightProfile>();
+    plants.forEach(p => {
+      (p.lights ?? []).forEach(l => {
+        lightsMap.set(l.id, l);
+      });
+    });
+    return Array.from(lightsMap.values());
+  }, [plants]);
+
+  const activeLights = activePlant?.lights ?? [];
+  const activeLightId = activePlant?.activeLightId ?? activeLights[0]?.id;
+  const activeLight = activeLights.find((l) => l.id === activeLightId) ?? activeLights[0];
+
   const removePlant = async (plantId: string) => {
     const confirmed = await showConfirmation({
       title: "Delete Plant",
@@ -450,12 +466,14 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     patchActivePlant(patch);
   };
 
+  const isValidDate = (isoString?: string) => {
+    if (!isoString) return false;
+    const date = new Date(isoString);
+    return !isNaN(date.getTime());
+  };
+
   const patchWateringData = (nextWateringData: PlantProfile["wateringData"]) => {
-    const validData = nextWateringData.filter((w) => {
-      if (!w.timestamp) return false;
-      const ts = new Date(w.timestamp).getTime();
-      return !isNaN(ts);
-    });
+    const validData = nextWateringData.filter((w) => isValidDate(w.timestamp));
     const sorted = [...validData].sort((a, b) => {
       const aTime = new Date(a.timestamp).getTime();
       const bTime = new Date(b.timestamp).getTime();
@@ -476,27 +494,27 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     });
   };
 
-  const patchClimateData = (nextClimateData: PlantProfile["climateData"]) => {
-    const validData = nextClimateData.filter((c) => {
-      if (!c.timestamp) return false;
-      const ts = new Date(c.timestamp).getTime();
-      return !isNaN(ts);
-    });
-    const sorted = [...validData].sort((a, b) => {
-      const aTime = new Date(a.timestamp).getTime();
-      const bTime = new Date(b.timestamp).getTime();
-      return aTime - bTime;
-    });
-    const latest = sorted[sorted.length - 1];
+  const patchClimateData = (data: any[]) => {
+    const validData = data.filter((c) => isValidDate(c.timestamp));
+    patchActivePlant({ climateData: validData });
+  };
 
+  const handleAddAiNote = (text: string, timestamp?: string) => {
+    const time = isValidDate(timestamp) ? timestamp! : new Date().toISOString();
+    const newNote = {
+      id: time, // No need for UUID per user feedback
+      timestamp: time,
+      text
+    };
     patchActivePlant({
-      climateData: sorted,
-      ...(latest
-        ? {
-            growTempC: latest.tempC,
-            growHumidity: latest.humidity
-          }
-        : {})
+      notes: [newNote, ...(activePlant.notes || [])]
+    });
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    if (!activePlant.notes) return;
+    patchActivePlant({
+      notes: activePlant.notes.filter((n) => n.id !== noteId)
     });
   };
 
@@ -506,10 +524,31 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     await setSetting("wateringNotification", String(enabled));
   };
 
-  // Light management functions
-  const activeLights = activePlant.lights ?? [];
-  const activeLightId = activePlant.activeLightId ?? activeLights[0]?.id;
-  const activeLight = activeLights.find((l) => l.id === activeLightId) ?? activeLights[0];
+  const syncLightUpdate = (lightId: string, patch: Partial<LightProfile>) => {
+    setPlants((current) => current.map(p => {
+      const hasLight = p.lights?.some(l => l.id === lightId);
+      if (!hasLight) return p;
+
+      const updatedLights = p.lights!.map(l =>
+        l.id === lightId ? { ...l, ...patch } : l
+      );
+
+      // If this light is the active one for this plant, also update root-level fields
+      const isActive = p.activeLightId === lightId || (!p.activeLightId && p.lights?.[0]?.id === lightId);
+      if (isActive) {
+        return {
+          ...p,
+          lights: updatedLights,
+          lightsOn: patch.lightsOn ?? p.lightsOn,
+          lightsOff: patch.lightsOff ?? p.lightsOff,
+          lightDimmerPercent: patch.dimmerPercent !== undefined ? patch.dimmerPercent : p.lightDimmerPercent,
+          lightLampWatts: patch.watts ?? p.lightLampWatts,
+        };
+      }
+
+      return { ...p, lights: updatedLights };
+    }));
+  };
 
   const handleSaveLight = (light: LightProfile) => {
     const updatedLights = [...(activePlant.lights ?? []), light];
@@ -540,15 +579,22 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   };
 
   const handleSelectLight = (id: string) => {
-    const light = activeLights.find((l) => l.id === id);
+    const light = allPoolLights.find((l) => l.id === id);
     if (light) {
-      patchActivePlant({
+      const alreadyHasIt = activeLights.some(l => l.id === id);
+      const patch: Partial<PlantProfile> = {
         activeLightId: id,
         lightsOn: light.lightsOn,
         lightsOff: light.lightsOff,
         lightDimmerPercent: light.dimmerPercent,
         lightLampWatts: light.watts
-      });
+      };
+
+      if (!alreadyHasIt) {
+        patch.lights = [...activeLights, light];
+      }
+
+      patchActivePlant(patch);
     }
   };
 
@@ -672,10 +718,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     const hours = getExpectedLightHours(activePlant.stage);
     const autoOff = calculateLightsOff(value, hours);
     if (isLightProfile && activeLight) {
-      const updatedLights = activeLights.map((l) =>
-        l.id === activeLightId ? { ...l, lightsOn: value, lightsOff: autoOff } : l
-      );
-      patchActivePlant({ lights: updatedLights, lightsOn: value, lightsOff: autoOff });
+      syncLightUpdate(activeLight.id, { lightsOn: value, lightsOff: autoOff });
     } else {
       patchActivePlant({ lightsOn: value, lightsOff: autoOff });
     }
@@ -1024,10 +1067,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                           onChange={(e) => {
                             const value = e.target.value;
                             if (activeLight) {
-                              const updatedLights = activeLights.map((l) =>
-                                l.id === activeLightId ? { ...l, lightsOff: value } : l
-                              );
-                              patchActivePlant({ lights: updatedLights, lightsOff: value });
+                              syncLightUpdate(activeLight.id, { lightsOff: value });
                             } else {
                               patchActivePlant({ lightsOff: value });
                             }
@@ -1078,7 +1118,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                               onChange={(e) => handleSelectLight(e.target.value)}
                               className="w-full rounded-lg border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 outline-none"
                             >
-                              {activeLights.map((light) => (
+                              {allPoolLights.map((light) => (
                                 <option key={light.id} value={light.id}>
                                   {light.type}{light.hasDimmer ? ` (${light.dimmerPercent}%)` : ""}
                                 </option>
@@ -1142,10 +1182,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                                 value={activeLight.dimmerPercent ?? 100}
                                 onChange={(e) => {
                                   const val = Number(e.target.value);
-                                  const updatedLights = activeLights.map((l) =>
-                                    l.id === activeLightId ? { ...l, dimmerPercent: val } : l
-                                  );
-                                  patchActivePlant({ lights: updatedLights, lightDimmerPercent: val });
+                                  syncLightUpdate(activeLight.id, { dimmerPercent: val });
                                 }}
                                 className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer z-10"
                               />
@@ -1174,6 +1211,8 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
               onUpdateClimateData={patchClimateData}
               onToggleNotification={handleToggleNotification}
               notificationsEnabled={notificationsEnabled}
+              onAddNote={handleAddAiNote}
+              onCreatePlant={createPlant}
             />
           </div>
         </div>
@@ -1209,7 +1248,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
             isOpen={isLightModalOpen}
             onClose={() => setIsLightModalOpen(false)}
             onSave={handleSaveLight}
-            existingLights={activeLights}
+            existingLights={allPoolLights}
             onDeleteLight={handleDeleteLight}
             onSelectLight={handleSelectLight}
             activeLightId={activeLightId}
@@ -1271,7 +1310,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                  
                  {/* Seedling Stage - Start Date (read-only days calculated from startedAt) */}
                  <MiniInfo
-                   label={<span className="flex items-center gap-1.5"><Sprout className="h-3.5 w-3.5 text-sky-500" /> Seedling Start</span>}
+                   label={<span className="flex items-center gap-1.5"><Sprout className="h-3.5 w-3.5 text-green-200" /> Seedling Start</span>}
                    value={
                      <EditableDate
                        dateIso={activePlant.startedAt}
@@ -1377,8 +1416,8 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                </div>
 
               {/* Calendar View */}
-              <div className="mt-6 border-t border-white/10 pt-6">
-                <PlantTimelineCalendar plant={activePlant} />
+              <div className="lg:col-span-1 shadow-2xl shadow-emerald-950/20 ">
+                <PlantTimelineCalendar plant={activePlant} onUpdate={onPlantUpdate} onDeleteNote={handleDeleteNote} />
               </div>
             </div>
 
@@ -1610,6 +1649,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
         onUpdateClimateData={patchClimateData}
         onToggleNotification={handleToggleNotification}
         notificationsEnabled={notificationsEnabled}
+        onAddNote={handleAddAiNote}
       />
     </main>
   );
@@ -1952,7 +1992,7 @@ function estimatePpfd(lightType: "blurple_40w" | "panel_100w", dimmerPercent: nu
 }
 
 function getStageIcon(stage: GrowStage) {
-  if (stage === "Seedling") return <Sprout className="h-4 w-4 text-sky-500" />;
+  if (stage === "Seedling") return <Sprout className="h-4 w-4 text-green-200" />;
   if (stage === "Veg") return <Cannabis className="h-4 w-4 text-green-500" />;
   if (stage === "Bloom") return <Wheat className="h-4 w-4 text-indigo-500" />;
   return <Leaf className="h-4 w-4 text-lime-300" />;

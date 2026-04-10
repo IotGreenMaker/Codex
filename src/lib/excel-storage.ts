@@ -469,6 +469,7 @@ function parsePlantRow(row: any): PlantProfile | null {
       stageDays: { seedling: 1, veg: 0, bloom: 0 },
       wateringData: [],
       climateData: [],
+      notes: [],
       feedRecipe: {
         title: "Default Mix",
         baseAMl: 24,

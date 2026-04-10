@@ -421,7 +421,7 @@ export function GrowChart({
         {projectedNextWatering && (
           <div className="mt-3 h-4 w-full overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-4 rounded-full bg-gradient-to-r from-amber-500/90 via-sky-300/70 to-sky-500/90 transition-all duration-700"
+              className="h-4 rounded-full bg-gradient-to-r from-sky-200/90 via-sky-300/70 to-blue-500/90 transition-all duration-700"
               style={{ width: `${wateringProgressPercent}%` }}
             />
           </div>

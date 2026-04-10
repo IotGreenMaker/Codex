@@ -57,6 +57,7 @@ export function createNewPlant(overrides?: Partial<PlantProfile>): PlantProfile 
     stageDays: { seedling: 1, veg: 0, bloom: 0 },
     wateringData: [],
     climateData: [],
+    notes: [],
     feedRecipe: createFeedRecipe(),
     ...overrides
   };

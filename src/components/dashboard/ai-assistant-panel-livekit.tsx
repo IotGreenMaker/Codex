@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getChatMessages, saveAndTruncateChatMessage } from "@/lib/indexeddb-storage";
-import { Mic, Volume2, Send } from "lucide-react";
+import { getChatMessages, saveAndTruncateChatMessage, getAiConfig, saveAiConfig } from "@/lib/indexeddb-storage";
+import { AiConfigModal, type AiConfig } from "@/components/dashboard/ai-config-modal";
+import { Mic, Volume2, Send, Settings } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { translations } from "@/lib/i18n";
 import { speak } from "@/lib/tts";
@@ -30,7 +31,9 @@ export function AiAssistantPanel({
   onUpdateWateringData,
   onUpdateClimateData,
   onToggleNotification,
-  notificationsEnabled = false
+  notificationsEnabled = false,
+  onCreatePlant,
+  onAddNote
 }: {
   locale: Locale;
   plant: PlantProfile;
@@ -43,6 +46,8 @@ export function AiAssistantPanel({
   onUpdateClimateData?: (data: PlantProfile["climateData"]) => void;
   onToggleNotification?: (enabled: boolean) => void;
   notificationsEnabled?: boolean;
+  onCreatePlant?: (data: { strainName: string; stage: string }) => void;
+  onAddNote?: (text: string, timestamp?: string) => void;
 }) {
   const t = translations[locale];
   const [isConnected, setIsConnected] = useState(false);
@@ -55,6 +60,13 @@ export function AiAssistantPanel({
     "idle" | "connecting" | "connected" | "failed"
   >("idle");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [aiConfig, setAiConfig] = useState<AiConfig>({
+    aiProvider: "groq",
+    aiApiKey: "",
+    voiceProvider: "browser",
+    voiceApiKey: ""
+  });
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -65,6 +77,22 @@ export function AiAssistantPanel({
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Load persisted AI config on mount
+  useEffect(() => {
+    getAiConfig().then(setAiConfig).catch(() => {});
+  }, []);
+
+  // Sync messages when active plant changes
+  useEffect(() => {
+    void loadConversation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plant.id]);
+
+  const handleSaveConfig = async (config: AiConfig) => {
+    setAiConfig(config);
+    await saveAiConfig(config).catch(() => {});
+  };
 
   // Initialize LiveKit connection and voice recognition
   useEffect(() => {
@@ -194,7 +222,8 @@ export function AiAssistantPanel({
           history: messages.map((m) => ({
             role: m.role,
             content: m.content
-          }))
+          })),
+          apiKey: aiConfig.aiApiKey || undefined
         })
       });
 
@@ -213,8 +242,8 @@ export function AiAssistantPanel({
       // Try to parse structured response with data commands
       let parsedData: any = null;
       try {
-        // Look for JSON block in response
-        const jsonMatch = assistantMessage.match(/```json\n([\s\S]*?)\n```/);
+        // Look for JSON block in response (flexible matching for whitespace/newlines)
+        const jsonMatch = assistantMessage.match(/```json\s*([\s\S]*?)\s*```/);
         if (jsonMatch) {
           parsedData = JSON.parse(jsonMatch[1]);
           // Extract just the message text if available
@@ -267,9 +296,34 @@ export function AiAssistantPanel({
           if (typeof parsedData.plant.growTempC === "number") plantUpdate.growTempC = parsedData.plant.growTempC;
           if (typeof parsedData.plant.growHumidity === "number") plantUpdate.growHumidity = parsedData.plant.growHumidity;
           
+          // Handle stageDays update
+          if (parsedData.plant.stageDays) {
+            plantUpdate.stageDays = {
+              ...plant.stageDays,
+              ...parsedData.plant.stageDays
+            };
+            
+            // Set start dates if moving to a new stage
+            const now = new Date().toISOString();
+            if (parsedData.plant.stageDays.veg > 0 && !plant.vegStartedAt) {
+              plantUpdate.vegStartedAt = now;
+            }
+            if (parsedData.plant.stageDays.bloom > 0 && !plant.bloomStartedAt) {
+              plantUpdate.bloomStartedAt = now;
+            }
+          }
+          
           if (Object.keys(plantUpdate).length > 0) {
             onPatchPlant(plantUpdate);
           }
+        }
+
+        // Handle plant creation
+        if (parsedData.createPlant && onCreatePlant) {
+          onCreatePlant({
+            strainName: parsedData.createPlant.strainName,
+            stage: parsedData.createPlant.stage || "Seedling"
+          });
         }
 
         // Handle plant selection by name
@@ -285,6 +339,11 @@ export function AiAssistantPanel({
         // Handle notification toggle
         if (parsedData.notifications && typeof parsedData.notifications.enabled === "boolean" && onToggleNotification) {
           onToggleNotification(parsedData.notifications.enabled);
+        }
+
+        // Handle note recording
+        if (parsedData.note && onAddNote) {
+          onAddNote(parsedData.note.text, parsedData.note.timestamp);
         }
       }
 
@@ -356,8 +415,8 @@ export function AiAssistantPanel({
 
   async function loadConversation() {
     try {
-      // Load last 20 messages from IndexedDB (global)
-      const msgs = await getChatMessages("global", 20);
+      // Load last 20 messages from IndexedDB for this specific plant
+      const msgs = await getChatMessages(plant.id, 20);
       const restored = msgs.map((msg) => ({
         id: msg.id,
         role: msg.role,
@@ -383,11 +442,11 @@ export function AiAssistantPanel({
     }>
   ) {
     try {
-      // Save each message to IndexedDB under global plantId
+      // Save each message to IndexedDB under current plantId
       for (const msg of payload) {
         const chatMessage = {
           id: msg.id,
-          plantId: "global",
+          plantId: plant.id,
           role: msg.role,
           content: msg.content,
           source: msg.source,
@@ -402,11 +461,26 @@ export function AiAssistantPanel({
   }
 
   return (
-    <div className="rounded-2xl lg:h-[97vh] border border-white/8 bg-black/20 p-5">
+    <div className="rounded-2xl lg:h-[51rem] border border-white/8 bg-black/20 p-5">
+      <AiConfigModal
+        isOpen={isConfigOpen}
+        onClose={() => setIsConfigOpen(false)}
+        config={aiConfig}
+        onSave={handleSaveConfig}
+      />
+
       <div className="flex items-center justify-between gap-3">
         <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">
           {t.aiConversation}
         </p>
+        <button
+          type="button"
+          onClick={() => setIsConfigOpen(true)}
+          title="AI Settings"
+          className="rounded-full p-1.5 text-slate-400 hover:bg-white/10 hover:text-lime-300 transition"
+        >
+          <Settings className="h-4 w-4" />
+        </button>
       </div>
 
       <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-4">
@@ -415,7 +489,7 @@ export function AiAssistantPanel({
 
         {/* Chat messages - responsive height */}
         <div
-          className="mt-3 max-h-[50vh] sm:max-h-[36rem] space-y-3 overflow-y-auto pr-1"
+          className="mt-3 max-h-[43rem] sm:max-h-[36rem] space-y-3 overflow-y-auto pr-1"
           ref={chatContainerRef}
         >
           {messages.length === 0 ? (

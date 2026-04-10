@@ -1,458 +1,385 @@
-﻿// IndexedDB storage for GBuddy
-import type { PlantProfile, WateringEntry, ClimateEntry } from "@/lib/types";
-import { createNewPlant } from "@/lib/newplant-data";
-import { generateUUID } from "@/lib/uuid";
+// lib/indexeddb-storage.ts
+// Real IndexedDB implementation — all data stored locally in the browser.
+// No server, no accounts, no cloud. Works completely offline.
 
-// Extended types for IndexedDB storage (includes plantId reference)
-export type StoredWateringEntry = WateringEntry & { plantId: string };
-export type StoredClimateEntry = ClimateEntry & { plantId: string };
+import type { AiConfig } from "@/components/dashboard/ai-config-modal";
+import type { PlantProfile } from "@/lib/types";
 
-// Chat message type for IndexedDB storage
+// ─── Schema ────────────────────────────────────────────────────────────────
+const DB_NAME = "g-buddy";
+const DB_VERSION = 1;
+
+// Stores
+const STORE_PLANTS = "plants";
+const STORE_SETTINGS = "settings";
+const STORE_CHAT = "chat_messages";
+
+// ─── Types ─────────────────────────────────────────────────────────────────
 export type ChatMessageEntry = {
   id: string;
   plantId: string;
+  /** ISO timestamp — prefer this field */
+  timestamp?: string;
+  /** Legacy alias kept for backward compatibility */
+  createdAt?: string;
   role: "user" | "assistant";
   content: string;
-  source: "text" | "voice";
-  createdAt: string;
+  source?: string;
   model?: string;
 };
 
-// Maximum number of messages to keep per plant (10 prompts + 10 responses = 20)
-const MAX_CHAT_MESSAGES = 20;
+// ─── DB open / upgrade ─────────────────────────────────────────────────────
 
-const DB_NAME = "gbuddy-db";
-const DB_VERSION = 2; // Incremented to add chat_messages store
-let dbCache: IDBDatabase | null = null;
-
-export async function openDB(): Promise<IDBDatabase> {
-  if (dbCache) {
-    try {
-      // Test if db is still usable
-      dbCache.transaction("settings", "readonly");
-      return dbCache;
-    } catch {
-      dbCache = null;
-    }
+/**
+ * Open (or create) the G-Buddy IndexedDB database.
+ * Exported so components can call it directly during initialisation.
+ */
+export function openDB(): Promise<IDBDatabase> {
+  // Guard: IndexedDB only exists in browser contexts
+  if (typeof window === "undefined" || typeof indexedDB === "undefined") {
+    return Promise.reject(new Error("[IndexedDB] Not available in this environment"));
   }
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      dbCache = request.result;
-      resolve(request.result);
-    };
+
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains("plants")) {
-        db.createObjectStore("plants", { keyPath: "id" });
+
+      // Plants — keyed by id
+      if (!db.objectStoreNames.contains(STORE_PLANTS)) {
+        db.createObjectStore(STORE_PLANTS, { keyPath: "id" });
       }
-      if (!db.objectStoreNames.contains("watering_logs")) {
-        db.createObjectStore("watering_logs", { keyPath: "id" });
+
+      // Settings — simple key-value store
+      if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
+        db.createObjectStore(STORE_SETTINGS);
       }
-      if (!db.objectStoreNames.contains("climate_logs")) {
-        db.createObjectStore("climate_logs", { keyPath: "id" });
-      }
-      if (!db.objectStoreNames.contains("settings")) {
-        db.createObjectStore("settings", { keyPath: "key" });
-      }
-      if (!db.objectStoreNames.contains("chat_messages")) {
-        const chatStore = db.createObjectStore("chat_messages", { keyPath: "id" });
+
+      // Chat messages — keyed by id, indexed by plantId for fast lookup
+      if (!db.objectStoreNames.contains(STORE_CHAT)) {
+        const chatStore = db.createObjectStore(STORE_CHAT, { keyPath: "id" });
         chatStore.createIndex("plantId", "plantId", { unique: false });
-        chatStore.createIndex("createdAt", "createdAt", { unique: false });
       }
     };
-  });
-}
 
-// Generic CRUD operations
-async function addRecord<T>(storeName: string, record: T): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, "readwrite");
-    const store = transaction.objectStore(storeName);
-    const request = store.add(record);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function putRecord<T>(storeName: string, record: T): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, "readwrite");
-    const store = transaction.objectStore(storeName);
-    const request = store.put(record);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function getRecord<T>(storeName: string, key: string): Promise<T | undefined> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, "readonly");
-    const store = transaction.objectStore(storeName);
-    const request = store.get(key);
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
 }
 
-async function getAllRecords<T>(storeName: string): Promise<T[]> {
-  const db = await openDB();
+// ─── Low-level helpers ─────────────────────────────────────────────────────
+
+function storeGetAll<T>(db: IDBDatabase, storeName: string): Promise<T[]> {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, "readonly");
-    const store = transaction.objectStore(storeName);
-    const request = store.getAll();
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    const tx = db.transaction(storeName, "readonly");
+    const req = tx.objectStore(storeName).getAll();
+    req.onsuccess = () => resolve(req.result as T[]);
+    req.onerror = () => reject(req.error);
   });
 }
 
-async function deleteRecord(storeName: string, key: string): Promise<void> {
-  const db = await openDB();
+function storeGet<T>(
+  db: IDBDatabase,
+  storeName: string,
+  key: IDBValidKey
+): Promise<T | undefined> {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, "readwrite");
-    const store = transaction.objectStore(storeName);
-    const request = store.delete(key);
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(transaction.error);
-    transaction.onabort = () => reject(transaction.error);
+    const tx = db.transaction(storeName, "readonly");
+    const req = tx.objectStore(storeName).get(key);
+    req.onsuccess = () => resolve(req.result as T | undefined);
+    req.onerror = () => reject(req.error);
   });
 }
 
-// Plants operations
+function storePut<T>(
+  db: IDBDatabase,
+  storeName: string,
+  value: T,
+  key?: IDBValidKey
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const req =
+      key !== undefined
+        ? tx.objectStore(storeName).put(value, key)
+        : tx.objectStore(storeName).put(value);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function storeDelete(
+  db: IDBDatabase,
+  storeName: string,
+  key: IDBValidKey
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const req = tx.objectStore(storeName).delete(key);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function storeGetByIndex<T>(
+  db: IDBDatabase,
+  storeName: string,
+  indexName: string,
+  key: IDBValidKey
+): Promise<T[]> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const req = tx.objectStore(storeName).index(indexName).getAll(key);
+    req.onsuccess = () => resolve(req.result as T[]);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// ─── Database initialisation ───────────────────────────────────────────────
+
+/** Call once on app startup to ensure the DB schema exists. */
+export async function initializeDB(): Promise<boolean> {
+  try {
+    await openDB();
+    console.log("[IndexedDB] Ready");
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] initializeDB failed:", err);
+    return false;
+  }
+}
+
+// ─── Plants ────────────────────────────────────────────────────────────────
+
+/** Retrieve all plant profiles stored in IndexedDB. */
 export async function getAllPlants(): Promise<PlantProfile[]> {
-  return getAllRecords<PlantProfile>("plants");
-}
-
-export async function getPlant(id: string): Promise<PlantProfile | undefined> {
-  return getRecord<PlantProfile>("plants", id);
-}
-
-export async function savePlant(plant: PlantProfile): Promise<void> {
-  return putRecord("plants", plant);
-}
-
-export async function deletePlant(id: string): Promise<void> {
-  const db = await openDB();
-  
-  // Delete associated watering logs
-  const wateringLogs = await getWateringLogs(id);
-  for (const log of wateringLogs) {
-    await deleteRecord("watering_logs", log.id);
+  try {
+    const db = await openDB();
+    return await storeGetAll<PlantProfile>(db, STORE_PLANTS);
+  } catch (err) {
+    console.error("[IndexedDB] getAllPlants failed:", err);
+    return [];
   }
-  
-  // Delete associated climate logs
-  const climateLogs = await getClimateLogs(id);
-  for (const log of climateLogs) {
-    await deleteRecord("climate_logs", log.id);
+}
+
+/** Save (insert or update) a plant profile. */
+export async function savePlant(plant: PlantProfile): Promise<boolean> {
+  try {
+    const db = await openDB();
+    await storePut(db, STORE_PLANTS, plant);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] savePlant failed:", err);
+    return false;
   }
-  
-  // Delete the plant itself
-  return deleteRecord("plants", id);
 }
 
-// Watering logs operations
-export async function getWateringLogs(plantId?: string): Promise<StoredWateringEntry[]> {
-  const logs = await getAllRecords<StoredWateringEntry>("watering_logs");
-  if (plantId) {
-    return logs.filter((log) => log.plantId === plantId);
+/** Permanently delete a plant by ID. */
+export async function deletePlant(id: string): Promise<boolean> {
+  try {
+    const db = await openDB();
+    await storeDelete(db, STORE_PLANTS, id);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] deletePlant failed:", err);
+    return false;
   }
-  return logs;
 }
 
-export async function saveWateringLog(log: StoredWateringEntry): Promise<void> {
-  return putRecord("watering_logs", log);
-}
+// ─── Settings (key-value) ──────────────────────────────────────────────────
 
-export async function deleteWateringLog(id: string): Promise<void> {
-  return deleteRecord("watering_logs", id);
-}
-
-// Climate logs operations
-export async function getClimateLogs(plantId?: string): Promise<StoredClimateEntry[]> {
-  const logs = await getAllRecords<StoredClimateEntry>("climate_logs");
-  if (plantId) {
-    return logs.filter((log) => log.plantId === plantId);
+/** Retrieve a setting by key. Returns null if not found. */
+export async function getSetting(key: string): Promise<string | null> {
+  try {
+    const db = await openDB();
+    const value = await storeGet<string>(db, STORE_SETTINGS, key);
+    return value ?? null;
+  } catch (err) {
+    console.error("[IndexedDB] getSetting failed:", err);
+    return null;
   }
-  return logs;
 }
 
-export async function saveClimateLog(log: StoredClimateEntry): Promise<void> {
-  return putRecord("climate_logs", log);
-}
-
-export async function deleteClimateLog(id: string): Promise<void> {
-  return deleteRecord("climate_logs", id);
-}
-
-// Settings operations
-export async function getSetting(key: string): Promise<string | undefined> {
-  const record = await getRecord<{ key: string; value: string }>("settings", key);
-  return record?.value;
-}
-
-export async function setSetting(key: string, value: string): Promise<void> {
-  return putRecord("settings", { key, value });
-}
-
-export async function getAllSettings(): Promise<Record<string, string>> {
-  const records = await getAllRecords<{ key: string; value: string }>("settings");
-  const settings: Record<string, string> = {};
-  for (const record of records) {
-    settings[record.key] = record.value;
+/** Save a setting value. Value is serialised as a string. */
+export async function setSetting(
+  key: string,
+  value: string
+): Promise<boolean> {
+  try {
+    const db = await openDB();
+    await storePut(db, STORE_SETTINGS, String(value), key);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] setSetting failed:", err);
+    return false;
   }
-  return settings;
 }
 
-// Test plant definitions for first-time users
-export async function seedTestPlants(): Promise<void> {
-  const existingPlants = await getAllPlants();
-  if (existingPlants.length > 0) return; // Only seed if DB is empty
+// ─── AI Configuration ──────────────────────────────────────────────────────
 
-  const now = new Date();
+const AI_CONFIG_KEY = "aiConfig";
 
-  // Helper to create watering entries
-  const createWateringEntry = (daysAgo: number, amountMl: number, ph: number, ec: number, runoffPh?: number, runoffEc?: number): WateringEntry => ({
-    id: generateUUID(),
-    timestamp: new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000).toISOString(),
-    amountMl,
-    ph,
-    ec,
-    ...(runoffPh !== undefined && { runoffPh }),
-    ...(runoffEc !== undefined && { runoffEc })
-  });
+const DEFAULT_AI_CONFIG: AiConfig = {
+  aiProvider: "groq",
+  aiApiKey: "",
+  voiceProvider: "browser",
+  voiceApiKey: "",
+};
 
-  // Helper to create climate entries
-  const createClimateEntry = (daysAgo: number, tempC: number, humidity: number): ClimateEntry => ({
-    id: generateUUID(),
-    timestamp: new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000).toISOString(),
-    tempC,
-    humidity
-  });
-
-  // Plant 1: "Baby Green" - Seedling (Day 1, no history)
-  const seedlingPlant = createNewPlant({
-    id: `test-seedling-${Date.now()}`,
-    strainName: "Baby Green",
-    startedAt: now.toISOString(),
-    stage: "Seedling",
-    vegStartedAt: undefined,
-    bloomStartedAt: undefined,
-    growTempC: 24,
-    growHumidity: 65,
-    waterInputMl: 200,
-    waterPh: 6.0,
-    waterEc: 0.8,
-    lastWateredAt: now.toISOString(),
-    wateringIntervalDays: 2,
-    lightSchedule: "18 / 6",
-    lightsOn: "08:00",
-    lightsOff: "02:00",
-    wateringData: [],
-    climateData: [
-      createClimateEntry(0, 24, 65)
-    ]
-  });
-
-  // Plant 2: "Green Machine" - Veg (25 days old, 15 days in veg, 5 watering logs)
-  const startDateVeg = new Date(now.getTime() - 25 * 24 * 60 * 60 * 1000);
-  const vegStartDate = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
-  const vegPlant = createNewPlant({
-    id: `test-veg-${Date.now()}`,
-    strainName: "Green Machine",
-    startedAt: startDateVeg.toISOString(),
-    stage: "Veg",
-    vegStartedAt: vegStartDate.toISOString(),
-    bloomStartedAt: undefined,
-    growTempC: 26,
-    growHumidity: 55,
-    waterInputMl: 800,
-    waterPh: 6.2,
-    waterEc: 1.4,
-    lastWateredAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    wateringIntervalDays: 3,
-    lightSchedule: "18 / 6",
-    lightsOn: "06:00",
-    lightsOff: "00:00",
-    wateringData: [
-      createWateringEntry(19, 500, 5.8, 1.2, 6.0, 1.3),
-      createWateringEntry(16, 600, 6.0, 1.3, 6.2, 1.4),
-      createWateringEntry(13, 650, 6.1, 1.35, 6.3, 1.45),
-      createWateringEntry(10, 700, 6.0, 1.4, 6.2, 1.5),
-      createWateringEntry(7, 750, 6.2, 1.4, 6.4, 1.55),
-      createWateringEntry(4, 780, 6.1, 1.45, 6.3, 1.5),
-      createWateringEntry(1, 800, 6.2, 1.4, 6.4, 1.45)
-    ],
-    climateData: [
-      createClimateEntry(25, 24, 65),
-      createClimateEntry(20, 25, 60),
-      createClimateEntry(15, 25, 58),
-      createClimateEntry(10, 26, 56),
-      createClimateEntry(5, 26, 55),
-      createClimateEntry(0, 26, 55)
-    ]
-  });
-
-  // Plant 3: "Purple Haze" - Bloom (60 days old, 10 days in bloom, full history)
-  const startDateBloom = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-  const vegStartDateBloom = new Date(now.getTime() - 35 * 24 * 60 * 60 * 1000);
-  const bloomStartDate = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
-  const bloomPlant = createNewPlant({
-    id: `test-bloom-${Date.now()}`,
-    strainName: "Purple Haze",
-    startedAt: startDateBloom.toISOString(),
-    stage: "Bloom",
-    vegStartedAt: vegStartDateBloom.toISOString(),
-    bloomStartedAt: bloomStartDate.toISOString(),
-    growTempC: 24,
-    growHumidity: 45,
-    waterInputMl: 1200,
-    waterPh: 6.0,
-    waterEc: 1.8,
-    lastWateredAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    wateringIntervalDays: 2,
-    lightSchedule: "12 / 12",
-    lightsOn: "20:00",
-    lightsOff: "08:00",
-    wateringData: [
-      createWateringEntry(50, 500, 5.8, 1.2, 6.0, 1.3),
-      createWateringEntry(47, 600, 6.0, 1.3, 6.2, 1.4),
-      createWateringEntry(44, 650, 6.1, 1.35, 6.3, 1.45),
-      createWateringEntry(41, 700, 6.0, 1.4, 6.2, 1.5),
-      createWateringEntry(38, 800, 6.2, 1.5, 6.4, 1.6),
-      createWateringEntry(35, 850, 6.1, 1.5, 6.3, 1.65),
-      createWateringEntry(32, 900, 6.0, 1.6, 6.2, 1.7),
-      createWateringEntry(29, 950, 6.0, 1.65, 6.2, 1.75),
-      createWateringEntry(26, 1000, 5.9, 1.7, 6.1, 1.8),
-      createWateringEntry(23, 1050, 5.9, 1.75, 6.1, 1.85),
-      createWateringEntry(20, 1100, 5.8, 1.8, 6.0, 1.9),
-      createWateringEntry(17, 1100, 5.8, 1.8, 6.0, 1.9),
-      createWateringEntry(14, 1150, 5.9, 1.8, 6.1, 1.85),
-      createWateringEntry(11, 1150, 6.0, 1.75, 6.2, 1.8),
-      createWateringEntry(8, 1200, 6.0, 1.7, 6.2, 1.75),
-      createWateringEntry(5, 1200, 6.0, 1.75, 6.2, 1.8),
-      createWateringEntry(2, 1200, 6.0, 1.8, 6.2, 1.85),
-      createWateringEntry(1, 1200, 6.0, 1.8, 6.2, 1.85)
-    ],
-    climateData: [
-      createClimateEntry(60, 23, 70),
-      createClimateEntry(50, 24, 65),
-      createClimateEntry(40, 25, 60),
-      createClimateEntry(35, 25, 58),
-      createClimateEntry(30, 25, 55),
-      createClimateEntry(25, 24, 52),
-      createClimateEntry(20, 24, 50),
-      createClimateEntry(15, 24, 48),
-      createClimateEntry(10, 24, 46),
-      createClimateEntry(5, 24, 45),
-      createClimateEntry(0, 24, 45)
-    ]
-  });
-
-  // Save all plants to IndexedDB
-  await savePlant(seedlingPlant);
-  await savePlant(vegPlant);
-  await savePlant(bloomPlant);
-
-  // Set the first plant as active
-  await setSetting("activePlantId", seedlingPlant.id);
+/** Load the user's AI/voice configuration from settings. */
+export async function getAiConfig(): Promise<AiConfig> {
+  try {
+    const db = await openDB();
+    const raw = await storeGet<string>(db, STORE_SETTINGS, AI_CONFIG_KEY);
+    if (!raw) return DEFAULT_AI_CONFIG;
+    return { ...DEFAULT_AI_CONFIG, ...(JSON.parse(raw) as Partial<AiConfig>) };
+  } catch (err) {
+    console.error("[IndexedDB] getAiConfig failed:", err);
+    return DEFAULT_AI_CONFIG;
+  }
 }
 
-// Chat messages operations
-export async function getChatMessages(plantId: string, limit: number = MAX_CHAT_MESSAGES): Promise<ChatMessageEntry[]> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction("chat_messages", "readonly");
-    const store = transaction.objectStore("chat_messages");
-    const index = store.index("plantId");
-    const request = index.getAll(plantId);
-    request.onsuccess = () => {
-      let messages = request.result as ChatMessageEntry[];
-      // Sort by createdAt descending and take the last N messages
-      messages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      messages = messages.slice(0, limit);
-      // Reverse to get chronological order
-      messages.reverse();
-      resolve(messages);
+/** Persist the AI/voice configuration. */
+export async function saveAiConfig(config: AiConfig): Promise<boolean> {
+  try {
+    const db = await openDB();
+    await storePut(db, STORE_SETTINGS, JSON.stringify(config), AI_CONFIG_KEY);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] saveAiConfig failed:", err);
+    return false;
+  }
+}
+
+// ─── Chat messages ─────────────────────────────────────────────────────────
+
+/** Retrieve the last `limit` chat messages for a given plant, oldest first. */
+export async function getChatMessages(
+  plantId: string,
+  limit = 20
+): Promise<ChatMessageEntry[]> {
+  try {
+    const db = await openDB();
+    const all = await storeGetByIndex<ChatMessageEntry>(
+      db,
+      STORE_CHAT,
+      "plantId",
+      plantId
+    );
+
+    // Sort ascending by timestamp so history is in conversation order
+    const sorted = all.sort((a, b) => {
+      const aTime = a.timestamp ?? a.createdAt ?? "";
+      const bTime = b.timestamp ?? b.createdAt ?? "";
+      return aTime.localeCompare(bTime);
+    });
+
+    // Return only the most recent `limit` entries
+    return sorted.slice(-limit);
+  } catch (err) {
+    console.error("[IndexedDB] getChatMessages failed:", err);
+    return [];
+  }
+}
+
+/**
+ * Save a new chat message then prune oldest entries so the store never
+ * exceeds `limit` messages per plant. Keeps memory usage tiny.
+ */
+export async function saveAndTruncateChatMessage(
+  message: ChatMessageEntry,
+  limit = 20
+): Promise<boolean> {
+  try {
+    const db = await openDB();
+
+    // Ensure timestamp is set
+    const entry: ChatMessageEntry = {
+      ...message,
+      timestamp: message.timestamp ?? message.createdAt ?? new Date().toISOString(),
     };
-    request.onerror = () => reject(request.error);
-  });
-}
 
-export async function saveChatMessage(message: ChatMessageEntry): Promise<void> {
-  return putRecord("chat_messages", message);
-  // After saving, truncate to MAX_CHAT_MESSAGES
-}
+    await storePut(db, STORE_CHAT, entry);
 
-export async function saveAndTruncateChatMessage(message: ChatMessageEntry, maxMessages: number = MAX_CHAT_MESSAGES): Promise<ChatMessageEntry[]> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction("chat_messages", "readwrite");
-    const store = transaction.objectStore("chat_messages");
-    const index = store.index("plantId");
+    // Prune oldest messages if over limit
+    const all = await storeGetByIndex<ChatMessageEntry>(
+      db,
+      STORE_CHAT,
+      "plantId",
+      message.plantId
+    );
 
-    // Save the new message
-    store.put(message);
-
-    // Get all messages for this plant, sorted by createdAt
-    const request = index.getAll(message.plantId);
-    request.onsuccess = () => {
-      let messages = request.result as ChatMessageEntry[];
-      messages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      
-      // Delete oldest messages if we exceed maxMessages
-      if (messages.length > maxMessages) {
-        const toDelete = messages.slice(maxMessages);
-        for (const msg of toDelete) {
-          store.delete(msg.id);
-        }
+    if (all.length > limit) {
+      const sorted = all.sort((a, b) => {
+        const aTime = a.timestamp ?? a.createdAt ?? "";
+        const bTime = b.timestamp ?? b.createdAt ?? "";
+        return aTime.localeCompare(bTime);
+      });
+      const toDelete = sorted.slice(0, all.length - limit);
+      for (const msg of toDelete) {
+        await storeDelete(db, STORE_CHAT, msg.id);
       }
-      
-      // Return the remaining messages in chronological order
-      const remaining = messages.slice(0, maxMessages);
-      remaining.reverse();
-      resolve(remaining);
-    };
-    request.onerror = () => reject(request.error);
-  });
-}
+    }
 
-export async function deleteChatMessagesForPlant(plantId: string): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction("chat_messages", "readwrite");
-    const store = transaction.objectStore("chat_messages");
-    const index = store.index("plantId");
-    const request = index.getAllKeys(plantId);
-    request.onsuccess = () => {
-      const keys = request.result as string[];
-      for (const key of keys) {
-        store.delete(key);
-      }
-      resolve();
-    };
-    request.onerror = () => reject(request.error);
-  });
-}
-
-export async function getAllChatMessages(plantId?: string): Promise<ChatMessageEntry[]> {
-  const messages = await getAllRecords<ChatMessageEntry>("chat_messages");
-  if (plantId) {
-    return messages.filter((msg) => msg.plantId === plantId);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] saveAndTruncateChatMessage failed:", err);
+    return false;
   }
-  return messages;
 }
 
-// Initialize with default settings
-export async function initializeDB(): Promise<void> {
-  const activePlantId = await getSetting("activePlantId");
-  if (activePlantId === undefined) {
-    await setSetting("activePlantId", "");
-    await setSetting("locale", "en");
-    // Seed test plants on first run (only if DB is empty)
-    await seedTestPlants();
+/** Delete all chat messages associated with a plant (e.g. when deleting the plant). */
+export async function deleteChatMessagesForPlant(
+  plantId: string
+): Promise<boolean> {
+  try {
+    const db = await openDB();
+    const all = await storeGetByIndex<ChatMessageEntry>(
+      db,
+      STORE_CHAT,
+      "plantId",
+      plantId
+    );
+    for (const msg of all) {
+      await storeDelete(db, STORE_CHAT, msg.id);
+    }
+    console.log(
+      `[IndexedDB] Deleted ${all.length} chat messages for plant ${plantId}`
+    );
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] deleteChatMessagesForPlant failed:", err);
+    return false;
+  }
+}
+
+// ─── Development helpers ───────────────────────────────────────────────────
+
+/**
+ * Seed three test plants for development/demo purposes.
+ * Safe to call multiple times — will not duplicate plants that already exist
+ * because IndexedDB put() on an existing key does an update, not an insert.
+ */
+export async function seedTestPlants(): Promise<boolean> {
+  try {
+    const { createNewPlant } = await import("@/lib/newplant-data");
+    const db = await openDB();
+
+    const testPlants = [
+      createNewPlant({ strainName: "Baby Green", stage: "Seedling" }),
+      createNewPlant({ strainName: "Green Machine", stage: "Veg" }),
+      createNewPlant({ strainName: "Purple Haze", stage: "Bloom" }),
+    ];
+
+    for (const plant of testPlants) {
+      await storePut(db, STORE_PLANTS, plant);
+    }
+
+    console.log(`[IndexedDB] Seeded ${testPlants.length} test plants`);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] seedTestPlants failed:", err);
+    return false;
   }
 }

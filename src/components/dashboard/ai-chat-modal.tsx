@@ -17,7 +17,8 @@ export function AiChatModal({
   onUpdateWateringData,
   onUpdateClimateData,
   onToggleNotification,
-  notificationsEnabled = false
+  notificationsEnabled = false,
+  onAddNote
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -32,6 +33,7 @@ export function AiChatModal({
   onUpdateClimateData?: (data: any[]) => void;
   onToggleNotification?: (enabled: boolean) => void;
   notificationsEnabled?: boolean;
+  onAddNote?: (text: string, timestamp?: string) => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -118,6 +120,7 @@ export function AiChatModal({
             onUpdateClimateData={onUpdateClimateData}
             onToggleNotification={onToggleNotification}
             notificationsEnabled={notificationsEnabled}
+            onAddNote={onAddNote}
           />
         </div>
       </div>

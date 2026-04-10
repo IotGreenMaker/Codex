@@ -41,9 +41,9 @@ export function ConfirmationModal({ isOpen, options, onConfirm, onCancel }: Conf
       iconBg: "bg-amber-500/10 border-amber-400/20"
     },
     info: {
-      icon: "text-sky-400",
-      confirm: "bg-sky-500/20 border-sky-400/30 hover:bg-sky-500/30 text-sky-100",
-      iconBg: "bg-sky-500/10 border-sky-400/20"
+      icon: "text-green-400",
+      confirm: "bg-green-500/20 border-green-400/30 hover:bg-green-500/30 text-green-100",
+      iconBg: "bg-green-500/10 border-green-400/20"
     }
   };
 

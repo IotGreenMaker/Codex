@@ -8,9 +8,14 @@ const groq = new Groq({
 export async function getAIResponseFromGroq(
   userMessage: string,
   conversationHistory: Array<{ role: string; content: string }>,
-  plantContext: string
+  plantContext: string,
+  apiKey?: string
 ): Promise<string> {
   try {
+    const client = new Groq({
+      apiKey: apiKey || process.env.GROQ_API_KEY,
+    });
+
     const systemPrompt = `You are G-Buddy, a plant care expert AI assistant with full read/write access to plant monitoring data.
 
 ## AVAILABLE PLANTS AND CURRENT SELECTION:
@@ -24,6 +29,7 @@ You can READ all plant data shown above and WRITE updates when the user requests
 - Timing adjustments (watering intervals, light schedule)
 - You can SWITCH between plants when the user mentions a plant name
 - You can CREATE new plants when the user asks to add a plant
+- You can RECORD manual notes and observations about the plants
 - You can READ and UPDATE the number of days in each stage (seedling, veg, bloom)
   - When user asks "how many days in veg" or similar, respond with the current value
   - When user says "mark 24 days in veg" or "set veg to 24 days", update stageDays.veg
@@ -124,7 +130,20 @@ When user mentions a different plant by name, switch to it:
 }
 \`\`\`
 
-### 6. TOGGLING NOTIFICATIONS:
+### 6. LOGGING MANUAL NOTES:
+When the user mentions an observation, asks to note something down, or provides a description:
+\`\`\`json
+{
+  "message": "I've recorded that note for you about the yellow tips.",
+  "note": {
+    "text": "The user mentioned the leaves are looking slightly yellow at the tips.",
+    "timestamp": "2024-03-20T10:00:00Z"
+  }
+}
+\`\`\`
+Note: Only include \`timestamp\` if the user specifies a particular date/time (e.g. "note down for yesterday that..."). Otherwise, the system will use the current time.
+
+### 7. TOGGLING NOTIFICATIONS:
 When user asks to turn on/off watering notifications or asks about notification status:
 - To enable notifications:
 \`\`\`json
@@ -206,7 +225,7 @@ You:
       },
     ];
 
-    const response = await groq.chat.completions.create({
+    const response = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       max_tokens: 512,
       messages: messages as ChatCompletionMessageParam[],

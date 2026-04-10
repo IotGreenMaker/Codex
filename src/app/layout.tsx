@@ -10,8 +10,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "G-Buddy - AI Grow Companion",
-  description: "Your AI-powered grow companion. 100% private. 100% offline. No account needed.",
-  manifest: "/manifest.json",
+  description: "Your AI-powered grow companion. 100% private. No account needed. Data stays on your device.",
   icons: {
     icon: "/g-icon.png",
     shortcut: "/g-icon.png",
@@ -32,8 +31,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#84cc16" />
         <link rel="apple-touch-icon" href="/g-icon.png" />
         <link rel="icon" type="image/png" href="/g-icon.png" />
       </head>

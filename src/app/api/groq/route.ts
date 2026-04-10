@@ -5,6 +5,7 @@ type RequestBody = {
   message: string;
   plantContext: string;
   plantId: string;
+  apiKey?: string;
   history?: Array<{
     role: "user" | "assistant";
     content: string;
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json()) as RequestBody;
-    const { message, plantContext, plantId, history = [] } = body;
+    const { message, plantContext, plantId, apiKey, history = [] } = body;
 
     if (!message || !plantId) {
       return NextResponse.json(
@@ -68,7 +69,8 @@ export async function POST(request: NextRequest) {
     const response = await getAIResponseFromGroq(
       message,
       history,
-      plantContext
+      plantContext,
+      apiKey
     );
 
     return NextResponse.json({

@@ -5,14 +5,15 @@ const INWORLD_VOICE = 'Mark'
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { text?: string }
+    const body = await req.json() as { text?: string; apiKey?: string }
     const text = body.text?.trim()
 
     if (!text || text.length === 0) {
       return NextResponse.json({ error: 'text is required' }, { status: 400 })
     }
 
-    const apiKey = process.env.INWORLD_API_KEY
+    // Use provided API key from client, fallback to environment variable
+    const apiKey = body.apiKey || process.env.INWORLD_API_KEY
     if (!apiKey) {
       console.error('[TTS] INWORLD_API_KEY not configured')
       return NextResponse.json({ error: 'TTS not configured' }, { status: 503 })

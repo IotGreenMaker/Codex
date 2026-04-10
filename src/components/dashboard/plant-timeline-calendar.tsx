@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Settings, Sprout, Cannabis, Wheat, Droplets, Bell } from "lucide-react";
+import { ChevronLeft, ChevronRight, Settings, Sprout, Cannabis, Wheat, Droplets, Bell, Pencil, Plus } from "lucide-react";
 import type { PlantProfile } from "@/lib/types";
 import { STAGE_TARGETS } from "@/lib/config";
 import { TimelineEventFeed } from "@/components/dashboard/timeline-event-feed";
@@ -13,6 +13,7 @@ type CalendarDay = {
   hasSeedling: boolean;
   hasVeg: boolean;
   hasBloom: boolean;
+  hasNote: boolean;
   wateringCount: number;
   isSeedlingDay: boolean;
   isVegDay: boolean;
@@ -20,11 +21,20 @@ type CalendarDay = {
   isNextWateringDay: boolean;
 };
 
-export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
+export function PlantTimelineCalendar({ 
+  plant, 
+  onUpdate, 
+  onDeleteNote 
+}: { 
+  plant: PlantProfile, 
+  onUpdate?: (plant: PlantProfile) => void,
+  onDeleteNote?: (noteId: string) => void 
+}) {
   const today = new Date();
   const [displayMonth, setDisplayMonth] = useState(today.getMonth());
   const [displayYear, setDisplayYear] = useState(today.getFullYear());
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [isAddingNote, setIsAddingNote] = useState(false);
   const [config, setConfig] = useState<CalendarConfig>({
     seedlingDuration: STAGE_TARGETS.seedling,
     vegDuration: STAGE_TARGETS.veg,
@@ -103,6 +113,7 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
         hasSeedling: false,
         hasVeg: false,
         hasBloom: false,
+        hasNote: false,
         wateringCount: 0,
         isSeedlingDay: false,
         isVegDay: false,
@@ -120,14 +131,21 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
       const hasSeedling = startedAt.toDateString() === dateStr;
       const hasVeg = vegStartDate && vegStartDate.toDateString() === dateStr;
       const hasBloom = bloomStartDate && bloomStartDate.toDateString() === dateStr;
+      const hasNote = (plant.notes || []).some((n) => {
+        if (!n.timestamp) return false;
+        const d = new Date(n.timestamp);
+        return !isNaN(d.getTime()) && d.toDateString() === dateStr;
+      });
 
       const isSeedlingDay = dateTime >= startedAt.getTime() && dateTime < seedlingEndDate.getTime();
       const isVegDay = vegStartDate !== null && vegEndDate !== null && dateTime >= vegStartDate.getTime() && dateTime < vegEndDate.getTime();
       const isBloomDay = bloomStartDate !== null && bloomEndDate !== null && dateTime >= bloomStartDate.getTime() && dateTime < bloomEndDate.getTime();
 
-      const wateringCount = plant.wateringData.filter(
-        (w) => new Date(w.timestamp).toDateString() === dateStr
-      ).length;
+      const wateringCount = plant.wateringData.filter((w) => {
+        if (!w.timestamp) return false;
+        const d = new Date(w.timestamp);
+        return !isNaN(d.getTime()) && d.toDateString() === dateStr;
+      }).length;
 
       const isNextWateringDay = nextWateringDate !== null && nextWateringDate.toDateString() === dateStr;
 
@@ -137,6 +155,7 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
         hasSeedling: !!hasSeedling,
         hasVeg: !!hasVeg,
         hasBloom: !!hasBloom,
+        hasNote: !!hasNote,
         wateringCount,
         isSeedlingDay,
         isVegDay: !!isVegDay,
@@ -155,6 +174,7 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
         hasSeedling: false,
         hasVeg: false,
         hasBloom: false,
+        hasNote: false,
         wateringCount: 0,
         isSeedlingDay: false,
         isVegDay: false,
@@ -210,7 +230,7 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
 
   return (
     <>
-      <div className="glass-panel rounded-3xl p-4 sm:w-full m-auto">
+      <div className="glass-panel mt-5 rounded-3xl p-4 sm:w-full m-auto">
         {/* Calendar + Feed layout */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
           {/* Calendar section - 60% width on desktop */}
@@ -229,13 +249,6 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
               </h2>
 
               <div className="flex items-center gap-2">
-                {/* <button
-                  onClick={() => setIsConfigOpen(true)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition"
-                  title="Timeline Settings"
-                >
-                  <Settings className="h-5 w-5 text-lime-300" />
-                </button> */}
                 <button
                   onClick={handleNextMonth}
                   className="p-2 hover:bg-white/10 rounded-lg transition"
@@ -271,7 +284,7 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
                       } else if (day.isVegDay) {
                         stageBorderClass = "border-2 border-green-500/80";
                       } else if (day.isSeedlingDay) {
-                        stageBorderClass = "border-2 border-sky-500/80";
+                        stageBorderClass = "border-2 border-green-200/80";
                       }
                     }
 
@@ -298,7 +311,7 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
                             </span>
                           )}
                           {day.hasSeedling && (
-                            <span className="text-[10px] bg-sky-500/60 px-1 py-0.5 rounded text-white font-semibold">
+                            <span className="text-[10px] bg-green-200/60 px-1 py-0.5 rounded text-white font-semibold">
                               <Sprout className="h-3 w-3" />
                             </span>
                           )}
@@ -315,6 +328,11 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
                           {day.wateringCount > 0 && (
                             <span className="text-[10px] bg-blue-500/60 px-1 py-0.5 rounded text-white font-semibold">
                               <Droplets className="h-3 w-3" />
+                            </span>
+                          )}
+                          {day.hasNote && (
+                            <span className="text-[10px] bg-yellow-900/80 px-1 py-0.5 rounded text-white font-semibold">
+                              <Pencil className="h-2.5 w-2.5" />
                             </span>
                           )}
                         </div>
@@ -355,15 +373,39 @@ export function PlantTimelineCalendar({ plant }: { plant: PlantProfile }) {
                   <Bell className="h-3.5 w-3.5 text-amber-500" />
                   <span className="text-lime-100/70">Next Watering</span>
                 </div>
+                <div className="flex items-center gap-1">
+                  <Pencil className="h-3.5 w-3.5 text-yellow-600" />
+                  <span className="text-lime-100/70">Note</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Feed section - 40% width on desktop, 100% stacked on mobile */}
           <div className="xl:col-span-5 flex flex-col">
-            <h3 className="text-sm text-center font-bold text-lime-100 mb-5 mt-3 uppercase tracking-wider">Activity Feed</h3>
+            <div className="flex items-center justify-center gap-2 mb-5 mt-3 relative">
+              <h3 className="text-sm font-bold text-lime-100 uppercase tracking-wider">Activity Feed</h3>
+              <button
+                onClick={() => setIsAddingNote(!isAddingNote)}
+                className="p-2 ml-auto rounded-full border border-lime-300/25 bg-lime-300/12 text-lime-200 hover:bg-lime-300/22 transition flex items-center justify-center min-h-[40px] min-w-[40px]"
+                title={isAddingNote ? "Cancel" : "Add manual note"}
+              >
+                {isAddingNote ? (
+                  <Pencil className="h-4 w-4 text-yellow-500" />
+                ) : (
+                  <Plus className="h-4 w-4 text-lime-300" />
+                )}
+              </button>
+            </div>
             <div className="flex-1 min-h-0">
-              <TimelineEventFeed plant={plant} config={config} />
+              <TimelineEventFeed 
+                plant={plant} 
+                config={config} 
+                isAddingNote={isAddingNote} 
+                onCancelNote={() => setIsAddingNote(false)}
+                onUpdate={onUpdate}
+                onDeleteNote={onDeleteNote}
+              />
             </div>
           </div>
         </div>

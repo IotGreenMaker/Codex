@@ -103,7 +103,7 @@ export function CalendarConfigModal({ isOpen, onClose, onSave }: CalendarConfigM
               {/* Seedling */}
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <Sprout className="h-4 w-4 text-sky-400" />
+                  <Sprout className="h-4 w-4 text-green-200" />
                   <label className="text-sm text-lime-100/80">Seedling</label>
                 </div>
                 <input
@@ -180,7 +180,7 @@ export function CalendarConfigModal({ isOpen, onClose, onSave }: CalendarConfigM
               {/* Seedling */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Sprout className="h-4 w-4 text-sky-400" />
+                  <Sprout className="h-4 w-4 text-green-200" />
                   <label className="text-sm text-lime-100/80">Seedling Changes</label>
                 </div>
                 <button
