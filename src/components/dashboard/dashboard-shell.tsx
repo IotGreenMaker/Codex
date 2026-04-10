@@ -738,7 +738,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   hour12: false
                 }).format(new Date(now))}
               </p>
-              <p className="text-xs text-lime-100/75 text-sm sm:text-xs">
+              <p className=" text-lime-100/75 text-sm sm:text-xs">
                 {new Intl.DateTimeFormat(locale, {
                   weekday: "long",
                   month: "long",
