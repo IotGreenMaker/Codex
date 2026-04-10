@@ -355,7 +355,7 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
   }, [notificationsEnabled, nextWateringDate, plant.strainName]);
 
   return (
-    <div className="flex flex-col gap-3 max-h-[50vh] sm:max-h-[800px] overflow-y-auto overflow-x-hidden pr-1 p-4 pt-0">
+    <div className="flex flex-col gap-3 max-h-[50vh] sm:max-h-[800px] overflow-y-auto overflow-x-hidden pl-1 pr-2 p-4 pt-0">
       {/* Next Watering Reminder - Always first if exists */}
       {nextWateringDate && (
         <WateringReminder
