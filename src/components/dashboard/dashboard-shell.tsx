@@ -13,7 +13,16 @@ import { AiAssistantTutorialModal } from "@/components/dashboard/ai-assistant-tu
 import { LightConfigModal } from "@/components/dashboard/light-config-modal";
 import { ConfirmationModal, ConfirmationOptions } from "@/components/dashboard/confirmation-modal";
 import { NutrientChecker } from "@/components/dashboard/nutrient-checker";
-import { calculateVpd, getCycleSummary, getDetailedCycleSummary, getVpdBand } from "@/lib/grow-math";
+import { 
+  calculateVpd, 
+  getVpdBand, 
+  getDetailedCycleSummary, 
+  getCycleSummary,
+  CANNA_AQUA_PERIODS, 
+  getNutrientPeriodKey, 
+  getRecipeSnapshotData,
+  formatNutrientValue
+} from "@/lib/grow-math";
 import { STAGE_TARGETS, SAVE_DEBOUNCE_DELAY, WEATHER_REFRESH_INTERVAL, VALIDATION_RANGES } from "@/lib/config";
 import { Locale, translations } from "@/lib/i18n";
 import { dailyLogs, createNewPlant } from "@/lib/newplant-data";
@@ -304,8 +313,6 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
         lightSchedule: activePlant.lightSchedule,
         lightsOn: activePlant.lightsOn,
         lightsOff: activePlant.lightsOff,
-        lightType: activePlant.lightType,
-        lightDimmerPercent: activePlant.lightDimmerPercent,
         containerVolumeL: activePlant.containerVolumeL,
         mediaVolumeL: activePlant.mediaVolumeL,
         mediaType: activePlant.mediaType,
@@ -375,6 +382,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   const cycle = getCycleSummary(activePlant);
   const cycleDetailed = getDetailedCycleSummary(activePlant);
   
+
   // Calculate elapsed days from timestamps for accurate progress
   const { seedlingDays: elapsedSeedling, vegDays: elapsedVeg, bloomDays: elapsedBloom, totalDaysElapsed } = calculateElapsedDays(activePlant);
   const liveVpd = calculateVpd(activePlant.growTempC, activePlant.growHumidity);
@@ -431,8 +439,6 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
         lightSchedule: activePlant.lightSchedule,
         lightsOn: activePlant.lightsOn,
         lightsOff: activePlant.lightsOff,
-        lightType: activePlant.lightType,
-        lightDimmerPercent: activePlant.lightDimmerPercent,
         containerVolumeL: activePlant.containerVolumeL,
         mediaVolumeL: activePlant.mediaVolumeL,
         mediaType: activePlant.mediaType,
@@ -474,7 +480,36 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
   const patchWateringData = (nextWateringData: PlantProfile["wateringData"]) => {
     const validData = nextWateringData.filter((w) => isValidDate(w.timestamp));
-    const sorted = [...validData].sort((a, b) => {
+    
+    // Automation: if there's a new entry without a snapshot, try to generate one
+    const processedData = validData.map(entry => {
+      if (entry.id && !entry.recipeSnapshot && entry.isFeed !== false) {
+        // This is likely a new entry (e.g. from AI)
+        const litersValue = entry.amountMl / 1000 || activePlant.waterInputMl / 1000;
+        const periodToSet = getNutrientPeriodKey({
+          stage: activePlant.stage,
+          seedlingDays: elapsedSeedling,
+          vegDays: elapsedVeg,
+          bloomDays: elapsedBloom,
+          seedlingTarget: calendarConfig?.seedlingDuration ?? STAGE_TARGETS.seedling,
+          vegTarget: calendarConfig?.vegDuration ?? STAGE_TARGETS.veg,
+          bloomTarget: calendarConfig?.bloomDuration ?? STAGE_TARGETS.bloom
+        });
+
+        return {
+          ...entry,
+          isFeed: entry.isFeed ?? true,
+          recipeSnapshot: getRecipeSnapshotData({
+            periodKey: !entry.isFeed ? "" : periodToSet,
+            liters: litersValue,
+            targetEc: entry.ec || activePlant.waterEc
+          })
+        };
+      }
+      return entry;
+    });
+
+    const sorted = [...processedData].sort((a, b) => {
       const aTime = new Date(a.timestamp).getTime();
       const bTime = new Date(b.timestamp).getTime();
       return aTime - bTime;
@@ -978,12 +1013,16 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 }
                 helper={
                   <EditableText
-                    value={`pH ${activePlant.waterPh} | EC ${activePlant.waterEc}`}
+                    value={`pH ${activePlant.waterPh} | ${calendarConfig?.measurementUnit === 'PPM' ? 'PPM ' + formatNutrientValue(activePlant.waterEc, 'PPM', calendarConfig?.hannaScale || 700) : 'EC ' + activePlant.waterEc}`}
                     className="text-xs leading-5 text-lime-100/70"
                     onSave={(value) => {
-                      const match = value.match(/pH\s*([0-9]+(?:\.[0-9]+)?)\s*\|\s*EC\s*([0-9]+(?:\.[0-9]+)?)/i);
+                      const match = value.match(/pH\s*([0-9]+(?:\.[0-9]+)?)\s*\|\s*(?:EC|PPM)\s*([0-9]+(?:\.[0-9]+)?)/i);
                       if (!match) return;
-                      patchActivePlant({ waterPh: Number(match[1]), waterEc: Number(match[2]) });
+                      let newEc = Number(match[2]);
+                      if (value.toLowerCase().includes('ppm')) {
+                        newEc = newEc / (calendarConfig?.hannaScale || 700);
+                      }
+                      patchActivePlant({ waterPh: Number(match[1]), waterEc: newEc });
                     }}
                   />
                 }
@@ -1032,6 +1071,9 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 </span>
                  <p className="text-sm font-semibold text-lime-100"> {wateringCountdown}</p>
               </div>
+
+
+
               <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
                 <div
                   className="h-2 rounded-full bg-gradient-to-r from-amber-500/90 via-sky-300/70 to-sky-500/90 transition-all duration-700"
@@ -1213,6 +1255,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
               notificationsEnabled={notificationsEnabled}
               onAddNote={handleAddAiNote}
               onCreatePlant={createPlant}
+              calendarConfig={calendarConfig}
             />
           </div>
         </div>
@@ -1274,7 +1317,28 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
             onWateringDataChange={patchWateringData}
             onClimateDataChange={patchClimateData}
             onUpdateInterval={(days) => patchActivePlant({ wateringIntervalDays: days })}
-            onWaterNow={() =>
+            onWaterNow={() => {
+              const litersValue = activePlant.waterInputMl / 1000;
+              const periodToSet = getNutrientPeriodKey({
+                stage: activePlant.stage,
+                seedlingDays: elapsedSeedling,
+                vegDays: elapsedVeg,
+                bloomDays: elapsedBloom,
+                seedlingTarget: calendarConfig?.seedlingDuration ?? STAGE_TARGETS.seedling,
+                vegTarget: calendarConfig?.vegDuration ?? STAGE_TARGETS.veg,
+                bloomTarget: calendarConfig?.bloomDuration ?? STAGE_TARGETS.bloom
+              });
+
+              setNutrientLiters(litersValue);
+              setNutrientTargetEc(activePlant.waterEc);
+              setNutrientPeriodKey(periodToSet);
+
+              const snapshot = getRecipeSnapshotData({
+                periodKey: periodToSet,
+                liters: litersValue,
+                targetEc: activePlant.waterEc
+              });
+
               patchWateringData([
                 ...activePlant.wateringData,
                 {
@@ -1282,10 +1346,13 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   timestamp: new Date().toISOString(),
                   amountMl: activePlant.waterInputMl,
                   ph: activePlant.waterPh,
-                  ec: activePlant.waterEc
+                  ec: activePlant.waterEc,
+                  isFeed: true,
+                  recipeSnapshot: snapshot
                 }
-              ])
-            }
+              ]);
+            }}
+            config={calendarConfig || undefined}
             labels={{ progression: t.progression, tempHumidityVpd: t.tempHumidityVpd }}
           />
 
@@ -1466,8 +1533,8 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   value={<span className="text-sm font-semibold text-lime-100">{formatAvgPh(activePlant.wateringData)}</span>}
                 />
                 <MiniInfo
-                  label="Average PPM"
-                  value={<span className="text-sm font-semibold text-lime-100">{formatAvgPpm(activePlant.wateringData)}</span>}
+                  label={calendarConfig?.measurementUnit === "PPM" ? "Average PPM" : "Average EC"}
+                  value={<span className="text-sm font-semibold text-lime-100">{formatAvgPpm(activePlant.wateringData, calendarConfig?.measurementUnit || "EC", calendarConfig?.hannaScale || 700)}</span>}
                 />
               </div>
 
@@ -1530,13 +1597,16 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                     />
                   </div>
                   <div>
-                    <p className="text-[11px] text-lime-100/65">Target EC</p>
+                    <p className="text-[11px] text-lime-100/65">Target {calendarConfig?.measurementUnit === 'PPM' ? 'PPM' : 'EC'}</p>
                     <input
                       type="number"
                       min={0}
-                      step={0.05}
-                      value={nutrientTargetEc}
-                      onChange={(e) => setNutrientTargetEc(Math.max(0, Number(e.target.value) || 0))}
+                      step={calendarConfig?.measurementUnit === 'PPM' ? 10 : 0.05}
+                      value={calendarConfig?.measurementUnit === 'PPM' ? Math.round(nutrientTargetEc * (calendarConfig?.hannaScale || 700)) : nutrientTargetEc}
+                      onChange={(e) => {
+                        const val = Math.max(0, Number(e.target.value) || 0);
+                        setNutrientTargetEc(calendarConfig?.measurementUnit === 'PPM' ? val / (calendarConfig?.hannaScale || 700) : val);
+                      }}
                       className="mt-1 w-full rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none"
                     />
                   </div>
@@ -1546,14 +1616,15 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   {renderCannaMix({
                     periodKey: nutrientPeriodKey,
                     liters: nutrientLiters,
-                    targetEc: nutrientTargetEc
+                    targetEc: nutrientTargetEc,
+                    config: calendarConfig || undefined
                   })}
                 </div>
                 </div>
 
                 {/* Smart Nutrient Checker */}
                 <div className={nutrientView === "checker" ? "" : "hidden"}>
-                  <NutrientChecker plant={activePlant} />
+                  <NutrientChecker plant={activePlant} config={calendarConfig || undefined} />
                 </div>
               </div>
 
@@ -2047,72 +2118,22 @@ function formatAvgPh(watering: PlantProfile["wateringData"]) {
   return `${inAvg ? inAvg.toFixed(2) : "--"} in / ${runoffAvg ? runoffAvg.toFixed(2) : "--"} runoff`;
 }
 
-function formatAvgPpm(watering: PlantProfile["wateringData"]) {
-  const toPpm = (ec: number) => ec * 700;
+function formatAvgPpm(watering: PlantProfile["wateringData"], unit: "EC" | "PPM", hannaScale: number) {
   const inVals = watering.map((w) => w.ec).filter((n) => Number.isFinite(n));
   const runoffVals = watering.map((w) => w.runoffEc).filter((n): n is number => typeof n === "number" && Number.isFinite(n));
   const avg = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null);
   const inAvg = avg(inVals);
   const runoffAvg = avg(runoffVals);
-  return `${inAvg ? Math.round(toPpm(inAvg)) : "--"} in / ${runoffAvg ? Math.round(toPpm(runoffAvg)) : "--"} runoff`;
+  
+  const fmt = (val: number | null) => val !== null ? formatNutrientValue(val, unit, hannaScale) : "--";
+  return `${fmt(inAvg)} in / ${fmt(runoffAvg)} runoff`;
 }
 
-const CANNA_AQUA_PERIODS: Array<{
-  key: string;
-  label: string;
-  ecTotal: number;
-  baseA?: number;
-  baseB?: number;
-  vega?: boolean;
-  flores?: boolean;
-  rhizotonic?: number | [number, number];
-  cannazym?: number | [number, number];
-  pk1314?: number;
-  cannaboost?: number | [number, number];
-}> = [
-  { key: "rooting", label: "Start / rooting (3-5 days)", ecTotal: 1.1, baseA: 1.8, baseB: 1.8, vega: true, rhizotonic: 4 },
-  { key: "veg_phase_1", label: "Vegetative phase I (0-3 weeks)", ecTotal: 1.3, baseA: 2.2, baseB: 2.2, vega: true, rhizotonic: 2, cannazym: 2.5 },
-  { key: "veg_phase_2", label: "Vegetative phase II (2-4 weeks)", ecTotal: 1.6, baseA: 2.8, baseB: 2.8, vega: true, rhizotonic: 2, cannazym: 2.5, cannaboost: [2, 4] },
-  { key: "gen_1", label: "Generative period I (2-3 weeks)", ecTotal: 1.8, baseA: 3.4, baseB: 3.4, flores: true, rhizotonic: 0.5, cannazym: 2.5, cannaboost: [2, 4] },
-  { key: "gen_2", label: "Generative period II (1 week)", ecTotal: 2.0, baseA: 3.5, baseB: 3.5, flores: true, rhizotonic: 0.5, cannazym: 2.5, pk1314: 1.5, cannaboost: [2, 4] },
-  { key: "gen_3", label: "Generative period III (2-3 weeks)", ecTotal: 1.4, baseA: 2.5, baseB: 2.5, flores: true, rhizotonic: 0.5, cannazym: 2.5, cannaboost: [2, 4] },
-  { key: "gen_4", label: "Generative period IV (1-2 weeks)", ecTotal: 0.2, flores: true, cannazym: [2.5, 5], cannaboost: [2, 4] }
-];
-
-function renderCannaMix({ periodKey, liters, targetEc }: { periodKey: string; liters: number; targetEc: number }) {
+function renderCannaMix({ periodKey, liters, targetEc, config }: { periodKey: string; liters: number; targetEc: number, config?: CalendarConfig }) {
   const period = CANNA_AQUA_PERIODS.find((p) => p.key === periodKey) ?? CANNA_AQUA_PERIODS[0];
   const scale = period.ecTotal > 0 ? targetEc / period.ecTotal : 1;
 
-  const calcMl = (mlPerL?: number) => (typeof mlPerL === "number" ? Math.max(0, mlPerL * liters * scale) : null);
-  const calcRange = (range?: [number, number]) =>
-    range ? ([range[0] * liters * scale, range[1] * liters * scale] as [number, number]) : null;
-
-  const items: Array<{ label: string; value: string }> = [];
-  if (period.vega) items.push({ label: "Aqua Vega (A/B)", value: "" });
-  if (period.flores) items.push({ label: "Aqua Flores (A/B)", value: "" });
-
-  const baseA = calcMl(period.baseA);
-  const baseB = calcMl(period.baseB);
-  if (baseA !== null && baseB !== null) items.push({ label: "Base A", value: `${baseA.toFixed(1)} ml` });
-  if (baseA !== null && baseB !== null) items.push({ label: "Base B", value: `${baseB.toFixed(1)} ml` });
-
-  const rhizo = Array.isArray(period.rhizotonic) ? calcRange(period.rhizotonic) : null;
-  const rhizoSingle = !Array.isArray(period.rhizotonic) ? calcMl(period.rhizotonic) : null;
-  if (rhizoSingle !== null) items.push({ label: "Rhizotonic", value: `${rhizoSingle.toFixed(1)} ml` });
-  if (rhizo) items.push({ label: "Rhizotonic", value: `${rhizo[0].toFixed(1)}–${rhizo[1].toFixed(1)} ml` });
-
-  const zym = Array.isArray(period.cannazym) ? calcRange(period.cannazym) : null;
-  const zymSingle = !Array.isArray(period.cannazym) ? calcMl(period.cannazym) : null;
-  if (zymSingle !== null) items.push({ label: "Cannazym", value: `${zymSingle.toFixed(1)} ml` });
-  if (zym) items.push({ label: "Cannazym", value: `${zym[0].toFixed(1)}–${zym[1].toFixed(1)} ml` });
-
-  const pk = calcMl(period.pk1314);
-  if (pk !== null) items.push({ label: "PK 13/14", value: `${pk.toFixed(1)} ml` });
-
-  const boost = Array.isArray(period.cannaboost) ? calcRange(period.cannaboost) : null;
-  const boostSingle = !Array.isArray(period.cannaboost) ? calcMl(period.cannaboost) : null;
-  if (boostSingle !== null) items.push({ label: "Cannaboost", value: `${boostSingle.toFixed(1)} ml` });
-  if (boost) items.push({ label: "Cannaboost", value: `${boost[0].toFixed(1)}–${boost[1].toFixed(1)} ml` });
+  const items = getRecipeSnapshotData({ periodKey, liters, targetEc });
 
   return (
     <>
@@ -2147,14 +2168,22 @@ function renderCannaMix({ periodKey, liters, targetEc }: { periodKey: string; li
           })}
         </div>
         <p className="mt-3 text-[11px] text-lime-100/65">
-          Scaled from chart EC total {period.ecTotal} to target EC {targetEc} (x{Number(scale.toFixed(2))}).
+          Scaled from chart EC total {period.ecTotal} to target EC {targetEc.toFixed(2)} (x{Number(scale.toFixed(2))}).
         </p>
       </div>
-      <div className="rounded-2xl border border-white/8 bg-white/5 p-3">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">PPM target</p>
-        <p className="mt-2 text-sm font-semibold text-lime-100">{Math.round(targetEc * 700)} PPM (Hanna)</p>
-        <p className="mt-1 text-[11px] text-lime-100/65">Uses 700 ppm/EC conversion.</p>
-      </div>
+      {config?.measurementUnit !== 'PPM' ? (
+        <div className="rounded-2xl border border-white/8 bg-white/5 p-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">PPM target</p>
+          <p className="mt-2 text-sm font-semibold text-lime-100">{Math.round(targetEc * (config?.hannaScale || 700))} PPM</p>
+          <p className="mt-1 text-[11px] text-lime-100/65">Uses {config?.hannaScale || 700} ppm/EC conversion.</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-white/8 bg-white/5 p-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">EC target</p>
+          <p className="mt-2 text-sm font-semibold text-lime-100">{targetEc.toFixed(2)} EC</p>
+          <p className="mt-1 text-[11px] text-lime-100/65">Reverse scaled from PPM.</p>
+        </div>
+      )}
     </>
   );
 }

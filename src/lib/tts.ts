@@ -3,14 +3,35 @@
 
 let currentAudio: HTMLAudioElement | null = null;
 
-export async function speak(text: string): Promise<void> {
+export async function speak(
+  text: string, 
+  options?: { apiKey?: string; provider?: "inworld" | "elevenlabs" | "browser" }
+): Promise<void> {
   if (!text || text.trim().length === 0) return;
+
+  const provider = options?.provider || "browser";
+
+  // Handle Browser Native TTS
+  if (provider === "browser") {
+    return new Promise((resolve) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.onend = () => resolve();
+      utterance.onerror = (err) => {
+        console.error('[TTS] Browser speech error:', err);
+        resolve();
+      };
+      window.speechSynthesis.speak(utterance);
+    });
+  }
 
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ 
+        text,
+        apiKey: options?.apiKey
+      }),
     });
 
     if (!res.ok) {

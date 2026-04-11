@@ -33,7 +33,8 @@ export function AiAssistantPanel({
   onToggleNotification,
   notificationsEnabled = false,
   onCreatePlant,
-  onAddNote
+  onAddNote,
+  calendarConfig
 }: {
   locale: Locale;
   plant: PlantProfile;
@@ -48,6 +49,7 @@ export function AiAssistantPanel({
   notificationsEnabled?: boolean;
   onCreatePlant?: (data: { strainName: string; stage: string }) => void;
   onAddNote?: (text: string, timestamp?: string) => void;
+  calendarConfig?: any;
 }) {
   const t = translations[locale];
   const [isConnected, setIsConnected] = useState(false);
@@ -70,6 +72,21 @@ export function AiAssistantPanel({
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
+
+  // ─── Ref-based State Sync (Fixes Stale Closures in Async Callbacks) ────────
+  const plantRef = useRef(plant);
+  const plantsRef = useRef(plants);
+  const messagesRef = useRef(messages);
+  const aiConfigRef = useRef(aiConfig);
+  const notificationsEnabledRef = useRef(notificationsEnabled);
+
+  useEffect(() => {
+    plantRef.current = plant;
+    plantsRef.current = plants;
+    messagesRef.current = messages;
+    aiConfigRef.current = aiConfig;
+    notificationsEnabledRef.current = notificationsEnabled;
+  });
 
   // Auto-scroll chat to bottom
   useEffect(() => {
@@ -138,7 +155,10 @@ export function AiAssistantPanel({
         };
 
         recognition.onerror = (event: any) => {
-          setMicError(`Voice error: ${event.error}`);
+          // Don't show error for 'no-speech', it's common in idle state
+          if (event.error !== "no-speech") {
+            setMicError(`Voice error: ${event.error}`);
+          }
         };
 
         recognition.onend = () => {
@@ -205,11 +225,14 @@ export function AiAssistantPanel({
     const assistantId = `assistant-${Date.now()}`;
 
     try {
-      // Build comprehensive plant context with real-time data
-      const latestClimate = plant.climateData?.[plant.climateData.length - 1];
-      const latestWatering = plant.wateringData?.[plant.wateringData.length - 1];
-      
-      const plantContext = buildGrowContext(plant, plants, notificationsEnabled);
+      // Use Ref-based latest data to avoid stale context during switches
+      const currentPlant = plantRef.current;
+      const currentPlants = plantsRef.current;
+      const currentMessages = messagesRef.current;
+      const currentAiConfig = aiConfigRef.current;
+      const currentNotificationsEnabled = notificationsEnabledRef.current;
+
+      const plantContext = buildGrowContext(currentPlant, currentPlants, currentNotificationsEnabled);
 
       // Use Groq API for AI response
       const response = await fetch("/api/groq", {
@@ -218,12 +241,12 @@ export function AiAssistantPanel({
         body: JSON.stringify({
           message: userMessage,
           plantContext: plantContext,
-          plantId: plant.id,
-          history: messages.map((m) => ({
+          plantId: currentPlant.id,
+          history: currentMessages.map((m) => ({
             role: m.role,
             content: m.content
           })),
-          apiKey: aiConfig.aiApiKey || undefined
+          apiKey: currentAiConfig.aiApiKey || undefined
         })
       });
 
@@ -268,7 +291,7 @@ export function AiAssistantPanel({
             runoffPh: parsedData.watering.runoffPh,
             runoffEc: parsedData.watering.runoffEc
           };
-          onUpdateWateringData([...(plant.wateringData ?? []), newWatering]);
+          onUpdateWateringData([...(plantRef.current.wateringData ?? []), newWatering]);
         }
 
         // Update climate data
@@ -276,10 +299,10 @@ export function AiAssistantPanel({
           const newClimate = {
             id: generateUUID(),
             timestamp: new Date().toISOString(),
-            tempC: parsedData.climate.tempC ?? plant.growTempC,
-            humidity: parsedData.climate.humidity ?? plant.growHumidity
+            tempC: parsedData.climate.tempC ?? plantRef.current.growTempC,
+            humidity: parsedData.climate.humidity ?? plantRef.current.growHumidity
           };
-          onUpdateClimateData([...(plant.climateData ?? []), newClimate]);
+          onUpdateClimateData([...(plantRef.current.climateData ?? []), newClimate]);
         }
 
         // Update plant profile (stage, strain, light settings, etc.)
@@ -299,16 +322,16 @@ export function AiAssistantPanel({
           // Handle stageDays update
           if (parsedData.plant.stageDays) {
             plantUpdate.stageDays = {
-              ...plant.stageDays,
+              ...plantRef.current.stageDays,
               ...parsedData.plant.stageDays
             };
             
             // Set start dates if moving to a new stage
             const now = new Date().toISOString();
-            if (parsedData.plant.stageDays.veg > 0 && !plant.vegStartedAt) {
+            if (parsedData.plant.stageDays.veg > 0 && !plantRef.current.vegStartedAt) {
               plantUpdate.vegStartedAt = now;
             }
-            if (parsedData.plant.stageDays.bloom > 0 && !plant.bloomStartedAt) {
+            if (parsedData.plant.stageDays.bloom > 0 && !plantRef.current.bloomStartedAt) {
               plantUpdate.bloomStartedAt = now;
             }
           }
@@ -371,7 +394,10 @@ export function AiAssistantPanel({
 
       // Read AI response with voice
       setIsPlaying(true);
-      await speak(assistantMessage);
+      await speak(assistantMessage, {
+        apiKey: aiConfig.voiceApiKey,
+        provider: aiConfig.voiceProvider
+      });
       setIsPlaying(false);
     } catch (error) {
       setConnectionState("failed");
@@ -442,11 +468,12 @@ export function AiAssistantPanel({
     }>
   ) {
     try {
+      const currentPlantId = plantRef.current.id;
       // Save each message to IndexedDB under current plantId
       for (const msg of payload) {
         const chatMessage = {
           id: msg.id,
-          plantId: plant.id,
+          plantId: currentPlantId,
           role: msg.role,
           content: msg.content,
           source: msg.source,

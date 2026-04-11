@@ -79,12 +79,20 @@ export async function POST(request: NextRequest) {
       remainingRequests: remaining,
     });
   } catch (error) {
-    console.error("Groq API error:", error);
+    console.error("Groq API error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      error
+    });
+    
+    // Check for specific error types if possible (e.g. 401 Unauthorized)
+    const status = (error as any)?.status || 500;
+    
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: status >= 400 && status < 600 ? status : 500 }
     );
   }
 }

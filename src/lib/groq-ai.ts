@@ -1,9 +1,6 @@
 import Groq from "groq-sdk";
 import type { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
 
 export async function getAIResponseFromGroq(
   userMessage: string,
@@ -167,14 +164,16 @@ When user asks to turn on/off watering notifications or asks about notification 
 
 ## GUIDELINES:
 - ALWAYS provide natural language response first
-- Only include JSON if user asks for updates or mentions measurements
-- Be concise (2-3 sentences) and actionable
-- Reference current values from plant data when giving advice
-- Suggest adjustments based on VPD ranges and plant stage
-- Only log data explicitly mentioned or asked for
-- When switching plants, use the plant name exactly as shown in AVAILABLE PLANTS
-- When creating plants, ALWAYS default to "Seedling" stage unless the user explicitly says otherwise (e.g., "in Bloom", "in Veg")
-- Do NOT ask the user what stage to use - just use Seedling by default
+- Only include JSON if user asks for updates or mentions measurements (e.g., "I just watered", "Change lighting to...")
+- **CRITICAL**: If the user asks about FUTURE dates (e.g., "When is my next watering?", "When should I harvest?"), respond in natural language ONLY. **Do NOT** include a "watering" or "note" JSON block unless you are actually logging a completed event.
+- Be concise (2-3 sentences) and actionable.
+- Reference current values from plant data when giving advice.
+- Use **DLI/PPFD status** and **Historical Notes** to justify advice (e.g., "You already noted yellow tips 3 days ago, and your DLI is high, so maybe back off the light").
+- Suggest adjustments based on VPD ranges and plant stage.
+- Only log data explicitly mentioned or asked for.
+- When switching plants, use the plant name exactly as shown in AVAILABLE PLANTS.
+- When creating plants, ALWAYS default to "Seedling" stage unless the user explicitly says otherwise (e.g., "in Bloom", "in Veg").
+- Do NOT ask the user what stage to use - just use Seedling by default.
 
 ## EXAMPLE CONVERSATION:
 User: "I just watered 1200ml, pH is 5.8, EC 1.35"

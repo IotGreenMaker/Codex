@@ -24,11 +24,13 @@ type CalendarDay = {
 export function PlantTimelineCalendar({ 
   plant, 
   onUpdate, 
-  onDeleteNote 
+  onDeleteNote,
+  calendarConfig
 }: { 
   plant: PlantProfile, 
   onUpdate?: (plant: PlantProfile) => void,
-  onDeleteNote?: (noteId: string) => void 
+  onDeleteNote?: (noteId: string) => void,
+  calendarConfig?: CalendarConfig
 }) {
   const today = new Date();
   const [displayMonth, setDisplayMonth] = useState(today.getMonth());
@@ -42,7 +44,10 @@ export function PlantTimelineCalendar({
     showWatering: true,
     showSeedling: true,
     showVeg: true,
-    showBloom: true
+    showBloom: true,
+    nutrientDelta: 5,
+    hannaScale: 700,
+    measurementUnit: "EC"
   });
 
   // Load config on mount

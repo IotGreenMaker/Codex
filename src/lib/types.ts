@@ -45,6 +45,8 @@ export type WateringEntry = {
   ec: number;
   runoffPh?: number;
   runoffEc?: number;
+  isFeed?: boolean;
+  recipeSnapshot?: Array<{ label: string; value: string }>;
 };
 
 export type ClimateEntry = {

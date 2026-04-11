@@ -39,6 +39,9 @@ function createMockPlant(overrides: Partial<PlantProfile> = {}): PlantProfile {
     stageDays: { seedling: 1, veg: 0, bloom: 0 },
     wateringData: [],
     climateData: [],
+    notes: [],
+    lights: [],
+    activeLightId: undefined,
     feedRecipe: {
       title: "Test Recipe",
       baseAMl: 24,

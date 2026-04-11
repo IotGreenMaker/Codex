@@ -18,7 +18,8 @@ export function AiChatModal({
   onUpdateClimateData,
   onToggleNotification,
   notificationsEnabled = false,
-  onAddNote
+  onAddNote,
+  calendarConfig
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -34,6 +35,7 @@ export function AiChatModal({
   onToggleNotification?: (enabled: boolean) => void;
   notificationsEnabled?: boolean;
   onAddNote?: (text: string, timestamp?: string) => void;
+  calendarConfig?: any;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -70,7 +72,7 @@ export function AiChatModal({
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -78,36 +80,36 @@ export function AiChatModal({
       {/* Modal Panel */}
       <div
         ref={panelRef}
-        className="relative z-10 w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-white/10 bg-slate-900/95 shadow-2xl animate-slide-up sm:animate-fade-in"
+        className="relative z-10 w-full max-w-2xl h-[70vh] sm:h-[70vh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-white/10 glass-panel shadow-2xl animate-slide-up sm:animate-fade-in"
         style={{
           animationFillMode: "forwards"
         }}
       >
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 z-20 rounded-full border border-white/20 bg-black/40 p-2 text-white/80 hover:bg-black/60 hover:text-white transition backdrop-blur-sm"
-          aria-label="Close AI chat"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
         {/* Header */}
-        <div className="sticky top-0 z-10 rounded-t-3xl sm:rounded-t-3xl border-b border-white/10 bg-gradient-to-b from-slate-800/95 to-slate-900/95 px-6 py-4 backdrop-blur-sm">
+        <div className="sticky top-0 z-20 flex items-center justify-between rounded-t-3xl sm:rounded-t-3xl border-b border-lime-300/10 bg-gradient-to-b from-black/40 to-black/20 px-6 py-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-lime-300/20 to-emerald-400/20 border border-lime-300/30">
-              <span className="text-lg">🤖</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-lime-300/10 to-emerald-400/10 border border-lime-300/20">
+              <img src="/gbuddy-icon.svg" alt="logo" className="h-6 w-6" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-white">AI Assistant</h2>
               <p className="text-xs text-slate-400">Your personal grow companion</p>
             </div>
           </div>
+
+          {/* Close Button - Now inside header */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-white/10 bg-white/5 p-2 text-white/70 hover:bg-white/10 hover:text-white transition backdrop-blur-sm"
+            aria-label="Close AI chat"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Chat Content */}
-        <div className="p-4 sm:p-6">
+        <div className="flex-1 sm:max-h-[50vh] overflow-y-scroll p-4 sm:p-6">
           <AiAssistantPanel
             locale={locale as any}
             plant={plant}
@@ -121,6 +123,7 @@ export function AiChatModal({
             onToggleNotification={onToggleNotification}
             notificationsEnabled={notificationsEnabled}
             onAddNote={onAddNote}
+            calendarConfig={calendarConfig}
           />
         </div>
       </div>

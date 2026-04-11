@@ -19,6 +19,9 @@ export type CalendarConfig = {
   showSeedling: boolean;
   showVeg: boolean;
   showBloom: boolean;
+  nutrientDelta: number;
+  hannaScale: 500 | 700;
+  measurementUnit: "EC" | "PPM";
 };
 
 const DEFAULT_CONFIG: CalendarConfig = {
@@ -28,7 +31,10 @@ const DEFAULT_CONFIG: CalendarConfig = {
   showWatering: true,
   showSeedling: true,
   showVeg: true,
-  showBloom: true
+  showBloom: true,
+  nutrientDelta: 5,
+  hannaScale: 700,
+  measurementUnit: "EC"
 };
 
 const SETTINGS_KEY = "calendarConfig";
@@ -146,6 +152,70 @@ export function CalendarConfigModal({ isOpen, onClose, onSave }: CalendarConfigM
                   onChange={(e) => setConfig({ ...config, bloomDuration: Math.max(1, Number(e.target.value) || 1) })}
                   className="w-20 rounded-lg border border-lime-300/15 bg-black/15 px-3 py-2 text-sm text-lime-100 outline-none text-center"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Feed & Nutrient Settings */}
+          <div className="pt-2">
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.22em] text-lime-200 mb-3 flex items-center gap-2">
+              <Droplets className="h-3.5 w-3.5" />
+              Nutrient Settings
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <label className="text-sm text-lime-100/80">Nutrient Delta (Next Feed %)</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={50}
+                    value={config.nutrientDelta}
+                    onChange={(e) => setConfig({ ...config, nutrientDelta: Math.max(0, Number(e.target.value) || 0) })}
+                    className="w-16 rounded-lg border border-lime-300/15 bg-black/15 px-2 py-1.5 text-sm text-lime-100 outline-none text-center"
+                  />
+                  <span className="text-xs text-lime-100/40">%</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <label className="text-sm text-lime-100/80">Measurement Unit</label>
+                <div className="flex rounded-lg border border-lime-300/20 bg-black/30 p-0.5">
+                  {["EC", "PPM"].map((unit) => (
+                    <button
+                      key={unit}
+                      type="button"
+                      onClick={() => setConfig({ ...config, measurementUnit: unit as "EC" | "PPM" })}
+                      className={`rounded-md px-3 py-1 text-[10px] font-mono transition ${
+                        config.measurementUnit === unit
+                          ? "bg-lime-300/20 text-lime-200"
+                          : "text-slate-400 hover:text-slate-300"
+                      }`}
+                    >
+                      {unit}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <label className="text-sm text-lime-100/80">Hanna Scale (PPM)</label>
+                <div className="flex rounded-lg border border-lime-300/20 bg-black/30 p-0.5">
+                  {[500, 700].map((scale) => (
+                    <button
+                      key={scale}
+                      type="button"
+                      onClick={() => setConfig({ ...config, hannaScale: scale as 500 | 700 })}
+                      className={`rounded-md px-3 py-1 text-[10px] font-mono transition ${
+                        config.hannaScale === scale
+                          ? "bg-lime-300/20 text-lime-200"
+                          : "text-slate-400 hover:text-slate-300"
+                      }`}
+                    >
+                      {scale}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

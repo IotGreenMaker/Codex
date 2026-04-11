@@ -3,9 +3,12 @@
 import { PlantProfile } from "@/lib/types";
 import { mapToNutrientStage, analyzeFeeding, NUTRIENT_TARGETS, FeedingAnalysis, NutrientStage } from "@/lib/nutrient-logic";
 import { CheckCircle, AlertTriangle, AlertCircle, ArrowDownCircle, ArrowUpCircle, Droplets, Info } from "lucide-react";
+import type { CalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import { formatNutrientValue } from "@/lib/grow-math";
 
 interface NutrientCheckerProps {
   plant: PlantProfile;
+  config?: CalendarConfig;
 }
 
 function getStatusIcon(status: string) {
@@ -77,7 +80,15 @@ function getRangeColor(
   return 'bg-green-500';
 }
 
-export function NutrientChecker({ plant }: NutrientCheckerProps) {
+export function NutrientChecker({ plant, config }: NutrientCheckerProps) {
+  const unit = config?.measurementUnit || 'EC';
+  const scale = config?.hannaScale || 700;
+
+  const formatValue = (val: number | null) => {
+    if (val === null) return '—';
+    return formatNutrientValue(val, unit, scale);
+  };
+
   // Get latest watering data (runoff EC/pH are optional)
   const wateringData = plant?.wateringData ?? [];
   const sortedWatering = [...wateringData].sort(
@@ -142,7 +153,7 @@ export function NutrientChecker({ plant }: NutrientCheckerProps) {
         {/* EC Section */}
         <div className="rounded-xl border border-white/8 bg-black/20 p-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-300">EC Analysis</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-300">{unit} Analysis</p>
             <div className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${getStatusColor(analysis.ecStatus)}`}>
               {getStatusIcon(analysis.ecStatus)}
               <span>{analysis.ecStatus}</span>
@@ -152,9 +163,9 @@ export function NutrientChecker({ plant }: NutrientCheckerProps) {
           {/* Input EC */}
           <div className="mb-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Input EC</span>
+              <span className="text-slate-400">Input {unit}</span>
               <span className="font-semibold text-lime-100">
-                {analysis.inputEc !== null ? analysis.inputEc.toFixed(2) : '—'}
+                {formatValue(analysis.inputEc)}
               </span>
             </div>
             <div className="relative mt-1 h-2 rounded-full bg-slate-700/50">
@@ -175,17 +186,17 @@ export function NutrientChecker({ plant }: NutrientCheckerProps) {
               )}
             </div>
             <div className="flex justify-between text-[10px] text-slate-500 mt-0.5">
-              <span>{ecAbsMin}</span>
-              <span>Target: {targets.ecMin}–{targets.ecMax}</span>
-              <span>{ecAbsMax}</span>
+              <span>{formatValue(ecAbsMin)}</span>
+              <span>Target: {formatValue(targets.ecMin)}–{formatValue(targets.ecMax)}</span>
+              <span>{formatValue(ecAbsMax)}</span>
             </div>
           </div>
 
           {/* Runoff EC + Delta */}
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-400">Runoff EC</span>
+            <span className="text-slate-400">Runoff {unit}</span>
             <span className="font-semibold text-lime-100">
-              {analysis.runoffEc !== null ? analysis.runoffEc.toFixed(2) : '—'}
+              {formatValue(analysis.runoffEc)}
             </span>
             {analysis.ecDelta !== null && (
               <span className={`ml-2 font-mono text-xs ${
@@ -194,7 +205,7 @@ export function NutrientChecker({ plant }: NutrientCheckerProps) {
                 analysis.ecDelta < -0.3 ? 'text-blue-400' :
                 'text-green-400'
               }`}>
-                Δ {analysis.ecDelta > 0 ? '+' : ''}{analysis.ecDelta.toFixed(2)}
+                Δ {analysis.ecDelta > 0 ? '+' : ''}{formatValue(Math.abs(analysis.ecDelta))}
               </span>
             )}
           </div>

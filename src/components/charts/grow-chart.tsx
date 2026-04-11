@@ -18,6 +18,8 @@ import {
 import type { ClimateEntry, GrowLogEntry, GrowStage, WateringEntry } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
 import type { Locale } from "@/lib/i18n";
+import type { CalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import { Droplets, CheckCircle2, Circle } from "lucide-react";
 
 type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
 
@@ -29,6 +31,7 @@ type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
     stage: GrowStage;
     locale: Locale;
     wateringIntervalDays: number;
+    config?: CalendarConfig;
     onWateringDataChange: (next: WateringEntry[]) => void;
     onClimateDataChange: (next: ClimateEntry[]) => void;
     onUpdateInterval?: (intervalDays: number) => void;
@@ -53,9 +56,17 @@ export function GrowChart({
   onUpdateInterval,
   onWaterNow,
   onOpenVpdChart,
-  labels
+  labels,
+  config
 }: GrowChartProps) {
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("WEEK");
+
+  const measurementUnit = config?.measurementUnit || "EC";
+  const hannaScale = config?.hannaScale || 700;
+
+  const handleToggleEcMode = () => {
+    // This is now global, we can either navigate to settings or just ignore since it's in the modal now
+  };
 
   const deleteWateringEntry = async (wateringId: string) => {
     try {
@@ -466,9 +477,19 @@ export function GrowChart({
                 <th className="px-2 sm:px-3 py-1.5 sm:py-2">ml</th>
                 {/* <th className="px-2 sm:px-3 py-1.5 sm:py-2">L</th> */}
                 <th className="px-2 sm:px-3 py-1.5 sm:py-2">pH in</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">EC in</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">
+                  <button 
+                    type="button"
+                    onClick={handleToggleEcMode}
+                    className="flex items-center gap-1 hover:text-white transition"
+                    title="Switch EC/PPM in settings"
+                  >
+                    {measurementUnit} in
+                  </button>
+                </th>
                 <th className="px-2 sm:px-3 py-1.5 sm:py-2">pH Out</th>
                 <th className="px-2 sm:px-3 py-1.5 sm:py-2">EC Out</th>
+                <th className="px-2 sm:px-3 py-1.5 sm:py-2">FEED</th>
                 <th className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">x</th>
               </tr>
             </thead>
@@ -479,6 +500,7 @@ export function GrowChart({
                   <td className="px-2 sm:px-3 py-1.5 sm:py-2">{projectedNextWatering.amountMl}</td>
                   {/* <td className="px-2 sm:px-3 py-1.5 sm:py-2">{(projectedNextWatering.amountMl / 1000).toFixed(2)}</td> */}
                   <td className="px-2 sm:px-3 py-1.5 sm:py-2">5.8-6.0</td>
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2"></td>
                   <td className="px-2 sm:px-3 py-1.5 sm:py-2"></td>
                   <td className="px-2 sm:px-3 py-1.5 sm:py-2"></td>
                   <td className="px-2 sm:px-3 py-1.5 sm:py-2"></td>
@@ -533,12 +555,14 @@ export function GrowChart({
                     <input
                       type="number"
                       step="0.01"
-                      value={entry.ec}
-                      onChange={(event) =>
+                      value={measurementUnit === "EC" ? entry.ec.toFixed(3) : Math.round(entry.ec * hannaScale)}
+                      onChange={(event) => {
+                        const val = Number(event.target.value) || 0;
+                        const finalEc = measurementUnit === "EC" ? val : val / hannaScale;
                         onWateringDataChange(
-                          wateringData.map((row) => (row.id === entry.id ? { ...row, ec: Number(event.target.value) || 0 } : row))
-                        )
-                      }
+                          wateringData.map((row) => (row.id === entry.id ? { ...row, ec: finalEc } : row))
+                        );
+                      }}
                       className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
                     />
                   </td>
@@ -561,16 +585,39 @@ export function GrowChart({
                     <input
                       type="number"
                       step="0.01"
-                      value={entry.runoffEc ?? ""}
-                      onChange={(event) =>
+                      value={entry.runoffEc !== undefined ? (measurementUnit === "EC" ? entry.runoffEc.toFixed(3) : Math.round(entry.runoffEc * hannaScale)) : ""}
+                      onChange={(event) => {
+                        const val = Number(event.target.value) || 0;
+                        const finalEc = measurementUnit === "EC" ? val : val / hannaScale;
                         onWateringDataChange(
-                          wateringData.map((row) =>
-                            row.id === entry.id ? { ...row, runoffEc: Number(event.target.value) || undefined } : row
+                          wateringData.map((row) => (row.id === entry.id ? { ...row, runoffEc: finalEc } : row))
+                        );
+                      }}
+                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                    <button
+                      type="button"
+                      onClick={() => 
+                        onWateringDataChange(
+                          wateringData.map((row) => 
+                            row.id === entry.id ? { ...row, isFeed: !row.isFeed } : row
                           )
                         )
                       }
-                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
-                    />
+                      className={`flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-md transition ${
+                        entry.isFeed 
+                          ? "bg-lime-300/20 text-lime-300 border border-lime-300/30" 
+                          : "bg-white/5 text-white/20 border border-white/10 hover:border-white/20"
+                      }`}
+                    >
+                      {entry.isFeed ? (
+                        <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      ) : (
+                        <Circle className="h-3 w-3 sm:h-3.5 sm:w-3.5 opacity-0 group-hover:opacity-100" />
+                      )}
+                    </button>
                   </td>
                   <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">
                     <button

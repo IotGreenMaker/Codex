@@ -1,9 +1,12 @@
 "use client";
 
 import { Droplets, Sprout, Cannabis, Wheat, Bell, BellOff, Pencil, Send, X, Calendar } from "lucide-react";
+import { formatNutrientValue } from "@/lib/grow-math";
 import type { PlantProfile, GrowStage, NoteEntry } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
 import type { CalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import { getNutrientPeriodKey, getRecipeSnapshotData, getDetailedCycleSummary } from "@/lib/grow-math";
+import { STAGE_TARGETS } from "@/lib/config";
 import { useState, useEffect, useCallback } from "react";
 import { getSetting, setSetting } from "@/lib/indexeddb-storage";
 
@@ -17,6 +20,8 @@ type TimelineEvent = {
   ph?: number;
   ec?: number;
   amountMl?: number;
+  isFeed?: boolean;
+  recipeSnapshot?: Array<{ label: string; value: string }>;
   stageFrom?: GrowStage | null;
   stageTo: GrowStage;
   noteText?: string;
@@ -115,9 +120,10 @@ type WateringReminderProps = {
   nextWateringDate: Date | null;
   onToggleNotification: (enabled: boolean) => void;
   notificationsEnabled: boolean;
+  recommendationItems?: Array<{ label: string; value: string }> | null;
 };
 
-function WateringReminder({ nextWateringDate, onToggleNotification, notificationsEnabled }: WateringReminderProps) {
+function WateringReminder({ nextWateringDate, onToggleNotification, notificationsEnabled, recommendationItems }: WateringReminderProps) {
   const dateLabel = new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
@@ -160,6 +166,21 @@ function WateringReminder({ nextWateringDate, onToggleNotification, notification
       <p className="text-xs text-lime-100/60 mt-1">
         {dateLabel} · {timeLabel}
       </p>
+
+      {/* Recommended Recipe */}
+      {recommendationItems && recommendationItems.length > 0 && (
+        <div className="mt-3 rounded-lg bg-black/30 p-2.5 border border-amber-500/10">
+          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-amber-400/80 mb-2">Recommended Feed</p>
+          <div className="space-y-1">
+            {recommendationItems.map((item, idx) => (
+              <div key={idx} className="flex justify-between items-center text-[11px]">
+                <span className="text-lime-100/60">{item.label}</span>
+                <span className="font-semibold text-lime-100">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -223,6 +244,51 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
   if (showWatering) {
     for (const w of plant.wateringData) {
       const { dateLabel, timeLabel } = formatDate(w.timestamp);
+      let recipeSnapshot = w.recipeSnapshot;
+      if (w.isFeed) {
+        // dynamic calc for past watering data
+        // note: to be perfectly accurate we would need to know the days at the time of watering,
+        // but for simplicity we can use current days or approximate it. Let's use current for now,
+        // or just calculate based on watering timestamp.
+        const wDate = new Date(w.timestamp);
+        const started = new Date(plant.startedAt);
+        const seedlingTarget = config?.seedlingDuration ?? STAGE_TARGETS.seedling;
+        const vegTarget = config?.vegDuration ?? STAGE_TARGETS.veg;
+        const bloomTarget = config?.bloomDuration ?? STAGE_TARGETS.bloom;
+        const totalDaysElapsed = Math.max(0, Math.floor((wDate.getTime() - started.getTime()) / (1000 * 60 * 60 * 24)));
+        
+        let sDays = 0, vDays = 0, bDays = 0;
+        if (plant.vegStartedAt) {
+          const vStart = new Date(plant.vegStartedAt);
+          sDays = Math.max(0, Math.floor((vStart.getTime() - started.getTime()) / (1000 * 60 * 60 * 24)));
+          if (plant.bloomStartedAt) {
+            const bStart = new Date(plant.bloomStartedAt);
+            vDays = Math.max(0, Math.floor((bStart.getTime() - vStart.getTime()) / (1000 * 60 * 60 * 24)));
+            bDays = Math.max(0, Math.floor((wDate.getTime() - bStart.getTime()) / (1000 * 60 * 60 * 24)));
+          } else {
+            vDays = Math.max(0, Math.floor((wDate.getTime() - vStart.getTime()) / (1000 * 60 * 60 * 24)));
+          }
+        } else {
+          sDays = totalDaysElapsed;
+        }
+
+        const periodKey = getNutrientPeriodKey({
+          stage: plant.stage,
+          seedlingDays: sDays,
+          vegDays: vDays,
+          bloomDays: bDays,
+          seedlingTarget,
+          vegTarget,
+          bloomTarget
+        });
+
+        recipeSnapshot = getRecipeSnapshotData({
+          periodKey,
+          liters: (w.amountMl / 1000) || (plant.waterInputMl / 1000),
+          targetEc: w.ec || plant.waterEc
+        });
+      }
+
       events.push({
         id: `watering-${w.id}`,
         type: "watering",
@@ -232,6 +298,8 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
         ph: w.ph,
         ec: w.ec,
         amountMl: w.amountMl,
+        isFeed: w.isFeed,
+        recipeSnapshot,
         stageTo: plant.stage
       });
     }
@@ -277,6 +345,37 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
   }, [plant.wateringData, plant.wateringIntervalDays]);
 
   const nextWateringDate = getNextWateringDate();
+
+  let recommendationItems: Array<{ label: string; value: string }> | null = null;
+  if (nextWateringDate) {
+    const sorted = [...plant.wateringData].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    const latest = sorted[0];
+    const isNextFeed = !latest || !latest.isFeed; // simplistically alternate
+
+    if (isNextFeed) {
+      const { daysInSeedling, daysInVeg, daysInBloom } = getDetailedCycleSummary(plant);
+      const periodKey = getNutrientPeriodKey({
+        stage: plant.stage,
+        seedlingDays: daysInSeedling,
+        vegDays: daysInVeg,
+        bloomDays: daysInBloom,
+        seedlingTarget: config?.seedlingDuration ?? STAGE_TARGETS.seedling,
+        vegTarget: config?.vegDuration ?? STAGE_TARGETS.veg,
+        bloomTarget: config?.bloomDuration ?? STAGE_TARGETS.bloom
+      });
+      // Apply nutrient delta if configured
+      const delta = config?.nutrientDelta ? 1 + config.nutrientDelta / 100 : 1;
+      const targetEc = (plant.waterEc || 1.2) * delta;
+      
+      recommendationItems = getRecipeSnapshotData({
+        periodKey,
+        liters: plant.waterInputMl / 1000 || 5, // Default to 5L if 0
+        targetEc
+      });
+    }
+  }
 
   const handleToggleNotification = useCallback(async (enabled: boolean) => {
     if (enabled) {
@@ -362,6 +461,7 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
           nextWateringDate={nextWateringDate}
           onToggleNotification={handleToggleNotification}
           notificationsEnabled={notificationsEnabled}
+          recommendationItems={recommendationItems}
         />
       )}
 
@@ -459,7 +559,10 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
               )}
               {event.ec !== undefined && (
                 <span className="text-xs text-lime-100/70">
-                  EC: <span className="font-medium text-lime-200">{event.ec}</span>
+                  {config?.measurementUnit === "PPM" ? "PPM" : "EC"}:{" "}
+                  <span className="font-medium text-lime-200">
+                    {formatNutrientValue(event.ec, config?.measurementUnit || "EC", config?.hannaScale || 700)}
+                  </span>
                 </span>
               )}
               {event.amountMl !== undefined && (
@@ -467,6 +570,21 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
                   <span className="font-medium text-lime-200">{event.amountMl}</span> ml
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Recipe Snapshot */}
+          {event.type === "watering" && event.recipeSnapshot && event.recipeSnapshot.length > 0 && (
+            <div className="mt-3 rounded-lg bg-black/30 p-2.5 border border-lime-300/10">
+              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-lime-400/80 mb-2">Recipe Snapshot</p>
+              <div className="space-y-1">
+                {event.recipeSnapshot.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-[11px]">
+                    <span className="text-lime-100/60">{item.label}</span>
+                    <span className="font-semibold text-lime-100">{item.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
