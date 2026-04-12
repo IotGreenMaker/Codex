@@ -82,6 +82,12 @@ export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModal
                   value={draft.aiApiKey}
                   onChange={(e) => setDraft({ ...draft, aiApiKey: e.target.value })}
                   className="w-full rounded-xl border border-lime-300/15 bg-black/20 pl-10 pr-4 py-2.5 text-sm text-white outline-none focus:border-lime-500/50 placeholder:text-slate-600"
+                  autoComplete="new-password"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  data-1p-ignore="true"
+                  data-lpignore="true"
+                  data-form-type="other"
                 />
                 <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-lime-400/50" />
               </div>
@@ -114,6 +120,12 @@ export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModal
                     value={draft.voiceApiKey}
                     onChange={(e) => setDraft({ ...draft, voiceApiKey: e.target.value })}
                     className="w-full rounded-xl border border-lime-300/15 bg-black/20 pl-10 pr-4 py-2.5 text-sm text-white outline-none focus:border-sky-500/50 placeholder:text-slate-600"
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    data-1p-ignore="true"
+                    data-lpignore="true"
+                    data-form-type="other"
                   />
                   <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-green-400/50" />
                 </div>
