@@ -89,7 +89,7 @@ export function AiChatModal({
         <div className="sticky top-0 z-20 flex items-center justify-between rounded-t-3xl sm:rounded-t-3xl border-b border-lime-300/10 bg-gradient-to-b from-black/40 to-black/20 px-6 py-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-lime-300/10 to-emerald-400/10 border border-lime-300/20">
-              <img src="/gbuddy-icon.svg" alt="logo" className="h-6 w-6" />
+              <img src="/g-icon.png" alt="logo" className="h-6 w-6" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-white">AI Assistant</h2>

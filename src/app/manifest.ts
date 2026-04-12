@@ -7,13 +7,13 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "AI grow companion for managing multiple plants, logs, and assistant actions.",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#09070f",
-    theme_color: "#8b3dff",
+    background_color: "#0d00358e",
+    theme_color: "#00461280",
     icons: [
       {
-        src: "/gbuddy-icon.svg",
+        src: "/g-icon.png",
         sizes: "any",
-        type: "image/svg+xml"
+        type: "image/png"
       }
     ]
   };

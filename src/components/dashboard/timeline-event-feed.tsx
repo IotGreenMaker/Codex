@@ -442,7 +442,7 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
           if (Notification.permission === "granted") {
             new Notification("G-Buddy - Watering Reminder", {
               body: `Time to water ${plant.strainName}!`,
-              icon: "/gbuddy-icon.svg",
+              icon: "/g-icon.png",
               tag: "watering-reminder"
             });
           }
