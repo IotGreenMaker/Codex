@@ -13,13 +13,12 @@ import { AiAssistantTutorialModal } from "@/components/dashboard/ai-assistant-tu
 import { LightConfigModal } from "@/components/dashboard/light-config-modal";
 import { ConfirmationModal, ConfirmationOptions } from "@/components/dashboard/confirmation-modal";
 import { NutrientChecker } from "@/components/dashboard/nutrient-checker";
-import { 
-  calculateVpd, 
-  getVpdBand, 
-  getDetailedCycleSummary, 
-  getCycleSummary,
-  CANNA_AQUA_PERIODS, 
-  getNutrientPeriodKey, 
+import {
+  calculateVpd,
+  getVpdBand,
+  getDetailedCycleSummary,
+  CANNA_AQUA_PERIODS,
+  getNutrientPeriodKey,
   getRecipeSnapshotData,
   formatNutrientValue
 } from "@/lib/grow-math";
@@ -28,15 +27,14 @@ import { Locale, translations } from "@/lib/i18n";
 import { dailyLogs, createNewPlant } from "@/lib/newplant-data";
 import { EmptyStateOnboarding } from "@/components/onboarding/empty-state-onboarding";
 import { generateUUID } from "@/lib/uuid";
-import { 
-  openDB, 
-  getAllPlants, 
-  savePlant, 
-  deletePlant, 
-  getSetting, 
+import {
+  openDB,
+  getAllPlants,
+  savePlant,
+  deletePlant,
+  getSetting,
   setSetting,
-  initializeDB,
-  seedTestPlants
+  initializeDB
 } from "@/lib/indexeddb-storage";
 import { Settings as SettingsIcon } from "lucide-react";
 import { exportToExcel } from "@/lib/excel-export";
@@ -91,26 +89,6 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   const handleCancel = () => {
     confirmState.resolve?.(false);
     setConfirmState({ isOpen: false, options: null, resolve: null });
-  };
-
-  // Seed test plants
-  const handleSeedTestData = async () => {
-    const confirmed = await showConfirmation({
-      title: "Seed Test Data",
-      message: "This will add 3 test plants (Baby Green, Green Machine, Purple Haze) to your database. Existing plants won't be affected.",
-      confirmLabel: "Add Test Plants",
-      cancelLabel: "Cancel",
-      variant: "info"
-    });
-    if (confirmed) {
-      await seedTestPlants();
-      // Reload plants list
-      const loadedPlants = await getAllPlants();
-      setPlants(loadedPlants);
-      if (loadedPlants.length > 0) {
-        setActivePlantId(loadedPlants[0].id);
-      }
-    }
   };
 
   // Refs for debounced save and latest plant state
@@ -379,9 +357,8 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     );
   }
 
-  const cycle = getCycleSummary(activePlant);
   const cycleDetailed = getDetailedCycleSummary(activePlant);
-  
+
 
   // Calculate elapsed days from timestamps for accurate progress
   const { seedlingDays: elapsedSeedling, vegDays: elapsedVeg, bloomDays: elapsedBloom, totalDaysElapsed } = calculateElapsedDays(activePlant);
@@ -531,7 +508,18 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
   const patchClimateData = (data: any[]) => {
     const validData = data.filter((c) => isValidDate(c.timestamp));
-    patchActivePlant({ climateData: validData });
+    const sorted = [...validData].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const latest = sorted[sorted.length - 1];
+
+    patchActivePlant({
+      climateData: validData,
+      ...(latest
+        ? {
+            growTempC: latest.tempC,
+            growHumidity: latest.humidity
+          }
+        : {})
+    });
   };
 
   const handleAddAiNote = (text: string, timestamp?: string) => {
@@ -907,15 +895,6 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   </button>
                   <button
                     type="button"
-                    onClick={handleSeedTestData}
-                    className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"
-                    title="Seed Test Plants"
-                    aria-label="Add test plants"
-                  >
-                    <Sprout className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
                     onClick={addPlant}
                     className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"
                     title="Add plant"
@@ -958,32 +937,19 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               <CompactMetric
                 label={t.climate}
                 icon={<Thermometer className="h-4 w-4" />}
-                value={
-                  <EditableText
-                    value={`${activePlant.growTempC} C / ${activePlant.growHumidity}%`}
-                    className="text-xl font-semibold text-lime-100"
-                    onSave={(value) => {
-                      const match = value.match(/([0-9]+(?:\.[0-9]+)?)\s*(?:C|c)?\s*\/\s*([0-9]+(?:\.[0-9]+)?)\s*%?/);
-                      if (!match) return;
-                      patchActivePlant({ growTempC: Number(match[1]), growHumidity: Number(match[2]) });
-                    }}
-                  />
-                }
+                value={<span className="text-xl font-semibold text-lime-100">{activePlant.growTempC}°C / {activePlant.growHumidity}%</span>}
                 helper={
-                  <EditableText
-                    value={`${weather?.temperatureC} C / ${weather?.humidity}%`}
-                    className="text-xs leading-5 text-lime-100/70"
-                    onSave={(value) => {
-                      const match = value.match(/([0-9]+(?:\.[0-9]+)?)\s*(?:C|c)?\s*\/\s*([0-9]+(?:\.[0-9]+)?)\s*%?/);
-                      if (!match) return;
-                      patchActivePlant({ outsideTempC: Number(match[1]), outsideHumidity: Number(match[2]) });
-                    }}
-                  />
+                  <span className="text-xs leading-5 text-lime-100/70">
+                    Outside: {weather?.temperatureC}°C / {weather?.humidity}%
+                  </span>
                 }
+                 statusColor={ <span className={`${vpdBand.tone} text-xs`}>
+
+                  </span>}
               />
 
               <CompactMetric
@@ -995,51 +961,32 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                     {vpdBand.label} | {vpdBand.range}
                   </span>
                 }
+                statusColor={ <span className={`${vpdBand.tone} text-xs`}>
+                  
+                  </span>}
               />
 
               <CompactMetric
                 label={t.water}
                 icon={<Droplets className="h-4 w-4" />}
-                value={
-                  <EditableText
-                    value={`${activePlant.waterInputMl} ml`}
-                    className="text-xl font-semibold text-lime-100"
-                    onSave={(value) => {
-                      const num = Number(value.replace(/[^\d.]/g, ""));
-                      if (!Number.isFinite(num)) return;
-                      patchActivePlant({ waterInputMl: num });
-                    }}
-                  />
-                }
+                value={<span className="text-xl font-semibold text-lime-100">{activePlant.waterInputMl} ml</span>}
                 helper={
-                  <EditableText
-                    value={`pH ${activePlant.waterPh} | ${calendarConfig?.measurementUnit === 'PPM' ? 'PPM ' + formatNutrientValue(activePlant.waterEc, 'PPM', calendarConfig?.hannaScale || 700) : 'EC ' + activePlant.waterEc}`}
-                    className="text-xs leading-5 text-lime-100/70"
-                    onSave={(value) => {
-                      const match = value.match(/pH\s*([0-9]+(?:\.[0-9]+)?)\s*\|\s*(?:EC|PPM)\s*([0-9]+(?:\.[0-9]+)?)/i);
-                      if (!match) return;
-                      let newEc = Number(match[2]);
-                      if (value.toLowerCase().includes('ppm')) {
-                        newEc = newEc / (calendarConfig?.hannaScale || 700);
-                      }
-                      patchActivePlant({ waterPh: Number(match[1]), waterEc: newEc });
-                    }}
-                  />
-                }
-              />
-
-              <CompactMetric
-                label={t.cycle}
-                icon={getStageIcon(activePlant.stage)}
-                value={<span className="text-xl font-semibold text-lime-100">{cycle.daysInStage} days</span>}
-                helper={
-                  <span className="text-xs text-lime-100/70">
-                    {activePlant.stage} | {cycle.totalDays} total
+                  <span className="text-xs leading-5 text-lime-100/70">
+                    pH {activePlant.waterPh} | {calendarConfig?.measurementUnit === 'PPM' ? 'PPM ' + formatNutrientValue(activePlant.waterEc, 'PPM', calendarConfig?.hannaScale || 700) : 'EC ' + activePlant.waterEc}
                   </span>
                 }
+              statusColor={
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-1.5 rounded-full bg-gradient-to-r from-white/90 via-sky-300/70 to-sky-500/90 transition-all duration-700"
+                  style={{ width: `${wateringProgress}%` }}
+                />
+              </div>}
+
+                
               />
             </div>
-
+{/* 
             <div className="mt-3 rounded-2xl border border-white/8 bg-black/20 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-lime-200">Watering</p>
@@ -1080,7 +1027,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   style={{ width: `${wateringProgress}%` }}
                 />
               </div>
-            </div>
+            </div> */}
 
             <div className="mt-4 grid gap-3">
               <MiniInfo
@@ -1356,7 +1303,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
             labels={{ progression: t.progression, tempHumidityVpd: t.tempHumidityVpd }}
           />
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 ">
             <div className="glass-panel rounded-3xl p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -1371,7 +1318,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                   <Settings className="h-5 w-5 text-lime-300" />
                 </button>
               </div>
-               <div className="mt-4 flex  gap-2 sm:grid-cols-2">
+               <div className="mt-4 gap-2 xl:flex md:grid md:grid-cols-2">
                  <MiniInfo label={t.stage} value={<EditableStage value={activePlant.stage} onSave={handleStageChange} />} />
                  <MiniInfo label={t.totalDays} value={<span className="text-sm font-semibold text-lime-100">{elapsedSeedling + elapsedVeg + elapsedBloom} days</span>} />
                  
@@ -1730,12 +1677,14 @@ function CompactMetric({
   label,
   value,
   helper,
-  icon
+  icon,
+  statusColor
 }: {
   label: string;
   value: React.ReactNode;
   helper: React.ReactNode;
   icon: React.ReactNode;
+  statusColor: React.ReactNode;
 }) {
   return (
     <div className="rounded-2xl border border-white/8 bg-white/5 p-4">
@@ -1745,6 +1694,7 @@ function CompactMetric({
       </div>
       <div className="mt-3">{value}</div>
       <div className="mt-1">{helper}</div>
+      <div className="mt-1">{statusColor}</div>
     </div>
   );
 }
@@ -2063,10 +2013,10 @@ function estimatePpfd(lightType: "blurple_40w" | "panel_100w", dimmerPercent: nu
 }
 
 function getStageIcon(stage: GrowStage) {
-  if (stage === "Seedling") return <Sprout className="h-4 w-4 text-green-200" />;
-  if (stage === "Veg") return <Cannabis className="h-4 w-4 text-green-500" />;
-  if (stage === "Bloom") return <Wheat className="h-4 w-4 text-indigo-500" />;
-  return <Leaf className="h-4 w-4 text-lime-300" />;
+  if (stage === "Seedling") return <Sprout className="h-5 w-5 text-green-200" />;
+  if (stage === "Veg") return <Cannabis className="h-5 w-5 text-green-500" />;
+  if (stage === "Bloom") return <Wheat className="h-5 w-5 text-indigo-500" />;
+  return <Leaf className="h-5 w-5 text-lime-300" />;
 }
 
 function StageProgressBar({

@@ -92,8 +92,8 @@ export function AiChatModal({
               <img src="/g-icon.png" alt="logo" className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">AI Assistant</h2>
-              <p className="text-xs text-slate-400">Your personal grow companion</p>
+              <h2 className="text-lg font-semibold text-white">Assistant</h2>
+            
             </div>
           </div>
 
@@ -109,7 +109,7 @@ export function AiChatModal({
         </div>
 
         {/* Chat Content */}
-        <div className="flex-1 sm:max-h-[50vh] overflow-y-scroll p-4 sm:p-6">
+        <div className="flex-1 sm:max-h-[50vh] p-4 sm:p-6">
           <AiAssistantPanel
             locale={locale as any}
             plant={plant}

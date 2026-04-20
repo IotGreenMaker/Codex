@@ -2,7 +2,7 @@
 
 ## Product goal
 
-Build a local-first AI companion that helps growers log cultivation data quickly through voice and then review progress in a clean web dashboard.
+Build a AI companion that helps growers log cultivation data quickly through voice and then review progress in a clean web dashboard.
 
 ## Recommended implementation path
 

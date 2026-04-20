@@ -15,6 +15,26 @@
 5. **Visual Identity** - Attractive, memorable branding
 
 ---
+## Manual TO DO List 
+1 - Remove the testing button, called Add test plants and remove all the logic relates to it,  and check if need to separate from the logic of Create New Plant - OK
+2 - Climate, VPD, Water Data cards on the dashboard, need to remove the editable feature, and check the faulty logic of updating it with the latest table info , and remove the total days card that is commented -ok
+3 - Watering table and Activity feed, The ligic on the FEED colunm from the table has faulty logic, It should ommit the feeding on the related watering event, not on the Suggested next feed recipe ,  
+4 - AI Config modal, need to be checked, the Inworld API key might not be included on the API call ,  add the view password button to the api inputs - save button can refresh the page -- NOT OK 
+5 - New -  Fix move to the right and make it always visible, the AI voice Speaker Icon and make it function for muting the voice when clicked - FIX LATER 
+6.1 - The Export, Change the Esxel for a themed Json or CSV inside a Gbudyd Style template , a  
+6.2 - The Import,  Develop A button to "import" a new plant that will import data from a JSon or CSV (made from the app), and the logging will continue from there 
+7 - Better Format the tables and masks for easier manual input 
+8 - Set the default measument units to PMM on 500 scale
+9 - Apply the logo on the header with a animated glow drop shadow 
+10 - Review the light hours dashboard card mobile layout 
+11 - Nutrient Calculator small layout review put the "target convesion" near the input with better styling.
+12 - The VPD Chart should detect automatically the plant stage and last teble input value.
+13 - Activity Feed style the stage event cards with the color and bigger icons 
+14 - Fix The vercel access through homepage, and apply logo to homepage
+15 - Improove the Setup Section with more relatable info of the grow space and add it to the AI context to help on relevant decisions
+16 - *Achitecture - Thake a look on the data structure to avoid conflict and redundancy, plot it in a .md and edit with notes 
+17 - AI chat Panel, check the logic for the STT, it's not transcribing and showing on the prompt in real time as it did before
+18 -  Check deleting the climate and watering data 
 
 ## Current Tech Stack
 

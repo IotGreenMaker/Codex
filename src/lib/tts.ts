@@ -9,9 +9,9 @@ export async function speak(
 ): Promise<void> {
   if (!text || text.trim().length === 0) return;
 
-  const provider = options?.provider || "browser";
+  const provider = options?.provider || "inworld";
 
-  // Handle Browser Native TTS
+  // Handle Browser Native TTS directly
   if (provider === "browser") {
     return new Promise((resolve) => {
       const utterance = new SpeechSynthesisUtterance(text);
@@ -24,6 +24,7 @@ export async function speak(
     });
   }
 
+  // Try server-side TTS (Inworld, ElevenLabs, etc.)
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
@@ -36,7 +37,8 @@ export async function speak(
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      console.warn('[TTS] failed:', err);
+      console.warn('[TTS] Server TTS failed:', err);
+      console.error('[TTS] No fallback to browser TTS as per configuration');
       return;
     }
 
@@ -61,7 +63,9 @@ export async function speak(
       currentAudio = null;
     });
   } catch (error) {
-    console.error('[TTS] error:', error);
+    console.error('[TTS] Server TTS error:', error);
+    console.error('[TTS] No fallback to browser TTS as per configuration');
+    return;
   }
 }
 

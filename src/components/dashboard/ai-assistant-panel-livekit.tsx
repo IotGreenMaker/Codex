@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getChatMessages, saveAndTruncateChatMessage, getAiConfig, saveAiConfig } from "@/lib/indexeddb-storage";
 import { AiConfigModal, type AiConfig } from "@/components/dashboard/ai-config-modal";
-import { Mic, Volume2, Send, Settings } from "lucide-react";
+import { Mic, Volume2, Send, Settings, VolumeOff } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { translations } from "@/lib/i18n";
 import { speak } from "@/lib/tts";
@@ -62,13 +62,14 @@ export function AiAssistantPanel({
     "idle" | "connecting" | "connected" | "failed"
   >("idle");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
-  const [aiConfig, setAiConfig] = useState<AiConfig>({
-    aiProvider: "groq",
-    aiApiKey: "",
-    voiceProvider: "browser",
-    voiceApiKey: ""
-  });
+   const [aiConfig, setAiConfig] = useState<AiConfig>({
+     aiProvider: "groq",
+     aiApiKey: "",
+     voiceProvider: "inworld",
+     voiceApiKey: ""
+   });
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -392,13 +393,15 @@ export function AiAssistantPanel({
         }
       ]);
 
-      // Read AI response with voice
-      setIsPlaying(true);
-      await speak(assistantMessage, {
-        apiKey: aiConfig.voiceApiKey,
-        provider: aiConfig.voiceProvider
-      });
-      setIsPlaying(false);
+      // Read AI response with voice (skip if muted)
+      if (!isMuted) {
+        setIsPlaying(true);
+        await speak(assistantMessage, {
+          apiKey: aiConfig.voiceApiKey,
+          provider: aiConfig.voiceProvider
+        });
+        setIsPlaying(false);
+      }
     } catch (error) {
       setConnectionState("failed");
       setIsPlaying(false);
@@ -543,29 +546,31 @@ export function AiAssistantPanel({
             ))
           )}
         </div>
-        {/* Connection status */}
-        <span 
-          className={` flex rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest ${
-            connectionState === "connected"
-              ? "bg-lime-300/14 text-lime-100"
-              : connectionState === "failed"
-                ? "bg-red-400/12 text-red-100"
-                : connectionState === "connecting"
-                  ? "bg-white/10 text-slate-200"
-                  : "bg-white/6 text-slate-400"
-          }`}
-        >
-          {connectionState}
-
-          <div className="flex items-center gap-2">
-            {/* Speaker indicator */}
-            {isPlaying && (
-              <div className="animate-pulse">
-                <Volume2 className="h-4 w-4 text-green-500/60" />
-              </div>
-            )}
-          </div>
-        </span>
+        {/* Connection status with mute toggle */}
+        <div className="flex items-center gap-2">
+          <span 
+            className={`rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest ${
+              connectionState === "connected"
+                ? "bg-lime-300/14 text-lime-100"
+                : connectionState === "failed"
+                  ? "bg-red-400/12 text-red-100"
+                  : connectionState === "connecting"
+                    ? "bg-white/10 text-slate-200"
+                    : "bg-white/6 text-slate-400"
+            }`}
+          >
+            {connectionState}
+          </span>
+          {/* Mute / Unmute button */}
+          <button
+            type="button"
+            onClick={() => setIsMuted(!isMuted)}
+            className="rounded-full  p-1 ml-auto border-none text-green-500/70 hover:text-green-500 transition"
+            title={isMuted ? "Unmute voice" : "Mute voice"}
+          >
+            {isMuted ? <VolumeOff /> : <Volume2 />}
+          </button>
+        </div>
       </div>
 
       {/* Quick text input with integrated voice */}

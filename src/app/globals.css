@@ -152,7 +152,7 @@ a {
 
 /* Replace white-ish borders with lime borders */
 [class*="border-white"] {
-  border-color: rgba(158, 255, 102, 0.28) !important;
+  border-color: rgba(80, 253, 37, 0.425) !important;
 }
 
 /* Keep red warning/danger borders untouched */

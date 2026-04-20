@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Settings, Shield, Cpu, Volume2 } from "lucide-react";
+import { X, Settings, Shield, Cpu, Volume2, Eye, EyeOff } from "lucide-react";
 
 export type AiProvider = "groq" | "openai" | "anthropic";
 export type VoiceProvider = "inworld" | "elevenlabs" | "browser";
@@ -17,14 +17,19 @@ interface AiConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
   config: AiConfig;
+  
   onSave: (config: AiConfig) => void;
 }
 
 export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModalProps) {
   const [draft, setDraft] = useState<AiConfig>(config);
+  const [showAiKey, setShowAiKey] = useState(false);
+  const [showVoiceKey, setShowVoiceKey] = useState(false);
 
   useEffect(() => {
     setDraft(config);
+    setShowAiKey(false);
+    setShowVoiceKey(false);
   }, [config, isOpen]);
 
   if (!isOpen) return null;
@@ -77,12 +82,12 @@ export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModal
               
               <div className="relative">
                 <input
-                  type="password"
+                  type={showAiKey ? "text" : "password"}
                   placeholder="Enter AI API Key"
                   value={draft.aiApiKey}
                   onChange={(e) => setDraft({ ...draft, aiApiKey: e.target.value })}
-                  className="w-full rounded-xl border border-lime-300/15 bg-black/20 pl-10 pr-4 py-2.5 text-sm text-white outline-none focus:border-lime-500/50 placeholder:text-slate-600"
-                  autoComplete="new-password"
+                  className="w-full rounded-xl border border-lime-300/15 bg-black/20 pl-10 pr-10 py-2.5 text-sm text-white outline-none focus:border-lime-500/50 placeholder:text-slate-600"
+                  autoComplete="off"
                   autoCorrect="off"
                   spellCheck={false}
                   data-1p-ignore="true"
@@ -90,6 +95,14 @@ export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModal
                   data-form-type="other"
                 />
                 <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-lime-400/50" />
+                <button
+                  type="button"
+                  onClick={() => setShowAiKey(!showAiKey)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-lime-300 transition"
+                  tabIndex={-1}
+                >
+                  {showAiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
           </div>
@@ -115,12 +128,12 @@ export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModal
               {draft.voiceProvider !== "browser" && (
                 <div className="relative">
                   <input
-                    type="password"
+                    type={showVoiceKey ? "text" : "password"}
                     placeholder="Enter Voice API Key"
                     value={draft.voiceApiKey}
                     onChange={(e) => setDraft({ ...draft, voiceApiKey: e.target.value })}
-                    className="w-full rounded-xl border border-lime-300/15 bg-black/20 pl-10 pr-4 py-2.5 text-sm text-white outline-none focus:border-sky-500/50 placeholder:text-slate-600"
-                    autoComplete="new-password"
+                    className="w-full rounded-xl border border-lime-300/15 bg-black/20 pl-10 pr-10 py-2.5 text-sm text-white outline-none focus:border-sky-500/50 placeholder:text-slate-600"
+                    autoComplete="off"
                     autoCorrect="off"
                     spellCheck={false}
                     data-1p-ignore="true"
@@ -128,6 +141,14 @@ export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModal
                     data-form-type="other"
                   />
                   <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-green-400/50" />
+                  <button
+                    type="button"
+                    onClick={() => setShowVoiceKey(!showVoiceKey)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-lime-300 transition"
+                    tabIndex={-1}
+                  >
+                    {showVoiceKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               )}
             </div>

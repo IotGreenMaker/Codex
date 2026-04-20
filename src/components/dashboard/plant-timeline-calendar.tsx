@@ -311,7 +311,7 @@ export function PlantTimelineCalendar({
                         {/* Event indicators */}
                         <div className="flex gap-0.5 flex-wrap justify-start w-full">
                           {day.isNextWateringDay && (
-                            <span className="text-[10px] bg-amber-500/60 px-1 py-0.5 rounded text-white font-semibold">
+                            <span className="text-[10px] bg-amber-500/80 px-1 py-0.5 rounded text-white font-semibold">
                               <Bell className="h-3 w-3" />
                             </span>
                           )}
@@ -364,7 +364,7 @@ export function PlantTimelineCalendar({
                 </div>
                 <div className="flex items-center gap-1">
                   <Cannabis className="h-3.5 w-3.5 text-green-500" />
-                  <span className="text-lime-100/70">Veg</span>
+                  <span className="text-lime-100/70">Vegging</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Wheat className="h-3.5 w-3.5 text-indigo-500" />
