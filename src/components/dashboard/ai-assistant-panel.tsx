@@ -4,12 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { getChatMessages, saveAndTruncateChatMessage, getAiConfig, saveAiConfig } from "@/lib/indexeddb-storage";
 import { AiConfigModal, type AiConfig } from "@/components/dashboard/ai-config-modal";
 import { Mic, Volume2, Send, Settings, VolumeOff } from "lucide-react";
+import { stopSpeaking } from "@/lib/tts";
 import type { Locale } from "@/lib/i18n";
 import { translations } from "@/lib/i18n";
 import { speak } from "@/lib/tts";
 import { buildGrowContext } from "@/lib/buildGrowContext";
 import { generateUUID } from "@/lib/uuid";
 import type { PlantProfile } from "@/lib/types";
+
+const VOICE_IDLE_TIMEOUT_MS = 2600;
 
 type ChatMessage = {
   id: string;
@@ -64,15 +67,24 @@ export function AiAssistantPanel({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
-   const [aiConfig, setAiConfig] = useState<AiConfig>({
-     aiProvider: "groq",
-     aiApiKey: "",
-     voiceProvider: "inworld",
-     voiceApiKey: ""
-   });
+  const [assistantAudioLevel, setAssistantAudioLevel] = useState(0);
+  const [micAudioLevel, setMicAudioLevel] = useState(0);
+  const [micAudioVariance, setMicAudioVariance] = useState(0);
+  const [aiConfig, setAiConfig] = useState<AiConfig>({
+    aiProvider: "groq",
+    aiApiKey: "",
+    voiceProvider: "inworld",
+    voiceApiKey: ""
+  });
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
+  const voiceDraftRef = useRef("");
+  const voiceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const micAudioContextRef = useRef<AudioContext | null>(null);
+  const micAnimationFrameRef = useRef<number | null>(null);
+  const lastMicLevelRef = useRef(0);
 
   // ─── Ref-based State Sync (Fixes Stale Closures in Async Callbacks) ────────
   const plantRef = useRef(plant);
@@ -128,7 +140,7 @@ export function AiAssistantPanel({
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = locale === "pt-BR" ? "pt-BR" : "en-US";
+        recognition.lang = locale ===  "pt-BR" ? "pt-BR" : "en-US";
 
         recognition.onstart = () => {
           setMicError(null);
@@ -148,11 +160,17 @@ export function AiAssistantPanel({
             }
           }
 
-          setInterimTranscript(interim);
-
-          if (final) {
-            handleUserSpeech(final.trim());
+          const normalizedFinal = final.trim();
+          if (normalizedFinal) {
+            voiceDraftRef.current = [voiceDraftRef.current, normalizedFinal].filter(Boolean).join(" ").trim();
           }
+
+          const normalizedInterim = interim.trim();
+          const liveTranscript = [voiceDraftRef.current, normalizedInterim].filter(Boolean).join(" ").trim();
+
+          setInterimTranscript(normalizedInterim);
+          setDraft(liveTranscript);
+          scheduleVoiceSend(liveTranscript);
         };
 
         recognition.onerror = (event: any) => {
@@ -164,6 +182,7 @@ export function AiAssistantPanel({
 
         recognition.onend = () => {
           setIsListening(false);
+          stopMicVisualization();
         };
 
         recognitionRef.current = recognition;
@@ -177,6 +196,8 @@ export function AiAssistantPanel({
     initializeVoice();
 
     return () => {
+      clearVoiceTimeout();
+      stopMicVisualization();
       if (recognitionRef.current) {
         recognitionRef.current.onend = null;
         recognitionRef.current.stop?.();
@@ -184,26 +205,119 @@ export function AiAssistantPanel({
     };
   }, [locale]);
 
-  const voiceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleUserSpeech = async (text: string) => {
-    if (!text.trim()) return;
-
-    // Clear any existing timeout
+  const clearVoiceTimeout = () => {
     if (voiceTimeoutRef.current) {
       clearTimeout(voiceTimeoutRef.current);
+      voiceTimeoutRef.current = null;
     }
+  };
+
+  const resetVoiceDraft = () => {
+    voiceDraftRef.current = "";
+    setDraft("");
+    setInterimTranscript("");
+  };
+
+  const stopMicVisualization = () => {
+    if (micAnimationFrameRef.current) {
+      window.cancelAnimationFrame(micAnimationFrameRef.current);
+      micAnimationFrameRef.current = null;
+    }
+
+    micStreamRef.current?.getTracks().forEach((track) => track.stop());
+    micStreamRef.current = null;
+
+    if (micAudioContextRef.current) {
+      void micAudioContextRef.current.close().catch(() => {});
+      micAudioContextRef.current = null;
+    }
+
+    lastMicLevelRef.current = 0;
+    setMicAudioLevel(0);
+    setMicAudioVariance(0);
+  };
+
+  const startMicVisualization = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) return;
+
+    try {
+      stopMicVisualization();
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.75;
+
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      const samples = new Uint8Array(analyser.fftSize);
+
+      micStreamRef.current = stream;
+      micAudioContextRef.current = audioContext;
+
+      const tick = () => {
+        analyser.getByteTimeDomainData(samples);
+
+        let sum = 0;
+        for (const sample of samples) {
+          const normalized = (sample - 128) / 128;
+          sum += normalized * normalized;
+        }
+
+        const rms = Math.sqrt(sum / samples.length);
+        const level = Math.min(1, rms * 5.5);
+        const variance = Math.min(1, Math.abs(level - lastMicLevelRef.current) * 5);
+
+        lastMicLevelRef.current = level;
+        setMicAudioLevel(level);
+        setMicAudioVariance(variance);
+        micAnimationFrameRef.current = window.requestAnimationFrame(tick);
+      };
+
+      await audioContext.resume().catch(() => {});
+      tick();
+    } catch {
+      setMicAudioLevel(0);
+      setMicAudioVariance(0);
+    }
+  };
+
+  const getVoiceDraftValue = () => {
+    return [voiceDraftRef.current, interimTranscript].filter(Boolean).join(" ").trim();
+  };
+
+  const submitMessage = async (text: string, source: "text" | "voice") => {
+    const normalized = text.trim();
+    if (!normalized) return;
+
+    clearVoiceTimeout();
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
-      content: text,
-      source: "voice",
+      content: normalized,
+      source,
       createdAt: new Date().toISOString()
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInterimTranscript("");
+
+    if (source === "voice") {
+      resetVoiceDraft();
+      stopMicVisualization();
+    } else {
+      setDraft("");
+      setInterimTranscript("");
+    }
 
     void persistMessages([
       {
@@ -211,17 +325,26 @@ export function AiAssistantPanel({
         createdAt: userMessage.createdAt ?? new Date().toISOString(),
         role: "user",
         content: userMessage.content,
-        source: "voice"
+        source
       }
     ]);
 
-    // Add 1 second delay before sending to AI
-    voiceTimeoutRef.current = setTimeout(() => {
-      void getAIResponse(text);
-    }, 1000);
+    await getAIResponse(normalized, source);
   };
 
-  const getAIResponse = async (userMessage: string) => {
+  const scheduleVoiceSend = (text: string) => {
+    const normalized = text.trim();
+    clearVoiceTimeout();
+
+    if (!normalized) return;
+
+    voiceTimeoutRef.current = setTimeout(() => {
+      recognitionRef.current?.stop?.();
+      setIsListening(false);
+      void submitMessage(normalized, "voice");
+    }, VOICE_IDLE_TIMEOUT_MS);
+  };
+  const getAIResponse = async (userMessage: string, source: "text" | "voice") => {
     setConnectionState("connecting");
     const assistantId = `assistant-${Date.now()}`;
 
@@ -375,7 +498,7 @@ export function AiAssistantPanel({
         id: assistantId,
         role: "assistant",
         content: assistantMessage,
-        source: "voice",
+        source,
         model: "llama-3.3-70b-versatile (Groq)",
         createdAt: new Date().toISOString()
       };
@@ -388,23 +511,28 @@ export function AiAssistantPanel({
           createdAt: new Date().toISOString(),
           role: "assistant",
           content: assistantMessage,
-          source: "voice",
+          source,
           meta: { model: "llama-3.3-70b-versatile (Groq)" }
         }
       ]);
 
       // Read AI response with voice (skip if muted)
       if (!isMuted) {
-        setIsPlaying(true);
         await speak(assistantMessage, {
-          apiKey: aiConfig.voiceApiKey,
-          provider: aiConfig.voiceProvider
+          apiKey: currentAiConfig.voiceApiKey,
+          provider: currentAiConfig.voiceProvider,
+          onStart: () => setIsPlaying(true),
+          onEnd: () => {
+            setIsPlaying(false);
+            setAssistantAudioLevel(0);
+          },
+          onAudioLevel: setAssistantAudioLevel
         });
-        setIsPlaying(false);
       }
     } catch (error) {
       setConnectionState("failed");
       setIsPlaying(false);
+      setAssistantAudioLevel(0);
       const errorMessage =
         error instanceof Error ? error.message : "Assistant request failed.";
 
@@ -414,7 +542,7 @@ export function AiAssistantPanel({
           id: assistantId,
           role: "assistant",
           content: errorMessage,
-          source: "voice",
+          source,
           model: "assistant",
           createdAt: new Date().toISOString()
         }
@@ -426,20 +554,28 @@ export function AiAssistantPanel({
     if (!recognitionRef.current) return;
 
     if (isListening) {
+      const pendingTranscript = getVoiceDraftValue();
+      clearVoiceTimeout();
       recognitionRef.current.stop();
       setIsListening(false);
+      if (pendingTranscript) {
+        void submitMessage(pendingTranscript, "voice");
+      } else {
+        resetVoiceDraft();
+        stopMicVisualization();
+      }
     } else {
-      setInterimTranscript("");
-      setDraft("");
+      resetVoiceDraft();
       setMicError(null);
       recognitionRef.current.start();
       setIsListening(true);
+      void startMicVisualization();
     }
   };
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
-    await handleUserSpeech(text);
+    await submitMessage(text, "text");
   };
 
   async function loadConversation() {
@@ -562,11 +698,29 @@ export function AiAssistantPanel({
             {connectionState}
           </span>
           {/* Mute / Unmute button */}
-          <button
+<button
             type="button"
-            onClick={() => setIsMuted(!isMuted)}
-            className="rounded-full  p-1 ml-auto border-none text-green-500/70 hover:text-green-500 transition"
+            onClick={() => {
+              const newMuted = !isMuted;
+              setIsMuted(newMuted);
+              if (newMuted) {
+                // Stop any currently playing audio when muting
+                stopSpeaking();
+                setIsPlaying(false);
+                setAssistantAudioLevel(0);
+              }
+            }}
+            className={`ml-auto rounded-full p-1 border-none transition ${
+              isPlaying ? "text-lime-200" : "text-green-500/70 hover:text-green-500"
+            }`}
             title={isMuted ? "Unmute voice" : "Mute voice"}
+            style={{
+              opacity: isPlaying ? 0.45 + assistantAudioLevel * 0.55 : 1,
+              filter: isPlaying
+                ? `drop-shadow(0 0 ${6 + assistantAudioLevel * 14}px rgba(163,230,53,0.45))`
+                : "none",
+              transform: isPlaying ? `scale(${1 + assistantAudioLevel * 0.08})` : "scale(1)"
+            }}
           >
             {isMuted ? <VolumeOff /> : <Volume2 />}
           </button>
@@ -588,8 +742,7 @@ export function AiAssistantPanel({
                 setInterimTranscript("");
               }
             }}
-            disabled={isListening}
-            className="flex-1 rounded-full border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 placeholder-slate-500 outline-none focus:border-lime-300/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded-full border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 placeholder-slate-500 outline-none focus:border-lime-300/50"
           />
 
           {/* Mic button - small, integrated with Send */}
@@ -602,6 +755,12 @@ export function AiAssistantPanel({
                 ? "border-lime-200/80 bg-gradient-to-br from-lime-300/35 via-fuchsia-400/25 to-emerald-300/25 text-lime-100 shadow-[0_0_20px_6px_rgba(178,107,255,0.12),0_0_40px_12px_rgba(158,255,102,0.12)]"
                 : "border-lime-300/35 bg-gradient-to-br from-lime-300/18 via-fuchsia-400/10 to-emerald-300/10 text-lime-100 hover:from-lime-300/30 hover:via-fuchsia-400/20 hover:to-emerald-300/20"
             }`}
+            style={{
+              boxShadow: isListening
+                ? `0 0 ${22 + micAudioLevel * 20}px ${4 + micAudioVariance * 10}px rgba(178,107,255,${0.14 + micAudioVariance * 0.18}), 0 0 ${34 + micAudioLevel * 34}px ${8 + micAudioVariance * 16}px rgba(158,255,102,${0.14 + micAudioLevel * 0.18})`
+                : undefined,
+              transform: isListening ? `scale(${1 + micAudioLevel * 0.06})` : "scale(1)"
+            }}
           >
             {isListening ? (
               <>
@@ -609,9 +768,10 @@ export function AiAssistantPanel({
                   className="absolute h-10 w-10 animate-pulse rounded-full"
                   style={{
                     background:
-                      "radial-gradient(circle at 60% 40%, rgba(158,255,102,0.22) 40%, rgba(178,107,255,0.18) 100%)",
+                      `radial-gradient(circle at 60% 40%, rgba(158,255,102,${0.2 + micAudioLevel * 0.25}) 35%, rgba(178,107,255,${0.16 + micAudioVariance * 0.24}) 100%)`,
                     boxShadow:
-                      "0 0 30px 8px rgba(178,107,255,0.12), 0 0 60px 16px rgba(158,255,102,0.12)",
+                      `0 0 ${24 + micAudioVariance * 22}px ${6 + micAudioVariance * 8}px rgba(178,107,255,${0.12 + micAudioVariance * 0.16}), 0 0 ${40 + micAudioLevel * 30}px ${12 + micAudioLevel * 14}px rgba(158,255,102,${0.12 + micAudioLevel * 0.18})`,
+                    opacity: 0.72 + micAudioLevel * 0.28
                   }}
                 />
                 <Mic className="relative h-4 w-4" />
@@ -631,8 +791,8 @@ export function AiAssistantPanel({
                 setInterimTranscript("");
               }
             }}
-            disabled={!draft.trim() || isListening}
-            className="rounded-lg border border-lime-300/20 bg-lime-300/12 px-4 py-2 text-sm font-semibold text-lime-100 transition hover:bg-lime-300/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!draft.trim()}
+            className="flex items-center gap-2 rounded-lg border border-lime-300/20 bg-lime-300/12 px-4 py-2 text-sm font-semibold text-lime-100 transition hover:bg-lime-300/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
           </button>

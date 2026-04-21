@@ -1,6 +1,6 @@
 "use client";
 
-import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel-livekit";
+import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel";
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 

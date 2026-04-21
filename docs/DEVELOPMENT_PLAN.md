@@ -17,24 +17,29 @@
 ---
 ## Manual TO DO List 
 1 - Remove the testing button, called Add test plants and remove all the logic relates to it,  and check if need to separate from the logic of Create New Plant - OK
-2 - Climate, VPD, Water Data cards on the dashboard, need to remove the editable feature, and check the faulty logic of updating it with the latest table info , and remove the total days card that is commented -ok
+2 - Climate, VPD, Water Data cards on the dashboard, need to remove the editable feature, and check the faulty logic of updating it with the latest table info , and remove the total days card that is commented -OK
 3 - Watering table and Activity feed, The ligic on the FEED colunm from the table has faulty logic, It should ommit the feeding on the related watering event, not on the Suggested next feed recipe ,  
-4 - AI Config modal, need to be checked, the Inworld API key might not be included on the API call ,  add the view password button to the api inputs - save button can refresh the page -- NOT OK 
-5 - New -  Fix move to the right and make it always visible, the AI voice Speaker Icon and make it function for muting the voice when clicked - FIX LATER 
+4 - AI Config modal, need to be checked, the Inworld API key might not be included on the API call , add the view password button to the api inputs - save button can refresh the page -- OK 
+5 - New -  Fix move to the right and make it always visible, the AI voice Speaker Icon and make it function for muting the voice when clicked - OK
 6.1 - The Export, Change the Esxel for a themed Json or CSV inside a Gbudyd Style template , a  
 6.2 - The Import,  Develop A button to "import" a new plant that will import data from a JSon or CSV (made from the app), and the logging will continue from there 
 7 - Better Format the tables and masks for easier manual input 
-8 - Set the default measument units to PMM on 500 scale
+8 - Set the default measument units to PMM on 500 scale always 
 9 - Apply the logo on the header with a animated glow drop shadow 
 10 - Review the light hours dashboard card mobile layout 
 11 - Nutrient Calculator small layout review put the "target convesion" near the input with better styling.
-12 - The VPD Chart should detect automatically the plant stage and last teble input value.
+12 - The VPD Chart should detect automatically the plant stage and last table input value.
 13 - Activity Feed style the stage event cards with the color and bigger icons 
 14 - Fix The vercel access through homepage, and apply logo to homepage
-15 - Improove the Setup Section with more relatable info of the grow space and add it to the AI context to help on relevant decisions
-16 - *Achitecture - Thake a look on the data structure to avoid conflict and redundancy, plot it in a .md and edit with notes 
-17 - AI chat Panel, check the logic for the STT, it's not transcribing and showing on the prompt in real time as it did before
-18 -  Check deleting the climate and watering data 
+15 - Improove the Setup Section with more relatable info of the grow space and add it to the AI context to help on relevant decisions add the outside weather data so when asked he "knows" if it is colder or hotter or humidy or dryer outside, so he can give advices like, increase ventilation or increase humidity basicaly looking at the two climate data the inddor and outdoor  
+ 16 - *Achitecture - Thake a look on the data structure to avoid conflict and redundancy, plot it in a .md and edit with notes 
+17 - AI chat Panel, check the logic for the STT, it's not transcribing and showing on the prompt in real time as it did before increase the input time as now whena take a bit of time in my speech it send the message inclepe, eg. new weather 25 degrees  -speech gap- and 43 percent humidity --- THe assitant is geting the message before I inform Humidity , taking 2 request to one action , 
+
+18 -  Check deleting the climate and watering data - OK  
+19 - when asking the AI assitnat about the last watering event it is creating a new occourance on the table, wich is not the desired behaviour - he should onl read and inform the data
+20 - Some AI responses are shoing duplicated and unfformatted on the chat - Watering logged with 1L of water, pH 5.8, and EC 1.4 (700 PPM). { "message": "Watering logged.", "watering": { "amountMl": 1000, "ph": 5.8, "ec": 1.4 } }
+
+
 
 ## Current Tech Stack
 

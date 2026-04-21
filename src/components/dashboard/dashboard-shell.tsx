@@ -3,12 +3,11 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { BookOpen, Download, Droplets, Flower, Info, Leaf, Lightbulb, Minus, Plus, RotateCcw, Settings, Sprout, Thermometer, Waves, X, Wheat, Cannabis } from "lucide-react";
 import { GrowChart } from "@/components/charts/grow-chart";
-import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel-livekit";
+import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel";
 import { VPDChart } from "@/components/dashboard/vpd-chart";
 import { PlantTimelineCalendar } from "@/components/dashboard/plant-timeline-calendar";
 import { CalendarConfigModal, CalendarConfig, loadCalendarConfig } from "@/components/dashboard/calendar-config-modal";
 import { STAGE_TARGETS as DEFAULT_STAGE_TARGETS } from "@/lib/config";
-import { FilePicker } from "@/components/dashboard/file-picker";
 import { AiAssistantTutorialModal } from "@/components/dashboard/ai-assistant-tutorial-modal";
 import { LightConfigModal } from "@/components/dashboard/light-config-modal";
 import { ConfirmationModal, ConfirmationOptions } from "@/components/dashboard/confirmation-modal";
@@ -36,10 +35,8 @@ import {
   setSetting,
   initializeDB
 } from "@/lib/indexeddb-storage";
-import { Settings as SettingsIcon } from "lucide-react";
 import { exportToExcel } from "@/lib/excel-export";
 import type { GrowStage, PlantProfile, LightProfile, LightType } from "@/lib/types";
-import { LIGHT_TYPE_LABELS, LIGHT_TYPE_DEFAULT_WATTS } from "@/lib/types";
 import { AiChatModal } from "@/components/dashboard/ai-chat-modal";
 import { MessageCircle } from "lucide-react";
 
@@ -212,6 +209,13 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
           await savePlant(plant);
         }
         await setSetting("activePlantId", activePlantId);
+
+        // Sync to server API so AI and Deletions have context
+        await fetch("/api/plants", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plants, activePlantId })
+        });
       } catch (error) {
         console.error("Error saving to IndexedDB:", error);
       }
@@ -385,10 +389,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   }).format(nextWateringDate);
   
   const lightsOnNow = isLightsOnNow(activePlant.lightsOn, activePlant.lightsOff, now);
-  const ppfd =
-    typeof activePlant.lightDimmerPercent === "number"
-      ? estimatePpfd(activePlant.lightType ?? "panel_100w", activePlant.lightDimmerPercent)
-      : null;
+
 
   const onPlantUpdate = (next: PlantProfile) => {
     setPlants((current) => current.map((entry) => (entry.id === next.id ? next : entry)));

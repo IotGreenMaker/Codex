@@ -15,6 +15,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
+import { savePlant, getAllPlants } from "@/lib/indexeddb-storage";
 import type { ClimateEntry, GrowLogEntry, GrowStage, WateringEntry } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
 import type { Locale } from "@/lib/i18n";
@@ -70,7 +71,19 @@ export function GrowChart({
 
   const deleteWateringEntry = async (wateringId: string) => {
     try {
-      const response = await fetch("/api/plants", {
+      // Update local state and IndexedDB immediately
+      const nextData = wateringData.filter((row) => row.id !== wateringId);
+      onWateringDataChange(nextData);
+      
+      const allLocal = await getAllPlants();
+      const localPlant = allLocal.find(p => p.id === plantId);
+      if (localPlant) {
+        localPlant.wateringData = localPlant.wateringData.filter(w => w.id !== wateringId);
+        await savePlant(localPlant);
+      }
+
+      // Attempt to sync deletion to server
+      const res = await fetch("/api/plants", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -79,22 +92,30 @@ export function GrowChart({
           plantId
         })
       });
-      const result = (await response.json()) as { ok: boolean; error?: string };
-      if (result.ok) {
-        onWateringDataChange(wateringData.filter((row) => row.id !== wateringId));
-      } else {
-        console.error("Failed to delete watering entry:", result.error);
-        alert("Failed to delete watering entry");
+      const payload = (await res.json().catch(() => null)) as null | { ok?: boolean; error?: string };
+      if (!res.ok || payload?.ok === false) {
+        console.warn("Failed to delete watering entry on server:", payload?.error ?? res.statusText);
       }
     } catch (error) {
       console.error("Error deleting watering entry:", error);
-      alert("Error deleting watering entry");
     }
   };
 
   const deleteClimateEntry = async (climateId: string) => {
     try {
-      const response = await fetch("/api/plants", {
+      // Update local state and IndexedDB immediately
+      const nextData = climateData.filter((row) => row.id !== climateId);
+      onClimateDataChange(nextData);
+
+      const allLocal = await getAllPlants();
+      const localPlant = allLocal.find((p) => p.id === plantId);
+      if (localPlant) {
+        localPlant.climateData = localPlant.climateData.filter((c) => c.id !== climateId);
+        await savePlant(localPlant);
+      }
+
+      // Attempt to sync deletion to server
+      const res = await fetch("/api/plants", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -103,16 +124,12 @@ export function GrowChart({
           plantId
         })
       });
-      const result = (await response.json()) as { ok: boolean; error?: string };
-      if (result.ok) {
-        onClimateDataChange(climateData.filter((row) => row.id !== climateId));
-      } else {
-        console.error("Failed to delete climate entry:", result.error);
-        alert("Failed to delete climate entry");
+      const payload = (await res.json().catch(() => null)) as null | { ok?: boolean; error?: string };
+      if (!res.ok || payload?.ok === false) {
+        console.warn("Failed to delete climate entry on server:", payload?.error ?? res.statusText);
       }
     } catch (error) {
       console.error("Error deleting climate entry:", error);
-      alert("Error deleting climate entry");
     }
   };
 

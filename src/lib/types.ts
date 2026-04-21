@@ -15,21 +15,6 @@ export type LightProfile = {
   lightsOff: string;
 };
 
-export const LIGHT_TYPE_LABELS: Record<LightType, string> = {
-  blurple_40w: "Blurple 40W (Veg)",
-  panel_100w: "Panel 100W (Bloom)",
-  custom_led: "Custom LED",
-  custom_hps: "Custom HPS/MH",
-  other: "Other Light"
-};
-
-export const LIGHT_TYPE_DEFAULT_WATTS: Record<LightType, number> = {
-  blurple_40w: 40,
-  panel_100w: 100,
-  custom_led: 100,
-  custom_hps: 600,
-  other: 100
-};
 
 export type NoteEntry = {
   id: string;
@@ -84,7 +69,7 @@ export type PlantProfile = {
   lightSchedule: string;
   lightsOn: string;
   lightsOff: string;
-  lightType?: "blurple_40w" | "panel_100w";
+  lightType?: string;
   lightDimmerPercent?: number;
   lightLampName?: string;
   lightLampWatts?: number;

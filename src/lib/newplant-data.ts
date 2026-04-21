@@ -30,7 +30,7 @@ export function createNewPlant(overrides?: Partial<PlantProfile>): PlantProfile 
   
   return {
     id: generateUUID(),
-    strainName: "New Plant",
+    strainName: "Plant",
     startedAt: today,
     stage: "Seedling",
     vegStartedAt: undefined,
@@ -52,8 +52,8 @@ export function createNewPlant(overrides?: Partial<PlantProfile>): PlantProfile 
     growTempC: 24,
     growHumidity: 65,
     waterInputMl: 250,
-    waterPh: 6.2,
-    waterEc: 0.8,
+    waterPh: 5.8,
+    waterEc: 0.6,
     lastWateredAt: today,
     wateringIntervalDays: 2,
     stageDays: { seedling: 1, veg: 0, bloom: 0 },

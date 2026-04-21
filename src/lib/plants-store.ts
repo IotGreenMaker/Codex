@@ -3,13 +3,6 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { PlantProfile } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
-import {
-  getAllPlants,
-  savePlant,
-  deletePlant as deletePlantFromIndexedDB,
-  getSetting,
-  setSetting
-} from "@/lib/indexeddb-storage";
 
 export type PlantsState = {
   plants: PlantProfile[];
@@ -114,18 +107,6 @@ export async function readPlantsState(): Promise<PlantsState> {
   await mkdir(dataDir, { recursive: true });
 
   try {
-    // Try to load from IndexedDB first
-    const indexedPlants = await getAllPlants();
-    if (indexedPlants && indexedPlants.length > 0) {
-      console.log("[Plants] Loaded from IndexedDB:", indexedPlants.length, "plants");
-      const activePlantId = await getSetting("activePlantId");
-      return {
-        plants: indexedPlants,
-        activePlantId: activePlantId || indexedPlants[0]?.id || ""
-      };
-    }
-
-    // Fallback to local JSON
     const raw = await readFile(stateFile, "utf-8");
     const parsed = JSON.parse(raw) as Partial<any>;
 
@@ -138,22 +119,16 @@ export async function readPlantsState(): Promise<PlantsState> {
       ? parsed.activePlantId
       : plants[0]?.id ?? "";
 
-    // Sync local JSON to IndexedDB if we loaded from JSON
-    if (plants.length > 0 && indexedPlants.length === 0) {
-      for (const plant of plants) {
-        await savePlant(plant);
-      }
-      await setSetting("activePlantId", activePlantId);
-      console.log("[Plants] Synced local JSON to IndexedDB");
-    }
-
     if (plants.length > 0) {
       console.log("[Plants] Loaded from local storage:", plants.length, "plants");
     }
 
     return { plants, activePlantId };
   } catch (error) {
-    console.error("Error reading plants state:", error);
+    // Missing file is normal on first run.
+    if ((error as any)?.code !== "ENOENT") {
+      console.error("Error reading plants state:", error);
+    }
     return defaultState;
   }
 }
@@ -166,50 +141,81 @@ export async function writePlantsState(state: PlantsState) {
     activePlantId: state.activePlantId || state.plants?.[0]?.id || ""
   };
 
-  // Save to IndexedDB
-  for (const plant of safeState.plants) {
-    try {
-      await savePlant(plant);
-    } catch (err) {
-      console.error(`[Plants] Failed to save plant ${plant.id}:`, err);
-    }
-  }
-  await setSetting("activePlantId", safeState.activePlantId);
-
-  // Also save to local JSON as fallback/backup
+  // Save to local JSON
   try {
     await writeFile(stateFile, JSON.stringify(safeState, null, 2), "utf-8");
-    console.log("[Plants] Saved to local storage and IndexedDB");
+    console.log("[Plants] Saved to local storage JSON");
   } catch (err) {
     console.error("[Plants] Failed to save local:", err);
   }
 }
 
-export async function deleteWateringLogById(wateringId: string, plantId: string): Promise<boolean> {
-  // Only uses IndexedDB now - Supabase removed
-  console.log("[Watering] Delete via IndexedDB only (Supabase removed)");
-  return true;
+function findPlantContainingWateringLog(plants: PlantProfile[], wateringId: string): PlantProfile | undefined {
+  return plants.find((plant) => plant.wateringData?.some((row) => row.id === wateringId));
 }
 
-export async function deleteClimateLogById(climateId: string, plantId: string): Promise<boolean> {
-  // Only uses IndexedDB now - Supabase removed
-  console.log("[Climate] Delete via IndexedDB only (Supabase removed)");
-  return true;
+function findPlantContainingClimateLog(plants: PlantProfile[], climateId: string): PlantProfile | undefined {
+  return plants.find((plant) => plant.climateData?.some((row) => row.id === climateId));
+}
+
+export async function deleteWateringLogById(
+  wateringId: string,
+  plantId: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const state = await readPlantsState();
+    const plant =
+      state.plants.find((p) => p.id === plantId) ?? findPlantContainingWateringLog(state.plants, wateringId);
+
+    // If the plant (or entry) is missing on the server, treat as already deleted
+    if (!plant) return { ok: true };
+
+    const initialCount = plant.wateringData.length;
+    plant.wateringData = plant.wateringData.filter(w => w.id !== wateringId);
+    
+    if (plant.wateringData.length === initialCount) {
+      // Treat as already deleted to avoid UI regressions when server is out-of-sync
+      return { ok: true };
+    }
+
+    await writePlantsState(state);
+    return { ok: true };
+  } catch (err) {
+    console.error("Error deleting watering log:", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Internal error" };
+  }
+}
+
+export async function deleteClimateLogById(climateId: string, plantId: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const state = await readPlantsState();
+    const plant =
+      state.plants.find((p) => p.id === plantId) ?? findPlantContainingClimateLog(state.plants, climateId);
+
+    // If the plant (or entry) is missing on the server, treat as already deleted
+    if (!plant) return { ok: true };
+
+    const initialCount = plant.climateData.length;
+    plant.climateData = plant.climateData.filter((c) => c.id !== climateId);
+    if (plant.climateData.length === initialCount) {
+      // Treat as already deleted to avoid UI regressions when server is out-of-sync
+      return { ok: true };
+    }
+    await writePlantsState(state);
+    return { ok: true };
+  } catch (err) {
+    console.error("Error deleting climate log:", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Internal error" };
+  }
 }
 
 export async function deletePlantById(plantId: string): Promise<boolean> {
   try {
-    // Delete from IndexedDB
-    await deletePlantFromIndexedDB(plantId);
-    
-    // Delete chat messages for this plant
-    const { deleteChatMessagesForPlant } = await import("@/lib/indexeddb-storage");
-    await deleteChatMessagesForPlant(plantId);
-
-    console.log(`[Plants] Deleted from IndexedDB: ${plantId}`);
-
-    // Also update local JSON
     const current = await readPlantsState();
+    
+    // Note: In a real server environment, you'd also delete associated 
+    // chat files here if they were stored on disk.
+    
     const updated = current.plants.filter((p) => p.id !== plantId);
     let newActivePlantId = current.activePlantId;
     

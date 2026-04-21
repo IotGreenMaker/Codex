@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readExcelFile, saveAllData, hasFileAccess } from "@/lib/excel-storage";
+import {
+  deleteClimateLogById,
+  deletePlantById,
+  deleteWateringLogById,
+  readPlantsState,
+  writePlantsState
+} from "@/lib/plants-store";
 import type { PlantProfile } from "@/lib/types";
-import { generateUUID } from "@/lib/uuid";
 
 type Body = {
   plants?: PlantProfile[];
@@ -14,14 +19,12 @@ type Body = {
 
 export async function GET() {
   try {
-    const data = await readExcelFile();
-    if (!data) {
-      return NextResponse.json({ ok: false, error: "No data file loaded" }, { status: 404 });
-    }
-
-    const activePlantId = data.settings?.activePlantId || data.plants[0]?.id || "";
-    return NextResponse.json({ ok: true, plants: data.plants, activePlantId });
+    const state = await readPlantsState();
+    const { plants, activePlantId } = state;
+    
+    return NextResponse.json({ ok: true, plants, activePlantId });
   } catch (error) {
+    console.error("API GET /plants failed:", error);
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "Failed to read plants." },
       { status: 500 }
@@ -36,63 +39,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "Invalid plants payload." }, { status: 400 });
     }
 
-    const data = await readExcelFile();
-    if (!data) {
-      return NextResponse.json({ ok: false, error: "No data file loaded" }, { status: 404 });
-    }
-
-    // Convert plants to watering and climate logs
-    const wateringLogs: any[] = [];
-    const climateLogs: any[] = [];
-
-    for (const plant of body.plants) {
-      // Add watering data
-      if (plant.wateringData) {
-        for (const w of plant.wateringData) {
-          wateringLogs.push({
-            id: w.id,
-            plantId: plant.id,
-            timestamp: w.timestamp,
-            amountMl: w.amountMl,
-            ph: w.ph,
-            ec: w.ec,
-            runoffPh: w.runoffPh,
-            runoffEc: w.runoffEc,
-          });
-        }
-      }
-
-      // Add climate data
-      if (plant.climateData) {
-        for (const c of plant.climateData) {
-          climateLogs.push({
-            id: c.id,
-            plantId: plant.id,
-            timestamp: c.timestamp,
-            tempC: c.tempC,
-            humidity: c.humidity,
-          });
-        }
-      }
-    }
-
-    // Save all data
-    const success = await saveAllData({
-      plants: body.plants,
-      wateringLogs,
-      climateLogs,
-      settings: {
-        ...data.settings,
-        activePlantId: body.activePlantId,
-      },
-    });
-
-    if (!success) {
-      return NextResponse.json({ ok: false, error: "Failed to save data" }, { status: 500 });
-    }
+    await writePlantsState({ plants: body.plants, activePlantId: body.activePlantId });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("API PUT /plants failed:", error);
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "Failed to persist plants." },
       { status: 500 }
@@ -105,36 +56,14 @@ export async function DELETE(request: NextRequest) {
     const body = (await request.json()) as Body;
     const action = body.action || "delete-plant";
 
-    const data = await readExcelFile();
-    if (!data) {
-      return NextResponse.json({ ok: false, error: "No data file loaded" }, { status: 404 });
-    }
-
     if (action === "delete-plant") {
       if (!body.plantId || typeof body.plantId !== "string") {
         return NextResponse.json({ ok: false, error: "Missing or invalid plantId." }, { status: 400 });
       }
 
-      const updatedPlants = data.plants.filter((p) => p.id !== body.plantId);
-      const updatedWateringLogs = data.wateringLogs.filter((l) => l.plantId !== body.plantId);
-      const updatedClimateLogs = data.climateLogs.filter((l) => l.plantId !== body.plantId);
-
-      let newActivePlantId = data.settings?.activePlantId || "";
-      if (newActivePlantId === body.plantId) {
-        newActivePlantId = updatedPlants[0]?.id || "";
-      }
-
-      const success = await saveAllData({
-        plants: updatedPlants,
-        wateringLogs: updatedWateringLogs,
-        climateLogs: updatedClimateLogs,
-        settings: {
-          ...data.settings,
-          activePlantId: newActivePlantId,
-        },
-      });
-
+      const success = await deletePlantById(body.plantId);
       return NextResponse.json({ ok: success });
+      
     } else if (action === "delete-watering") {
       if (!body.wateringId || typeof body.wateringId !== "string") {
         return NextResponse.json({ ok: false, error: "Missing or invalid wateringId." }, { status: 400 });
@@ -143,13 +72,9 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ ok: false, error: "Missing or invalid plantId." }, { status: 400 });
       }
 
-      const updatedWateringLogs = data.wateringLogs.filter((l) => l.id !== body.wateringId);
-      const success = await saveAllData({
-        ...data,
-        wateringLogs: updatedWateringLogs,
-      });
+      const result = await deleteWateringLogById(body.wateringId, body.plantId);
+      return NextResponse.json(result);
 
-      return NextResponse.json({ ok: success });
     } else if (action === "delete-climate") {
       if (!body.climateId || typeof body.climateId !== "string") {
         return NextResponse.json({ ok: false, error: "Missing or invalid climateId." }, { status: 400 });
@@ -158,17 +83,14 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ ok: false, error: "Missing or invalid plantId." }, { status: 400 });
       }
 
-      const updatedClimateLogs = data.climateLogs.filter((l) => l.id !== body.climateId);
-      const success = await saveAllData({
-        ...data,
-        climateLogs: updatedClimateLogs,
-      });
+      const result = await deleteClimateLogById(body.climateId, body.plantId);
+      return NextResponse.json(result);
 
-      return NextResponse.json({ ok: success });
     } else {
       return NextResponse.json({ ok: false, error: "Invalid action." }, { status: 400 });
     }
   } catch (error) {
+    console.error("API DELETE /plants failed:", error);
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "Failed to delete record." },
       { status: 500 }
