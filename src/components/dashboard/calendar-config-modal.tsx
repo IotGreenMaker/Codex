@@ -4,24 +4,12 @@ import { useState, useEffect } from "react";
 import { X, Calendar, Eye, Droplets, Sprout, Cannabis, Wheat } from "lucide-react";
 import { STAGE_TARGETS } from "@/lib/config";
 import { getSetting, setSetting } from "@/lib/indexeddb-storage";
+import type { CalendarConfig } from "@/lib/types";
 
 type CalendarConfigModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave: (config: CalendarConfig) => void;
-};
-
-export type CalendarConfig = {
-  seedlingDuration: number;
-  vegDuration: number;
-  bloomDuration: number;
-  showWatering: boolean;
-  showSeedling: boolean;
-  showVeg: boolean;
-  showBloom: boolean;
-  nutrientDelta: number;
-  hannaScale: 500 | 700;
-  measurementUnit: "EC" | "PPM";
 };
 
 const DEFAULT_CONFIG: CalendarConfig = {
@@ -33,9 +21,10 @@ const DEFAULT_CONFIG: CalendarConfig = {
   showVeg: true,
   showBloom: true,
   nutrientDelta: 5,
-  hannaScale: 700,
-  measurementUnit: "EC"
+  hannaScale: 500,        // TODO #8: default to 500-scale (most common Hanna meter)
+  measurementUnit: "PPM"  // TODO #8: PPM is the most common grower preference
 };
+
 
 const SETTINGS_KEY = "calendarConfig";
 

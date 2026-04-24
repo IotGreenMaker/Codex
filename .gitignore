@@ -3,3 +3,5 @@ node_modules
 .env.local
 .codex-logs
 tsconfig.tsbuildinfo
+tests/
+playwright/tests/

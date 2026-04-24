@@ -3,10 +3,26 @@
 
 import type { PlantProfile } from '@/lib/types'
 
+/**
+ * Format EC/PPM values based on user's selected measurement unit
+ */
+function formatEcValue(
+  ecValue: number,
+  unit: 'EC' | 'PPM' = 'EC',
+  hannaScale: number = 700
+): string {
+  if (unit === 'PPM') {
+    return Math.round(ecValue * hannaScale).toString();
+  }
+  return ecValue.toFixed(2);
+}
+
 export function buildGrowContext(
   plant: PlantProfile,
   plants: PlantProfile[] = [],
-  notificationsEnabled: boolean = false
+  notificationsEnabled: boolean = false,
+  measurementUnit: 'EC' | 'PPM' = 'EC',
+  hannaScale: number = 700
 ): string {
   // Calculate stage durations
   const startDate = new Date(plant.startedAt)
@@ -141,12 +157,12 @@ export function buildGrowContext(
   const waterLine = latestWatering
     ? `Last watered ${daysSinceLast}d ago — ${latestWatering.amountMl}ml` +
       (latestWatering.ph ? `, pH in ${latestWatering.ph}` : '') +
-      (latestWatering.ec ? `, EC in ${latestWatering.ec}` : '') +
+      (latestWatering.ec ? `, ${measurementUnit} in ${formatEcValue(latestWatering.ec, measurementUnit, hannaScale)}` : '') +
       (latestWatering.runoffPh
         ? `, pH runoff ${latestWatering.runoffPh}`
         : '') +
       (latestWatering.runoffEc
-        ? `, EC runoff ${latestWatering.runoffEc}`
+        ? `, ${measurementUnit} runoff ${formatEcValue(latestWatering.runoffEc, measurementUnit, hannaScale)}`
         : '')
     : 'No watering recorded yet.'
 
@@ -165,8 +181,13 @@ export function buildGrowContext(
 
 ## WATERING STATUS
 - ${waterLine}
-- CONFIG: Every ${plant.wateringIntervalDays} days | Target pH: ${plant.waterPh} | Target EC: ${plant.waterEc}
+- CONFIG: Every ${plant.wateringIntervalDays} days | Target pH: ${plant.waterPh} | Target ${measurementUnit}: ${formatEcValue(plant.waterEc, measurementUnit, hannaScale)}${measurementUnit === 'PPM' ? ` (${hannaScale}-scale)` : ''}
 - NEXT ESTIMATED WATERING: ${nextWateringEstimate}
+
+## MEASUREMENT UNIT
+- Using ${measurementUnit} for nutrient values ${measurementUnit === 'PPM' ? `(${hannaScale}-scale)` : '(direct EC readings)'}
+- When responding about nutrients, always use ${measurementUnit} ${measurementUnit === 'PPM' ? `with ${hannaScale}-scale` : 'format'}
+- When logging in JSON, just pass the raw number the user provided in the 'nutrientValue' field.
 
 ## RECENT HISTORY & NOTES (Showing last 10)
 ${(plant.notes || [])

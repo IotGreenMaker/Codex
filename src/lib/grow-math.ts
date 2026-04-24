@@ -256,3 +256,145 @@ export function formatNutrientValue(value: number, unit: "EC" | "PPM", hannaScal
   }
   return Math.round(value * hannaScale).toString();
 }
+
+// ─── Watering Utilities ──────────────────────────────────────────────────────
+
+/**
+ * Human-readable countdown string until the next watering is due.
+ * Returns "0d 0h" when overdue.
+ */
+export function getWateringCountdown(lastWateredAt: string, intervalDays: number): string {
+  const last = new Date(lastWateredAt).getTime();
+  const next = last + intervalDays * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const diff = Math.max(0, next - now);
+  const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+  const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+  return `${days}d ${hours}h`;
+}
+
+/**
+ * Dryback percentage: 100 = just watered, 0 = next watering due.
+ * Used to drive the soil-moisture progress bar.
+ */
+export function getDrybackPercent(lastWateredAt: string, intervalDays: number): number {
+  const last = new Date(lastWateredAt).getTime();
+  const next = last + intervalDays * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const total = Math.max(1, next - last);
+  const elapsed = Math.max(0, Math.min(total, now - last));
+  return Math.round(100 - (elapsed / total) * 100);
+}
+
+// ─── Time Utilities ───────────────────────────────────────────────────────────
+
+/**
+ * Parse a "HH:MM" string into total minutes from midnight.
+ * Returns null for invalid or out-of-range values.
+ */
+export function parseTimeToMinutes(value: string): number | null {
+  const match = value.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute) || hour > 23 || minute > 59) {
+    return null;
+  }
+  return hour * 60 + minute;
+}
+
+/**
+ * Returns true if the lights are currently ON based on the on/off schedule.
+ * Handles overnight schedules (e.g. on=22:00, off=04:00).
+ *
+ * @param lightsOn  - "HH:MM" time lights turn on
+ * @param lightsOff - "HH:MM" time lights turn off
+ * @param nowMs     - current timestamp in milliseconds (Date.now())
+ */
+export function isLightsOnNow(lightsOn: string, lightsOff: string, nowMs: number): boolean {
+  const on = parseTimeToMinutes(lightsOn);
+  const off = parseTimeToMinutes(lightsOff);
+  if (on === null || off === null || on === off) return false;
+
+  const nowDate = new Date(nowMs);
+  const nowMinutes = nowDate.getHours() * 60 + nowDate.getMinutes();
+
+  // Normal schedule (e.g. on=06:00, off=22:00)
+  if (on < off) return nowMinutes >= on && nowMinutes < off;
+  // Overnight schedule (e.g. on=22:00, off=06:00)
+  return nowMinutes >= on || nowMinutes < off;
+}
+
+/**
+ * Convert an ISO timestamp to the format expected by <input type="datetime-local">.
+ * Example: "2026-04-21T12:00:00.000Z" → "2026-04-21T12:00"
+ */
+export function toDatetimeLocal(iso: string): string {
+  const date = new Date(iso);
+  const pad = (v: number) => String(v).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+// ─── Light Utilities ──────────────────────────────────────────────────────────
+
+/**
+ * Estimate PPFD (μmol/m²/s) for legacy light types.
+ * Only used as a fallback when a light profile has no ppfdEstimated value.
+ */
+export function estimatePpfd(
+  lightType: "blurple_40w" | "panel_100w",
+  dimmerPercent: number
+): number {
+  if (lightType === "blurple_40w") return 230;
+
+  const p = Math.max(1, Math.min(100, dimmerPercent || 1));
+  const points: Array<[number, number]> = [
+    [1, 580],
+    [50, 750],
+    [100, 1200],
+  ];
+
+  if (p <= points[0][0]) return points[0][1];
+  for (let i = 0; i < points.length - 1; i++) {
+    const [x1, y1] = points[i];
+    const [x2, y2] = points[i + 1];
+    if (p >= x1 && p <= x2) {
+      const t = (p - x1) / Math.max(1e-9, x2 - x1);
+      return Math.round(y1 + (y2 - y1) * t);
+    }
+  }
+  return points[points.length - 1][1];
+}
+
+// ─── Watering Stats Formatters ────────────────────────────────────────────────
+
+/**
+ * Compute and format average input and runoff pH from a list of watering events.
+ * Returns "--" for values with no data.
+ */
+export function formatAvgPh(watering: Array<{ ph: number; runoffPh?: number }>): string {
+  const inVals = watering.map((w) => w.ph).filter((n) => Number.isFinite(n));
+  const runoffVals = watering.map((w) => w.runoffPh).filter((n): n is number => typeof n === "number" && Number.isFinite(n));
+  const avg = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null);
+  const inAvg = avg(inVals);
+  const runoffAvg = avg(runoffVals);
+  return `${inAvg ? inAvg.toFixed(2) : "--"} in / ${runoffAvg ? runoffAvg.toFixed(2) : "--"} runoff`;
+}
+
+/**
+ * Compute and format average input and runoff EC/PPM from watering events.
+ * Respects the user's measurement unit preference.
+ */
+export function formatAvgPpm(
+  watering: Array<{ ec: number; runoffEc?: number }>,
+  unit: "EC" | "PPM",
+  hannaScale: number
+): string {
+  const inVals = watering.map((w) => w.ec).filter((n) => Number.isFinite(n));
+  const runoffVals = watering.map((w) => w.runoffEc).filter((n): n is number => typeof n === "number" && Number.isFinite(n));
+  const avg = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null);
+  const inAvg = avg(inVals);
+  const runoffAvg = avg(runoffVals);
+  const fmt = (val: number | null) => (val !== null ? formatNutrientValue(val, unit, hannaScale) : "--");
+  return `${fmt(inAvg)} in / ${fmt(runoffAvg)} runoff`;
+}

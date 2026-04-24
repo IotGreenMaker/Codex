@@ -19,7 +19,7 @@ import { savePlant, getAllPlants } from "@/lib/indexeddb-storage";
 import type { ClimateEntry, GrowLogEntry, GrowStage, WateringEntry } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
 import type { Locale } from "@/lib/i18n";
-import type { CalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import type { CalendarConfig } from "@/lib/types";
 import { Droplets, CheckCircle2, Circle } from "lucide-react";
 
 type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
@@ -310,11 +310,11 @@ export function GrowChart({
           <table className="w-full border-collapse text-[10px] sm:text-xs text-lime-100 min-w-[400px]">
             <thead className="bg-black/25 sticky top-0 z-10">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">Weather</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">Temp C</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">Hum %</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">VPD</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">x</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">Weather</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">Temp C</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">Hum %</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">VPD</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-right">x</th>
               </tr>
             </thead>
             <tbody>
@@ -322,66 +322,75 @@ export function GrowChart({
                 .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                 .map((entry) => (
                   <tr key={entry.id} className="border-t border-black/30">
-                    <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                    <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                       <input
                         type="datetime-local"
-                        value={toDatetimeLocal(entry.timestamp)}
-                        onChange={(event) =>
-                          onClimateDataChange(
-                            climateData.map((row) =>
-                              row.id === entry.id ? { ...row, timestamp: fromDatetimeLocal(event.target.value) } : row
-                            )
-                          )
-                        }
-                        className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
+                        defaultValue={toDatetimeLocal(entry.timestamp)}
+                        onBlur={(event) => {
+                          const val = event.target.value;
+                          if (val) {
+                            onClimateDataChange(
+                              climateData.map((row) =>
+                                row.id === entry.id ? { ...row, timestamp: fromDatetimeLocal(val) } : row
+                              )
+                            );
+                          }
+                        }}
+                        className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
                       />
                     </td>
-                    <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                    <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                       <input
-                        type="number"
-                        step="0.1"
-                        value={entry.tempC}
-                        onChange={(event) =>
-                          onClimateDataChange(
-                            climateData.map((row) =>
-                              row.id === entry.id ? { ...row, tempC: Number(event.target.value) || 0 } : row
-                            )
-                          )
-                        }
-                        className="w-16 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
+                        type="text"
+                        inputMode="decimal"
+                        defaultValue={entry.tempC}
+                        onBlur={(event) => {
+                          const val = Number(event.target.value);
+                          if (!isNaN(val)) {
+                            onClimateDataChange(
+                              climateData.map((row) =>
+                                row.id === entry.id ? { ...row, tempC: val } : row
+                              )
+                            );
+                          }
+                        }}
+                        className="w-16 sm:w-24 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
                       />
                     </td>
-                    <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                    <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                       <input
-                        type="number"
-                        step="0.1"
-                        value={entry.humidity}
-                        onChange={(event) =>
-                          onClimateDataChange(
-                            climateData.map((row) =>
-                              row.id === entry.id ? { ...row, humidity: Number(event.target.value) || 0 } : row
-                            )
-                          )
-                        }
-                        className="w-16 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
+                        type="text"
+                        inputMode="decimal"
+                        defaultValue={entry.humidity}
+                        onBlur={(event) => {
+                          const val = Number(event.target.value);
+                          if (!isNaN(val)) {
+                            onClimateDataChange(
+                              climateData.map((row) =>
+                                row.id === entry.id ? { ...row, humidity: val } : row
+                              )
+                            );
+                          }
+                        }}
+                        className="w-16 sm:w-24 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
                       />
                     </td>
-                    <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                    <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                       <span
                         title={getVpdTooltip(stage, calculateVpd(entry.tempC, entry.humidity))}
-                        className={`rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs ${getVpdPillClass(stage, calculateVpd(entry.tempC, entry.humidity))}`}
+                        className={`rounded-full px-3 py-1.5 text-[11px] sm:text-xs ${getVpdPillClass(stage, calculateVpd(entry.tempC, entry.humidity))}`}
                       >
                         {calculateVpd(entry.tempC, entry.humidity).toFixed(2)} kPa
                       </span>
                     </td>
-                    <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">
+                    <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right">
                       <button
                         type="button"
                         onClick={() => deleteClimateEntry(entry.id)}
-                        className="rounded-full border border-red-300/20 bg-red-400/10 p-0.5 sm:p-1 text-red-100"
+                        className="rounded-full border border-red-300/20 bg-red-400/10 p-1.5 sm:p-2 text-red-100 hover:bg-red-400/20 transition"
                         title="Delete row"
                       >
-                        <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </button>
                     </td>
                   </tr>
@@ -490,11 +499,10 @@ export function GrowChart({
           <table className="w-full border-collapse text-[10px] sm:text-xs text-lime-100 min-w-[400px]">
             <thead className="bg-black/25 sticky top-0 z-10">
               <tr className="text-left font-mono uppercase tracking-[0.16em] text-lime-200">
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">Time</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">ml</th>
-                {/* <th className="px-2 sm:px-3 py-1.5 sm:py-2">L</th> */}
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">pH in</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">Time</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">ml</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">pH in</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">
                   <button 
                     type="button"
                     onClick={handleToggleEcMode}
@@ -504,10 +512,10 @@ export function GrowChart({
                     {measurementUnit} in
                   </button>
                 </th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">pH Out</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">EC Out</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2">FEED</th>
-                <th className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">x</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">pH Out</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">EC Out</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm">FEED</th>
+                <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-right">x</th>
               </tr>
             </thead>
             <tbody>
@@ -525,95 +533,111 @@ export function GrowChart({
                 </tr>
               ) : null}
               {newestFirstWatering.map((entry) => (
-                <tr key={entry.id} className="border-t border-black/30">
-                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                <tr key={entry.id} className="border-t border-black/30 hover:bg-white/[0.02] transition">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     <input
                       type="datetime-local"
-                      value={toDatetimeLocal(entry.timestamp)}
-                      onChange={(event) =>
-                        onWateringDataChange(
-                          wateringData.map((row) =>
-                            row.id === entry.id ? { ...row, timestamp: fromDatetimeLocal(event.target.value) } : row
-                          )
-                        )
-                      }
-                      className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
-                    />
-                  </td>
-                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
-                    <input
-                      type="number"
-                      value={entry.amountMl}
-                      onChange={(event) =>
-                        onWateringDataChange(
-                          wateringData.map((row) =>
-                            row.id === entry.id ? { ...row, amountMl: Number(event.target.value) || 0 } : row
-                          )
-                        )
-                      }
-                      className="w-16 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
-                    />
-                  </td>
-                  {/* <td className="px-2 sm:px-3 py-1.5 sm:py-2">{(entry.amountMl / 1000).toFixed(2)}</td> */}
-                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={entry.ph}
-                      onChange={(event) =>
-                        onWateringDataChange(
-                          wateringData.map((row) => (row.id === entry.id ? { ...row, ph: Number(event.target.value) || 0 } : row))
-                        )
-                      }
-                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
-                    />
-                  </td>
-                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={measurementUnit === "EC" ? entry.ec.toFixed(3) : Math.round(entry.ec * hannaScale)}
-                      onChange={(event) => {
-                        const val = Number(event.target.value) || 0;
-                        const finalEc = measurementUnit === "EC" ? val : val / hannaScale;
-                        onWateringDataChange(
-                          wateringData.map((row) => (row.id === entry.id ? { ...row, ec: finalEc } : row))
-                        );
+                      defaultValue={toDatetimeLocal(entry.timestamp)}
+                      onBlur={(event) => {
+                        const val = event.target.value;
+                        if (val) {
+                          onWateringDataChange(
+                            wateringData.map((row) =>
+                              row.id === entry.id ? { ...row, timestamp: fromDatetimeLocal(val) } : row
+                            )
+                          );
+                        }
                       }}
-                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
+                      className="w-full rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
                     />
                   </td>
-                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     <input
-                      type="number"
-                      step="0.01"
-                      value={entry.runoffPh ?? ""}
-                      onChange={(event) =>
-                        onWateringDataChange(
-                          wateringData.map((row) =>
-                            row.id === entry.id ? { ...row, runoffPh: Number(event.target.value) || undefined } : row
-                          )
-                        )
-                      }
-                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
-                    />
-                  </td>
-                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={entry.runoffEc !== undefined ? (measurementUnit === "EC" ? entry.runoffEc.toFixed(3) : Math.round(entry.runoffEc * hannaScale)) : ""}
-                      onChange={(event) => {
-                        const val = Number(event.target.value) || 0;
-                        const finalEc = measurementUnit === "EC" ? val : val / hannaScale;
-                        onWateringDataChange(
-                          wateringData.map((row) => (row.id === entry.id ? { ...row, runoffEc: finalEc } : row))
-                        );
+                      type="text"
+                      inputMode="numeric"
+                      defaultValue={entry.amountMl}
+                      onBlur={(event) => {
+                        const val = Number(event.target.value);
+                        if (!isNaN(val)) {
+                          onWateringDataChange(
+                            wateringData.map((row) =>
+                              row.id === entry.id ? { ...row, amountMl: val } : row
+                            )
+                          );
+                        }
                       }}
-                      className="w-14 sm:w-16 rounded-lg border border-lime-300/10 bg-black/30 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-lime-100 outline-none"
+                      className="w-16 sm:w-24 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
                     />
                   </td>
-                  <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      defaultValue={entry.ph}
+                      onBlur={(event) => {
+                        const val = Number(event.target.value);
+                        if (!isNaN(val)) {
+                          onWateringDataChange(
+                            wateringData.map((row) => (row.id === entry.id ? { ...row, ph: val } : row))
+                          );
+                        }
+                      }}
+                      className="w-14 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
+                    />
+                  </td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      defaultValue={measurementUnit === "EC" ? entry.ec.toFixed(2) : Math.round(entry.ec * hannaScale)}
+                      onBlur={(event) => {
+                        const val = Number(event.target.value);
+                        if (!isNaN(val)) {
+                          const finalEc = measurementUnit === "EC" ? val : val / hannaScale;
+                          onWateringDataChange(
+                            wateringData.map((row) => (row.id === entry.id ? { ...row, ec: finalEc } : row))
+                          );
+                        }
+                      }}
+                      className="w-14 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
+                    />
+                  </td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      defaultValue={entry.runoffPh ?? ""}
+                      onBlur={(event) => {
+                        const val = event.target.value === "" ? undefined : Number(event.target.value);
+                        if (val === undefined || !isNaN(val)) {
+                          onWateringDataChange(
+                            wateringData.map((row) =>
+                              row.id === entry.id ? { ...row, runoffPh: val } : row
+                            )
+                          );
+                        }
+                      }}
+                      className="w-14 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
+                    />
+                  </td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      defaultValue={entry.runoffEc !== undefined ? (measurementUnit === "EC" ? entry.runoffEc.toFixed(2) : Math.round(entry.runoffEc * hannaScale)) : ""}
+                      onBlur={(event) => {
+                        const val = event.target.value === "" ? undefined : Number(event.target.value);
+                        if (val === undefined || !isNaN(val)) {
+                          const finalEc = val === undefined ? undefined : (measurementUnit === "EC" ? val : val / hannaScale);
+                          onWateringDataChange(
+                            wateringData.map((row) => (row.id === entry.id ? { ...row, runoffEc: finalEc } : row))
+                          );
+                        }
+                      }}
+                      className="w-14 sm:w-20 rounded-lg border border-lime-300/10 bg-black/30 px-3 py-2 text-xs sm:text-sm text-lime-100 outline-none focus:border-lime-500/50"
+                    />
+                  </td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     <button
                       type="button"
                       onClick={() => 
@@ -623,27 +647,27 @@ export function GrowChart({
                           )
                         )
                       }
-                      className={`flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-md transition ${
+                      className={`flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-md transition ${
                         entry.isFeed 
                           ? "bg-lime-300/20 text-lime-300 border border-lime-300/30" 
                           : "bg-white/5 text-white/20 border border-white/10 hover:border-white/20"
                       }`}
                     >
                       {entry.isFeed ? (
-                        <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                        <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       ) : (
-                        <Circle className="h-3 w-3 sm:h-3.5 sm:w-3.5 opacity-0 group-hover:opacity-100" />
+                        <Circle className="h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-0 group-hover:opacity-100" />
                       )}
                     </button>
                   </td>
-                  <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right">
                     <button
                       type="button"
                       onClick={() => deleteWateringEntry(entry.id)}
-                      className="rounded-full border border-red-300/20 bg-red-400/10 p-0.5 sm:p-1 text-red-100"
+                      className="rounded-full border border-red-300/20 bg-red-400/10 p-1.5 sm:p-2 text-red-100 hover:bg-red-400/20 transition"
                       title="Delete row"
                     >
-                      <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </button>
                   </td>
                 </tr>

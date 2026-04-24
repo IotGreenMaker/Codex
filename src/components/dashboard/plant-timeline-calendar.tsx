@@ -2,10 +2,10 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Settings, Sprout, Cannabis, Wheat, Droplets, Bell, Pencil, Plus } from "lucide-react";
-import type { PlantProfile } from "@/lib/types";
+import type { PlantProfile, CalendarConfig } from "@/lib/types";
 import { STAGE_TARGETS } from "@/lib/config";
 import { TimelineEventFeed } from "@/components/dashboard/timeline-event-feed";
-import { CalendarConfigModal, CalendarConfig, loadCalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import { CalendarConfigModal, loadCalendarConfig } from "@/components/dashboard/calendar-config-modal";
 
 type CalendarDay = {
   date: Date;

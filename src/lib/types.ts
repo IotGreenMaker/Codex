@@ -1,5 +1,18 @@
 export type GrowStage = "Seedling" | "Veg" | "Bloom";
 
+export type CalendarConfig = {
+  seedlingDuration: number;
+  vegDuration: number;
+  bloomDuration: number;
+  showWatering: boolean;
+  showSeedling: boolean;
+  showVeg: boolean;
+  showBloom: boolean;
+  nutrientDelta: number;
+  hannaScale: 500 | 700;
+  measurementUnit: "EC" | "PPM";
+};
+
 export type LightType = "blurple_40w" | "panel_100w" | "custom_led" | "custom_hps" | "other";
 
 export type LightProfile = {

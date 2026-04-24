@@ -3,7 +3,7 @@
 import { PlantProfile } from "@/lib/types";
 import { mapToNutrientStage, analyzeFeeding, NUTRIENT_TARGETS, FeedingAnalysis, NutrientStage } from "@/lib/nutrient-logic";
 import { CheckCircle, AlertTriangle, AlertCircle, ArrowDownCircle, ArrowUpCircle, Droplets, Info } from "lucide-react";
-import type { CalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import type { CalendarConfig } from "@/lib/types";
 import { formatNutrientValue } from "@/lib/grow-math";
 
 interface NutrientCheckerProps {
@@ -106,7 +106,8 @@ export function NutrientChecker({ plant, config }: NutrientCheckerProps) {
     latest?.ph,
     latest?.runoffEc,
     latest?.runoffPh,
-    nutrientStage
+    nutrientStage,
+    config?.nutrientDelta
   );
 
   const lastWateringDate = latest

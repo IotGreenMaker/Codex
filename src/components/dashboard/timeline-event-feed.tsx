@@ -4,7 +4,7 @@ import { Droplets, Sprout, Cannabis, Wheat, Bell, BellOff, Pencil, Send, X, Cale
 import { formatNutrientValue } from "@/lib/grow-math";
 import type { PlantProfile, GrowStage, NoteEntry } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
-import type { CalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import type { CalendarConfig } from "@/lib/types";
 import { getNutrientPeriodKey, getRecipeSnapshotData, getDetailedCycleSummary } from "@/lib/grow-math";
 import { STAGE_TARGETS } from "@/lib/config";
 import { useState, useEffect, useCallback } from "react";
@@ -12,7 +12,7 @@ import { getSetting, setSetting } from "@/lib/indexeddb-storage";
 
 type TimelineEvent = {
   id: string;
-  type: "watering" | "stage-change" | "watering-reminder" | "note";
+  type: "watering" | "feeding" | "stage-change" | "watering-reminder" | "note";
   stage?: GrowStage;
   timestamp: string;
   dateLabel: string;
@@ -65,6 +65,9 @@ function getEventIcon(type: TimelineEvent["type"], stage?: GrowStage) {
   if (type === "watering") {
     return <Droplets className="h-5 w-5 text-sky-400" />;
   }
+  if (type === "feeding") {
+    return <Calendar className="h-5 w-5 text-lime-400" />;
+  }
   if (type === "note") {
     return <Pencil className="h-4.5 w-4.5 text-yellow-500/90" />;
   }
@@ -86,6 +89,9 @@ function getEventLabel(type: TimelineEvent["type"], stage?: GrowStage): string {
   }
   if (type === "watering") {
     return "Watering";
+  }
+  if (type === "feeding") {
+    return "Feeding";
   }
   if (type === "note") {
     return "Note";
@@ -299,9 +305,21 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
         ec: w.ec,
         amountMl: w.amountMl,
         isFeed: w.isFeed,
-        recipeSnapshot,
         stageTo: plant.stage
       });
+
+      if (w.isFeed) {
+        events.push({
+          id: `feeding-${w.id}`,
+          type: "feeding",
+          timestamp: w.timestamp,
+          dateLabel,
+          timeLabel,
+          isFeed: true,
+          recipeSnapshot,
+          stageTo: plant.stage
+        });
+      }
     }
   }
 
@@ -352,7 +370,7 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     const latest = sorted[0];
-    const isNextFeed = !latest || !latest.isFeed; // simplistically alternate
+    const isNextFeed = true; // Always suggest a feed per user request
 
     if (isNextFeed) {
       const { daysInSeedling, daysInVeg, daysInBloom } = getDetailedCycleSummary(plant);
@@ -366,8 +384,13 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
         bloomTarget: config?.bloomDuration ?? STAGE_TARGETS.bloom
       });
       // Apply nutrient delta if configured
-      const delta = config?.nutrientDelta ? 1 + config.nutrientDelta / 100 : 1;
-      const targetEc = (plant.waterEc || 1.2) * delta;
+      const delta = config?.nutrientDelta ? 1 + config.nutrientDelta / 100 : 1.05; // Use config or 5%
+      // Find the last actual feed to use as base, or fall back to waterEc
+      const lastFeed = [...plant.wateringData]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .find(w => w.isFeed);
+      const baseEc = lastFeed?.ec || plant.waterEc || 1.2;
+      const targetEc = baseEc * delta;
       
       recommendationItems = getRecipeSnapshotData({
         periodKey,
@@ -574,7 +597,7 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
           )}
 
           {/* Recipe Snapshot */}
-          {event.type === "watering" && event.recipeSnapshot && event.recipeSnapshot.length > 0 && (
+          {event.type === "feeding" && event.recipeSnapshot && event.recipeSnapshot.length > 0 && (
             <div className="mt-3 rounded-lg bg-black/30 p-2.5 border border-lime-300/10">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-lime-400/80 mb-2">Recipe Snapshot</p>
               <div className="space-y-1">

@@ -28,11 +28,11 @@ export type ChatMessageEntry = {
   model?: string;
 };
 
-// ─── DB open / upgrade ─────────────────────────────────────────────────────
+let dbPromise: Promise<IDBDatabase> | null = null;
 
 /**
  * Open (or create) the G-Buddy IndexedDB database.
- * Exported so components can call it directly during initialisation.
+ * Uses a singleton promise to ensure the database is only opened once per session.
  */
 export function openDB(): Promise<IDBDatabase> {
   // Guard: IndexedDB only exists in browser contexts
@@ -40,7 +40,9 @@ export function openDB(): Promise<IDBDatabase> {
     return Promise.reject(new Error("[IndexedDB] Not available in this environment"));
   }
 
-  return new Promise((resolve, reject) => {
+  if (dbPromise) return dbPromise;
+
+  dbPromise = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onupgradeneeded = (event) => {
@@ -64,9 +66,15 @@ export function openDB(): Promise<IDBDatabase> {
     };
 
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => {
+      dbPromise = null; // Reset promise on error so we can retry
+      reject(request.error);
+    };
   });
+
+  return dbPromise;
 }
+
 
 // ─── Low-level helpers ─────────────────────────────────────────────────────
 
@@ -354,32 +362,4 @@ export async function deleteChatMessagesForPlant(
   }
 }
 
-// ─── Development helpers ───────────────────────────────────────────────────
-
-/**
- * Seed three test plants for development/demo purposes.
- * Safe to call multiple times — will not duplicate plants that already exist
- * because IndexedDB put() on an existing key does an update, not an insert.
- */
-export async function seedTestPlants(): Promise<boolean> {
-  try {
-    const { createNewPlant } = await import("@/lib/newplant-data");
-    const db = await openDB();
-
-    const testPlants = [
-      createNewPlant({ strainName: "Baby Green", stage: "Seedling" }),
-      createNewPlant({ strainName: "Green Machine", stage: "Veg" }),
-      createNewPlant({ strainName: "Purple Haze", stage: "Bloom" }),
-    ];
-
-    for (const plant of testPlants) {
-      await storePut(db, STORE_PLANTS, plant);
-    }
-
-    console.log(`[IndexedDB] Seeded ${testPlants.length} test plants`);
-    return true;
-  } catch (err) {
-    console.error("[IndexedDB] seedTestPlants failed:", err);
-    return false;
-  }
-}
+

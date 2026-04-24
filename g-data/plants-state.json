@@ -36,7 +36,7 @@
       "waterInputMl": 1000,
       "waterPh": 5.8,
       "waterEc": 1.40002,
-      "lastWateredAt": "2026-04-21T12:27:27.960Z",
+      "lastWateredAt": "2026-04-21T23:50:47.382Z",
       "wateringIntervalDays": 2,
       "stageDays": {
         "seedling": 1,
@@ -44,28 +44,6 @@
         "bloom": 0
       },
       "wateringData": [
-        {
-          "id": "ddc28a58-57c2-47f1-8f72-89edf68cdcbe",
-          "timestamp": "2026-03-29T12:10:00.000Z",
-          "amountMl": 500,
-          "ph": 6,
-          "ec": 1,
-          "isFeed": true,
-          "recipeSnapshot": [
-            {
-              "label": "Aqua Base A",
-              "value": "0.8 ml"
-            },
-            {
-              "label": "Aqua Base B",
-              "value": "0.8 ml"
-            },
-            {
-              "label": "Rhizotonic",
-              "value": "1.8 ml"
-            }
-          ]
-        },
         {
           "id": "f75dda08-11cc-4a1b-966d-6b3e5e95af6b",
           "timestamp": "2026-04-01T12:10:00.000Z",
@@ -144,7 +122,95 @@
           "ec": 1.40002,
           "runoffPh": 5.9,
           "runoffEc": 1.4,
+          "isFeed": false,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "2.3 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "2.3 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "5.1 ml"
+            }
+          ]
+        },
+        {
+          "id": "c18c00bc-0bbd-42ae-bd60-3ba330ddb222",
+          "timestamp": "2026-04-21T23:50:46.727Z",
+          "amountMl": 1000,
+          "ph": 5.8,
+          "ec": 1.40002,
+          "isFeed": false,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "2.3 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "2.3 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "5.1 ml"
+            }
+          ]
+        },
+        {
+          "id": "6c9646bb-74ac-47c2-8681-789918db92a6",
+          "timestamp": "2026-04-21T23:50:46.949Z",
+          "amountMl": 1000,
+          "ph": 5.8,
+          "ec": 1.40002,
           "isFeed": true,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "2.3 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "2.3 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "5.1 ml"
+            }
+          ]
+        },
+        {
+          "id": "a1646002-6e21-4cc3-90c4-7ec0cfef3fe3",
+          "timestamp": "2026-04-21T23:50:47.159Z",
+          "amountMl": 1000,
+          "ph": 5.8,
+          "ec": 1.40002,
+          "isFeed": false,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "2.3 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "2.3 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "5.1 ml"
+            }
+          ]
+        },
+        {
+          "id": "917b0d45-5407-4486-bf5d-93906dcb9548",
+          "timestamp": "2026-04-21T23:50:47.382Z",
+          "amountMl": 1000,
+          "ph": 5.8,
+          "ec": 1.40002,
+          "isFeed": false,
           "recipeSnapshot": [
             {
               "label": "Aqua Base A",
@@ -162,12 +228,6 @@
         }
       ],
       "climateData": [
-        {
-          "id": "3d184ed6-8984-4d00-8a44-ee80b974eb5a",
-          "timestamp": "2026-04-21T12:10:51.025Z",
-          "tempC": 25,
-          "humidity": 60
-        },
         {
           "id": "8cf157f4-77ed-4152-9270-e93ab004adf1",
           "timestamp": "2026-04-21T12:10:51.193Z",
@@ -207,7 +267,7 @@
         }
       ],
       "feedRecipe": {
-        "title": "10 L veg mix",
+        "title": "Canna Nutrients",
         "baseAMl": 24,
         "baseBMl": 21,
         "calMagMl": 6,
@@ -424,162 +484,7 @@
           }
         ]
       }
-    },
-    {
-      "id": "eb88a557-363f-4e1b-b44c-18416965b5ce",
-      "strainName": "Purple Haze",
-      "startedAt": "2026-04-20T20:08:26.697Z",
-      "stage": "Seedling",
-      "lightSchedule": "18 / 6",
-      "lightsOn": "06:00",
-      "lightsOff": "00:00",
-      "lights": [],
-      "containerVolumeL": 11,
-      "mediaVolumeL": 10,
-      "mediaType": "Soil",
-      "outsideTempC": 22,
-      "outsideHumidity": 55,
-      "growTempC": 23,
-      "growHumidity": 75,
-      "waterInputMl": 500,
-      "waterPh": 6,
-      "waterEc": 1,
-      "lastWateredAt": "2026-04-21T12:10:47.766Z",
-      "wateringIntervalDays": 2,
-      "stageDays": {
-        "seedling": 1,
-        "veg": 0,
-        "bloom": 0
-      },
-      "wateringData": [
-        {
-          "id": "054d98a6-1d24-443a-98b6-51b864ca7ead",
-          "timestamp": "2026-04-21T12:10:47.430Z",
-          "amountMl": 500,
-          "ph": 6,
-          "ec": 1,
-          "isFeed": true,
-          "recipeSnapshot": [
-            {
-              "label": "Aqua Base A",
-              "value": "0.8 ml"
-            },
-            {
-              "label": "Aqua Base B",
-              "value": "0.8 ml"
-            },
-            {
-              "label": "Rhizotonic",
-              "value": "1.8 ml"
-            }
-          ]
-        },
-        {
-          "id": "aab0c7c9-d871-41ca-b553-62b8f0a62135",
-          "timestamp": "2026-04-21T12:10:47.591Z",
-          "amountMl": 500,
-          "ph": 6,
-          "ec": 1,
-          "isFeed": true,
-          "recipeSnapshot": [
-            {
-              "label": "Aqua Base A",
-              "value": "0.8 ml"
-            },
-            {
-              "label": "Aqua Base B",
-              "value": "0.8 ml"
-            },
-            {
-              "label": "Rhizotonic",
-              "value": "1.8 ml"
-            }
-          ]
-        },
-        {
-          "id": "29cbb079-9c95-4df6-b873-f5a6a9cf0dda",
-          "timestamp": "2026-04-21T12:10:47.766Z",
-          "amountMl": 500,
-          "ph": 6,
-          "ec": 1,
-          "isFeed": true,
-          "recipeSnapshot": [
-            {
-              "label": "Aqua Base A",
-              "value": "0.8 ml"
-            },
-            {
-              "label": "Aqua Base B",
-              "value": "0.8 ml"
-            },
-            {
-              "label": "Rhizotonic",
-              "value": "1.8 ml"
-            }
-          ]
-        }
-      ],
-      "climateData": [
-        {
-          "id": "c5a045d3-0d28-4d1a-a1f6-2af6a22f2541",
-          "timestamp": "2026-04-21T12:10:40.073Z",
-          "tempC": 25,
-          "humidity": 60
-        },
-        {
-          "id": "82f78708-d541-4392-9794-3cb5e07d6c19",
-          "timestamp": "2026-04-21T12:10:40.281Z",
-          "tempC": 25,
-          "humidity": 60
-        },
-        {
-          "id": "644e17c5-aff0-4278-9e77-24113cf0d378",
-          "timestamp": "2026-04-21T12:10:41.165Z",
-          "tempC": 25,
-          "humidity": 60
-        },
-        {
-          "id": "654dd3f7-f628-488e-b558-ce7bc6606b98",
-          "timestamp": "2026-04-21T12:10:41.354Z",
-          "tempC": 25,
-          "humidity": 60
-        },
-        {
-          "id": "945ee6a4-10a6-4a16-a5e3-6395fcdf1e50",
-          "timestamp": "2026-04-21T13:09:05.326Z",
-          "tempC": 23,
-          "humidity": 75
-        }
-      ],
-      "notes": [
-        {
-          "id": "2024-04-21T10:00:00Z",
-          "timestamp": "2024-04-21T10:00:00Z",
-          "text": "User inquired about the Purple Haze strain."
-        },
-        {
-          "id": "2024-03-20T10:00:00Z",
-          "timestamp": "2024-03-20T10:00:00Z",
-          "text": "The user's plant is looking really funny."
-        }
-      ],
-      "feedRecipe": {
-        "title": "10 L veg mix",
-        "baseAMl": 24,
-        "baseBMl": 21,
-        "calMagMl": 6,
-        "targetEc": 1.45,
-        "targetPhLow": 5.8,
-        "targetPhHigh": 6.1,
-        "additives": [
-          {
-            "id": "33ee8122-f9c2-490a-9a78-3455c959ced5",
-            "label": "Silica",
-            "amountMl": 5
-          }
-        ]
-      }
     }
   ],
-  "activePlantId": "17290ca7-e175-40ee-9979-2a26fb281f61"
+  "activePlantId": "b4820fe5-ecd6-44da-a9be-3a574765e12c"
 }

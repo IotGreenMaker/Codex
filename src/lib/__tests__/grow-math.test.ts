@@ -223,5 +223,41 @@ describe("calculateNutrientPlan", () => {
   });
 });
 
+describe("Nutrient Formatting (PPM/EC)", () => {
+  const { formatNutrientValue, formatAvgPpm } = require("../grow-math");
+
+  test("formatNutrientValue returns fixed 3 for EC", () => {
+    expect(formatNutrientValue(1.23456, "EC")).toBe("1.235");
+    expect(formatNutrientValue(0.6, "EC")).toBe("0.600");
+  });
+
+  test("formatNutrientValue converts EC to PPM correctly (500 scale)", () => {
+    expect(formatNutrientValue(1.0, "PPM", 500)).toBe("500");
+    expect(formatNutrientValue(0.6, "PPM", 500)).toBe("300");
+    expect(formatNutrientValue(1.2, "PPM", 500)).toBe("600");
+  });
+
+  test("formatNutrientValue converts EC to PPM correctly (700 scale)", () => {
+    expect(formatNutrientValue(1.0, "PPM", 700)).toBe("700");
+    expect(formatNutrientValue(0.6, "PPM", 700)).toBe("420");
+  });
+
+  test("formatAvgPpm calculates averages and formats correctly", () => {
+    const watering = [
+      { ec: 1.0, runoffEc: 1.2 },
+      { ec: 1.2, runoffEc: 1.4 }
+    ];
+    // Avg in = 1.1, Avg runoff = 1.3
+    // 500 scale: 1.1 * 500 = 550, 1.3 * 500 = 650
+    expect(formatAvgPpm(watering, "PPM", 500)).toBe("550 in / 650 runoff");
+    
+    // 700 scale: 1.1 * 700 = 770, 1.3 * 700 = 910
+    expect(formatAvgPpm(watering, "PPM", 700)).toBe("770 in / 910 runoff");
+    
+    // EC unit:
+    expect(formatAvgPpm(watering, "EC", 700)).toBe("1.100 in / 1.300 runoff");
+  });
+});
+
 // Export for test runner
 export { createMockPlant };

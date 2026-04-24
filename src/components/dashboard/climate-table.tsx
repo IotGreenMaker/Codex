@@ -24,16 +24,16 @@ export function ClimateTable({ climateData, stage }: ClimateTableProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-lime-300/14 bg-black/20 p-3 sm:p-5 overflow-x-auto max-h-[35vh]">
-      <p className="mb-3 sm:mb-4 font-mono text-[10px] sm:text-xs uppercase tracking-[0.28em] text-lime-300/70">Recent Climate Readings</p>
+    <div className="rounded-2xl border border-lime-300/14 bg-black/20 p-4 sm:p-6 overflow-x-auto max-h-[35vh]">
+      <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">Recent Climate Readings</p>
       
-      <table className="w-full text-xs sm:text-sm min-w-[400px]">
+      <table className="w-full text-sm min-w-[400px]">
         <thead>
           <tr className="border-b border-lime-300/20">
-            <th className="table-header px-2 sm:px-3 py-1.5 sm:py-2 text-left text-[10px] sm:text-xs font-semibold text-lime-300">Timestamp</th>
-            <th className="table-header px-2 sm:px-3 py-1.5 sm:py-2 text-left text-[10px] sm:text-xs font-semibold text-lime-300">Temp</th>
-            <th className="table-header px-2 sm:px-3 py-1.5 sm:py-2 text-left text-[10px] sm:text-xs font-semibold text-lime-300">Hum</th>
-            <th className="table-header px-2 sm:px-3 py-1.5 sm:py-2 text-left text-[10px] sm:text-xs font-semibold text-lime-300">VPD</th>
+            <th className="table-header px-3 py-2.5 text-left text-xs font-semibold text-lime-300 uppercase tracking-wider">Timestamp</th>
+            <th className="table-header px-3 py-2.5 text-left text-xs font-semibold text-lime-300 uppercase tracking-wider">Temp</th>
+            <th className="table-header px-3 py-2.5 text-left text-xs font-semibold text-lime-300 uppercase tracking-wider">Hum</th>
+            <th className="table-header px-3 py-2.5 text-left text-xs font-semibold text-lime-300 uppercase tracking-wider">VPD</th>
           </tr>
         </thead>
         <tbody>
@@ -44,25 +44,25 @@ export function ClimateTable({ climateData, stage }: ClimateTableProps) {
 
             return (
               <tr key={index} className="border-b border-lime-300/10 hover:bg-lime-300/5 transition">
-                <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-slate-300 text-[10px] sm:text-sm">{timestamp}</td>
-                <td className="px-2 sm:px-3 py-1.5 sm:py-2">
-                  <span className="font-mono text-lime-200 text-xs sm:text-sm">{entry.tempC}°C</span>
+                <td className="px-3 py-3 text-slate-300 text-xs sm:text-sm">{timestamp}</td>
+                <td className="px-3 py-3">
+                  <span className="font-mono text-lime-200 text-sm">{entry.tempC}°C</span>
                 </td>
-                <td className="px-2 sm:px-3 py-1.5 sm:py-2">
-                  <span className="font-mono text-blue-200 text-xs sm:text-sm">{entry.humidity}%</span>
+                <td className="px-3 py-3">
+                  <span className="font-mono text-blue-200 text-sm">{entry.humidity}%</span>
                 </td>
-                <td className="px-2 sm:px-3 py-1.5 sm:py-2">
+                <td className="px-3 py-3">
                   <div
-                    className={`inline-flex items-center gap-1 sm:gap-2 rounded-lg px-2 sm:px-3 py-0.5 sm:py-1 font-mono font-semibold text-[10px] sm:text-xs ${vpdStatus.bgColor} ${vpdStatus.color} border ${
+                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-1 font-mono font-semibold text-xs ${vpdStatus.bgColor} ${vpdStatus.color} border ${
                       vpdStatus.status === "optimal"
                         ? "border-green-500/100"
                         : vpdStatus.status === "low"
-                          ? "border-sky-300/80"
-                          : "border-orange-300/80"
+                           ? "border-sky-300/80"
+                           : "border-orange-300/80"
                     }`}
                   >
                     <span
-                      className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full ${
+                      className={`h-2 w-2 rounded-full ${
                         vpdStatus.status === "optimal"
                           ? "bg-green-500/30"
                           : vpdStatus.status === "low"

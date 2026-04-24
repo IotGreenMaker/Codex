@@ -10,9 +10,10 @@ import { translations } from "@/lib/i18n";
 import { speak } from "@/lib/tts";
 import { buildGrowContext } from "@/lib/buildGrowContext";
 import { generateUUID } from "@/lib/uuid";
-import type { PlantProfile } from "@/lib/types";
+import type { PlantProfile, GrowStage } from "@/lib/types";
 
 const VOICE_IDLE_TIMEOUT_MS = 2600;
+const SHARED_CONVERSATION_ID = "global_ai_conversation"; // Global conversation shared across all plants
 
 type ChatMessage = {
   id: string;
@@ -50,7 +51,7 @@ export function AiAssistantPanel({
   onUpdateClimateData?: (data: PlantProfile["climateData"]) => void;
   onToggleNotification?: (enabled: boolean) => void;
   notificationsEnabled?: boolean;
-  onCreatePlant?: (data: { strainName: string; stage: string }) => void;
+  onCreatePlant?: (data: { strainName: string; stage: GrowStage }) => void;
   onAddNote?: (text: string, timestamp?: string) => void;
   calendarConfig?: any;
 }) {
@@ -113,11 +114,10 @@ export function AiAssistantPanel({
     getAiConfig().then(setAiConfig).catch(() => {});
   }, []);
 
-  // Sync messages when active plant changes
+  // Load global conversation once on mount
   useEffect(() => {
     void loadConversation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plant.id]);
+  }, []);
 
   const handleSaveConfig = async (config: AiConfig) => {
     setAiConfig(config);
@@ -356,7 +356,13 @@ export function AiAssistantPanel({
       const currentAiConfig = aiConfigRef.current;
       const currentNotificationsEnabled = notificationsEnabledRef.current;
 
-      const plantContext = buildGrowContext(currentPlant, currentPlants, currentNotificationsEnabled);
+      const plantContext = buildGrowContext(
+        currentPlant,
+        currentPlants,
+        currentNotificationsEnabled,
+        (calendarConfig?.measurementUnit as 'EC' | 'PPM') || 'EC',
+        calendarConfig?.hannaScale || 700
+      );
 
       // Use Groq API for AI response
       const response = await fetch("/api/groq", {
@@ -386,32 +392,87 @@ export function AiAssistantPanel({
         ? data.response
         : data.error ?? "Assistant request failed.";
 
-      // Try to parse structured response with data commands
+      // ─── Zero-Leak Parser (TODO #20 FIX) ──────────────────────────────
+      // This parser is "cynical" — it doesn't trust the AI to follow code fences.
+      // It scans the entire response for any JSON structure and extracts it.
       let parsedData: any = null;
+      let cleanedMessage = assistantMessage;
+
       try {
-        // Look for JSON block in response (flexible matching for whitespace/newlines)
-        const jsonMatch = assistantMessage.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          parsedData = JSON.parse(jsonMatch[1]);
-          // Extract just the message text if available
-          if (parsedData.message) {
-            assistantMessage = parsedData.message;
+        // Step 1: Look for code-fenced JSON (```json ... ```)
+        const fencedMatch = assistantMessage.match(/```json\s*([\s\S]*?)\s*```/);
+        if (fencedMatch) {
+          try {
+            parsedData = JSON.parse(fencedMatch[1]);
+            // Strip the fence for the text fallback
+            cleanedMessage = assistantMessage.replace(/```json[\s\S]*?```/g, "").trim();
+          } catch (e) { /* invalid JSON in fence, skip */ }
+        }
+
+        // Step 2: If no fence worked, hunt for raw JSON { ... } anywhere in the string
+        if (!parsedData) {
+          const firstBrace = assistantMessage.indexOf('{');
+          const lastBrace = assistantMessage.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            const potentialJsonTarget = assistantMessage.substring(firstBrace, lastBrace + 1);
+            try {
+              const detected = JSON.parse(potentialJsonTarget);
+              // If it has a message field OR any of our command keys, it's our JSON
+              if (detected && typeof detected === 'object' && (detected.message || detected.watering || detected.climate || detected.plant || detected.selectPlant || detected.createPlant)) {
+                parsedData = detected;
+                // Text before the JSON is our fallback message
+                cleanedMessage = assistantMessage.substring(0, firstBrace).trim();
+              }
+            } catch (e) { /* not JSON, continue */ }
           }
         }
-      } catch {
-        // Not structured JSON, continue with plain text
+
+        // Step 3: Priority Message — if JSON has a message, that IS the response
+        if (parsedData && parsedData.message && typeof parsedData.message === "string") {
+          cleanedMessage = parsedData.message;
+        }
+      } catch (err) {
+        // Parsing failed entirely, keep original but strip technical symbols below
+      }
+
+      // Step 4: Final Sanitization — strip stray backticks or partial markers
+      assistantMessage = cleanedMessage
+        .replace(/```[\s\S]*?```/g, "")
+        .replace(/`{1,3}/g, "")
+        .trim();
+
+      // Ensure we never show an empty bubble
+      if (!assistantMessage) {
+        assistantMessage = parsedData?.message || "Processed your request.";
       }
 
       // Apply data updates from AI
       if (parsedData) {
         // Update watering data
         if (parsedData.watering && onUpdateWateringData) {
+          // Determine the raw value provided by AI (could be 'ec', 'ppm', or 'nutrientValue')
+          const rawNutrient = parsedData.watering.nutrientValue ?? parsedData.watering.ec ?? parsedData.watering.ppm;
+          let finalEc = 1.4; // Default fallback
+
+          if (typeof rawNutrient === "number") {
+            const isPpmMode = (calendarConfig?.measurementUnit === 'PPM');
+            const hannaScale = calendarConfig?.hannaScale || 700;
+
+            if (isPpmMode) {
+              // User is in PPM mode, so we treat the raw AI value as PPM and convert to storage EC
+              finalEc = Number((rawNutrient / hannaScale).toFixed(3));
+            } else {
+              // User is in EC mode, use the value directly
+              finalEc = rawNutrient;
+            }
+          }
+
           const newWatering = {
             id: generateUUID(),
             timestamp: new Date().toISOString(),
             amountMl: parsedData.watering.amountMl ?? 0,
             ph: parsedData.watering.ph ?? 6.0,
-            ec: parsedData.watering.ec ?? 1.4,
+            ec: finalEc,
             runoffPh: parsedData.watering.runoffPh,
             runoffEc: parsedData.watering.runoffEc
           };
@@ -580,8 +641,8 @@ export function AiAssistantPanel({
 
   async function loadConversation() {
     try {
-      // Load last 20 messages from IndexedDB for this specific plant
-      const msgs = await getChatMessages(plant.id, 20);
+      // Load last 20 messages from IndexedDB using global conversation ID
+      const msgs = await getChatMessages(SHARED_CONVERSATION_ID, 20);
       const restored = msgs.map((msg) => ({
         id: msg.id,
         role: msg.role,
@@ -607,12 +668,11 @@ export function AiAssistantPanel({
     }>
   ) {
     try {
-      const currentPlantId = plantRef.current.id;
-      // Save each message to IndexedDB under current plantId
+      // Save each message to IndexedDB using global conversation ID
       for (const msg of payload) {
         const chatMessage = {
           id: msg.id,
-          plantId: currentPlantId,
+          plantId: SHARED_CONVERSATION_ID,
           role: msg.role,
           content: msg.content,
           source: msg.source,

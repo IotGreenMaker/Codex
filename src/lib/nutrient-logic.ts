@@ -50,7 +50,8 @@ export function analyzeFeeding(
   inputPh: number | null | undefined,
   runoffEc: number | null | undefined,
   runoffPh: number | null | undefined,
-  stage: NutrientStage
+  stage: NutrientStage,
+  nutrientDeltaPct: number = 5
 ): FeedingAnalysis {
   const targets = NUTRIENT_TARGETS[stage];
 
@@ -100,7 +101,7 @@ export function analyzeFeeding(
   }
 
   // Generate recommendation using decision tree
-  const recommendation = buildRecommendation(ecStatus, phStatus, ecDelta, ec, targets);
+  const recommendation = buildRecommendation(ecStatus, phStatus, ecDelta, ec, targets, nutrientDeltaPct);
 
   return {
     inputEc: ec,
@@ -121,8 +122,12 @@ function buildRecommendation(
   phStatus: FeedingAnalysis['phStatus'],
   ecDelta: number | null,
   inputEc: number | null,
-  targets: NutrientTargets
+  targets: NutrientTargets,
+  nutrientDeltaPct: number
 ): string {
+  const deltaValue = inputEc ? (inputEc * (nutrientDeltaPct / 100)) : (targets.ecMin * (nutrientDeltaPct / 100));
+  const deltaStr = deltaValue.toFixed(2);
+
   // Flush Ready
   if (ecStatus === 'Flush Ready') {
     return 'Flush immediately with plain water at EC 0.0. Check runoff until it drops below 1.0 before resuming feeding.';
@@ -130,7 +135,7 @@ function buildRecommendation(
 
   // Salt buildup + overfeeding
   if (ecStatus === 'Salt Buildup' && inputEc !== null && inputEc > targets.ecMax) {
-    return 'Salt buildup and overfeeding detected. Reduce feed strength by 0.2-0.3 EC and add a plain water flush next watering.';
+    return `Salt buildup and overfeeding detected. Reduce feed strength by ${deltaStr} EC and add a plain water flush next watering.`;
   }
 
   // Salt buildup alone
@@ -140,22 +145,22 @@ function buildRecommendation(
 
   // Hungry + underfeeding overlap check (via inputEc being low)
   if (ecStatus === 'Hungry' && inputEc !== null && inputEc < targets.ecMin) {
-    return 'Plant is eating heavily and input EC is low. Increase EC gradually by 0.2-0.3 on next feeding.';
+    return `Plant is eating heavily and input EC is low. Increase EC gradually by ${deltaStr} on next feeding.`;
   }
 
   // Hungry
   if (ecStatus === 'Hungry') {
-    return 'Plant is consuming heavily - runoff EC lower than input. Consider increasing feed strength slightly next time.';
+    return `Plant is consuming heavily - runoff EC lower than input. Consider increasing feed strength by ${deltaStr} next time.`;
   }
 
   // Underfeeding
   if (ecStatus === 'Underfeeding') {
-    return 'Input EC is below the optimal range for this stage. Consider increasing feed strength gradually by 0.2 EC.';
+    return `Input EC is below the optimal range for this stage. Consider increasing feed strength gradually by ${deltaStr} EC.`;
   }
 
   // Overfeeding
   if (ecStatus === 'Overfeeding') {
-    return 'Input EC is above the optimal range. Reduce feed EC by 0.2-0.3 to avoid nutrient burn.';
+    return `Input EC is above the optimal range. Reduce feed EC by ${deltaStr} to avoid nutrient burn.`;
   }
 
   // pH issues + EC issues
@@ -178,4 +183,4 @@ function buildRecommendation(
 
   // All good
   return 'All parameters look good. Maintain current feeding regimen and monitor runoff periodically.';
-}
+}

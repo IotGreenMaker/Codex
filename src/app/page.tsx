@@ -1,14 +1,28 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Sprout, Mic, Bot, BarChart3, Shield, WifiOff, Download, ArrowRight } from "lucide-react";
+import { usePlants } from "@/hooks/use-plants";
 
 export default function HomePage() {
+  const { plants, addPlant, loadedFromServer } = usePlants();
+  const router = useRouter();
+
+  const handleGetStarted = async () => {
+    if (plants.length === 0) {
+      await addPlant({ strainName: "My First Plant", stage: "Seedling" });
+    }
+    router.push("/dashboard");
+  };
+
   return (
     <main className="min-h-screen bg-hero-grid relative">
       {/* Animated background orbs - behind all content */}
       <div className="bg-orb bg-orb--green" aria-hidden="true" />
       <div className="bg-orb bg-orb--purple" aria-hidden="true" />
       <div className="bg-orb bg-orb--orange" aria-hidden="true" />
-        
+
         <section className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:py-32 lg:px-6">
           <div className="text-center">
             {/* Logo */}
@@ -31,13 +45,14 @@ export default function HomePage() {
             </p>
 
             <div className="mt-10 flex items-center justify-center gap-4">
-              <Link
-                href="/dashboard"
-                className="group flex items-center gap-2 rounded-xl bg-lime-400/20 px-6 py-3 text-base font-semibold text-lime-100 border border-lime-400/30 hover:bg-lime-400/30 transition-all shadow-[0_0_20px_rgba(132,204,22,0.1)] hover:shadow-[0_0_30px_rgba(132,204,22,0.2)]"
+              <button
+                onClick={handleGetStarted}
+                disabled={!loadedFromServer}
+                className="group flex items-center gap-2 rounded-xl bg-lime-400/20 px-6 py-3 text-base font-semibold text-lime-100 border border-lime-400/30 hover:bg-lime-400/30 transition-all shadow-[0_0_20px_rgba(132,204,22,0.1)] hover:shadow-[0_0_30px_rgba(132,204,22,0.2)] disabled:opacity-50"
               >
-                Open Dashboard
+                {plants.length > 0 ? "Open Dashboard" : "Get Started"}
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </button>
             </div>
           </div>
         </section>
@@ -127,13 +142,13 @@ export default function HomePage() {
           <p className="mt-4 text-slate-400 max-w-xl mx-auto">
             Start tracking your grow today. No sign-up, no credit card, no hassle.
           </p>
-          <Link
-            href="/dashboard"
+          <button
+            onClick={handleGetStarted}
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-lime-400/20 px-8 py-3 text-base font-semibold text-lime-100 border border-lime-400/30 hover:bg-lime-400/30 transition-all"
           >
-            Get Started — It's Free
+            {plants.length > 0 ? "Resume Grow" : "Get Started — It's Free"}
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </button>
         </div>
       </section>
 
