@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Settings, Sprout, Cannabis, Wheat, Droplets, Bell, Pencil, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sprout, Cannabis, Wheat, Droplets, Bell, Pencil, Plus } from "lucide-react";
 import type { PlantProfile, CalendarConfig } from "@/lib/types";
 import { STAGE_TARGETS } from "@/lib/config";
 import { TimelineEventFeed } from "@/components/dashboard/timeline-event-feed";
 import { CalendarConfigModal, loadCalendarConfig } from "@/components/dashboard/calendar-config-modal";
+import { useCurrentTime, getStartOfDay } from "@/lib/time-context";
 
 type CalendarDay = {
   date: Date;
@@ -32,7 +33,7 @@ export function PlantTimelineCalendar({
   onDeleteNote?: (noteId: string) => void,
   calendarConfig?: CalendarConfig
 }) {
-  const today = new Date();
+  const { today } = useCurrentTime();
   const [displayMonth, setDisplayMonth] = useState(today.getMonth());
   const [displayYear, setDisplayYear] = useState(today.getFullYear());
   const [isConfigOpen, setIsConfigOpen] = useState(false);
@@ -76,25 +77,21 @@ export function PlantTimelineCalendar({
     }
 
     // Calculate stage date ranges based on actual timestamps only
-    const startedAt = new Date(plant.startedAt);
-    const vegStartedAt = plant.vegStartedAt ? new Date(plant.vegStartedAt) : null;
-    const bloomStartedAt = plant.bloomStartedAt ? new Date(plant.bloomStartedAt) : null;
-
-    // Stage start dates from actual timestamps
-    const vegStartDate = vegStartedAt ? new Date(vegStartedAt) : null;
-    const bloomStartDate = bloomStartedAt ? new Date(bloomStartedAt) : null;
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
+    const startedAt = getStartOfDay(new Date(plant.startedAt));
+    const vegStartDate = plant.vegStartedAt ? getStartOfDay(new Date(plant.vegStartedAt)) : null;
+    const bloomStartDate = plant.bloomStartedAt ? getStartOfDay(new Date(plant.bloomStartedAt)) : null;
 
     // Calculate stage end dates based on configured durations
     const seedlingEndFromDate = new Date(startedAt);
     seedlingEndFromDate.setDate(seedlingEndFromDate.getDate() + seedlingDuration);
+    seedlingEndFromDate.setHours(0, 0, 0, 0);
     const seedlingEndDate = vegStartDate && vegStartDate < seedlingEndFromDate ? vegStartDate : seedlingEndFromDate;
 
     let vegEndDate: Date | null = null;
     if (vegStartDate) {
       const vegEndFromDate = new Date(vegStartDate);
       vegEndFromDate.setDate(vegEndFromDate.getDate() + vegDuration);
+      vegEndFromDate.setHours(0, 0, 0, 0);
       vegEndDate = bloomStartDate && bloomStartDate < vegEndFromDate ? bloomStartDate : vegEndFromDate;
     }
 
@@ -102,6 +99,7 @@ export function PlantTimelineCalendar({
     if (bloomStartDate) {
       bloomEndDate = new Date(bloomStartDate);
       bloomEndDate.setDate(bloomEndDate.getDate() + bloomDuration);
+      bloomEndDate.setHours(0, 0, 0, 0);
     }
 
     const daysArray: CalendarDay[] = [];

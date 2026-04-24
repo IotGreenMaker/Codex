@@ -1,19 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Locale } from "@/lib/i18n";
+import { useCurrentTime } from "@/lib/time-context";
 
 interface LiveClockProps {
   locale: Locale;
 }
 
 export function LiveClock({ locale }: LiveClockProps) {
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
+  const { nowMs } = useCurrentTime();
 
   return (
     <div className="flex-1 w-full sm:w-auto">
@@ -24,7 +19,7 @@ export function LiveClock({ locale }: LiveClockProps) {
           minute: "2-digit",
           second: "2-digit",
           hour12: false
-        }).format(new Date(now))}
+        }).format(new Date(nowMs))}
       </p>
       <p className="text-lime-100/75 text-sm sm:text-xs">
         {new Intl.DateTimeFormat(locale, {
@@ -32,7 +27,7 @@ export function LiveClock({ locale }: LiveClockProps) {
           month: "long",
           day: "numeric",
           year: "numeric"
-        }).format(new Date(now))}
+        }).format(new Date(nowMs))}
       </p>
     </div>
   );

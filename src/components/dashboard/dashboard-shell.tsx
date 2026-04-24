@@ -37,6 +37,7 @@ import { exportToExcel } from "@/lib/excel-export";
 import type { GrowStage, PlantProfile, LightProfile, CalendarConfig } from "@/lib/types";
 import { AiChatModal } from "@/components/dashboard/ai-chat-modal";
 import { MessageCircle } from "lucide-react";
+import { useCurrentTime } from "@/lib/time-context";
 
 // Hooks
 import { usePlants } from "@/hooks/use-plants";
@@ -75,6 +76,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   
   const weather = useWeather();
   const { notificationsEnabled, toggleNotifications, calendarConfig, setCalendarConfig } = useSettings();
+  const { nowMs } = useCurrentTime();
 
   // Local UI State
   const [nutrientLiters, setNutrientLiters] = useState(10);
@@ -366,9 +368,9 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   const scheduleDisplay = getScheduleDisplay();
 
   return (
-    <main className="min-h-screen bg-hero-grid relative">
-      <div className="bg-orb bg-orb--green" aria-hidden="true" /><div className="bg-orb bg-orb--purple" aria-hidden="true" /><div className="bg-orb bg-orb--orange" aria-hidden="true" />
-      <section className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 lg:px-6">
+      <main className="min-h-screen bg-hero-grid relative">
+        <div className="bg-orb bg-orb--green" aria-hidden="true" /><div className="bg-orb bg-orb--purple" aria-hidden="true" /><div className="bg-orb bg-orb--orange" aria-hidden="true" />
+        <section className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 lg:px-6">
         <div className="glass-panel rounded-3xl p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <LiveClock locale={locale} />
@@ -429,7 +431,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                     <span>Off <input type="time" value={activeLight?.lightsOff ?? activePlant.lightsOff} onChange={(e) => { const v = e.target.value; if (activeLight) syncLightUpdate(activeLight.id, { lightsOff: v }); else patchActivePlant({ lightsOff: v }); }} className="rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none" /></span>
                     <span className=" flex items-center gap-3">
                       {getCurrentPpfd() !== null && <span className="group relative flex items-center gap-1.5"><span className={`h-2.5 w-2.5 rounded-full ${dliStatus.color} shadow-[0_0_8px_currentColor]`} /><span className={`text-xs font-medium ${dliStatus.tone}`}>{dliStatus.label}</span><Info className="h-3.5 w-3.5 text-lime-100/50 cursor-help" /></span>}
-                      <span className="flex items-center gap-2"><span className={`h-2.5 w-2.5 rounded-full ${isLightsOnNow(activeLight?.lightsOn ?? activePlant.lightsOn, activeLight?.lightsOff ?? activePlant.lightsOff, Date.now()) ? "bg-green-500 shadow-[0_0_10px_rgba(158,255,102,0.9)]" : "bg-slate-600"}`} />{isLightsOnNow(activeLight?.lightsOn ?? activePlant.lightsOn, activeLight?.lightsOff ?? activePlant.lightsOff, Date.now()) ? "Lights ON" : "Lights OFF"}</span>
+                      <span className="flex items-center gap-2"><span className={`h-2.5 w-2.5 rounded-full ${isLightsOnNow(activeLight?.lightsOn ?? activePlant.lightsOn, activeLight?.lightsOff ?? activePlant.lightsOff, nowMs) ? "bg-green-500 shadow-[0_0_10px_rgba(158,255,102,0.9)]" : "bg-slate-600"}`} />{isLightsOnNow(activeLight?.lightsOn ?? activePlant.lightsOn, activeLight?.lightsOff ?? activePlant.lightsOff, nowMs) ? "Lights ON" : "Lights OFF"}</span>
                     </span>
                   </div>
                   <div className="flex items-center gap-2"><div className="flex-1"><p className="text-[11px] text-lime-100/65 mb-1">Active Light</p>{activeLights.length > 0 ? <select value={activeLightId ?? ""} onChange={(e) => handleSelectLight(e.target.value)} className="w-full rounded-lg border border-lime-300/20 bg-black/30 px-3 py-2 text-sm text-lime-100 outline-none">{allPoolLights.map(l => <option key={l.id} value={l.id}>{l.type}{l.hasDimmer ? ` (${l.dimmerPercent}%)` : ""}</option>)}</select> : <p className="text-sm text-lime-100/40 italic">No lights configured</p>}</div>
@@ -454,22 +456,39 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
           <MemoizedGrowChart onOpenVpdChart={() => setIsVpdChartOpen(true)} plantId={activePlant.id} logs={[]} wateringData={activePlant.wateringData} climateData={activePlant.climateData} stage={activePlant.stage} locale={locale} wateringIntervalDays={activePlant.wateringIntervalDays} onWateringDataChange={patchWateringData} onClimateDataChange={patchClimateData} onUpdateInterval={(d) => patchActivePlant({ wateringIntervalDays: d })} onWaterNow={() => {
             const liters = activePlant.waterInputMl / 1000;
             const period = getNutrientPeriodKey({ stage: activePlant.stage as GrowStage, seedlingDays: cycleDetailed.daysInSeedling, vegDays: cycleDetailed.daysInVeg, bloomDays: cycleDetailed.daysInBloom, seedlingTarget: calendarConfig?.seedlingDuration ?? STAGE_TARGETS.seedling, vegTarget: calendarConfig?.vegDuration ?? STAGE_TARGETS.veg, bloomTarget: calendarConfig?.bloomDuration ?? STAGE_TARGETS.bloom });
-            patchWateringData([...activePlant.wateringData, { id: generateUUID(), timestamp: new Date().toISOString(), amountMl: activePlant.waterInputMl, ph: activePlant.waterPh, ec: activePlant.waterEc, isFeed: true, recipeSnapshot: getRecipeSnapshotData({ periodKey: period, liters, targetEc: activePlant.waterEc }) }]);
+            patchWateringData([...activePlant.wateringData, { id: generateUUID(), timestamp: new Date(nowMs).toISOString(), amountMl: activePlant.waterInputMl, ph: activePlant.waterPh, ec: activePlant.waterEc, isFeed: true, recipeSnapshot: getRecipeSnapshotData({ periodKey: period, liters, targetEc: activePlant.waterEc }) }]);
           }} config={calendarConfig || undefined} labels={{ progression: t.progression, tempHumidityVpd: t.tempHumidityVpd }} />
-
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 ">
-            <div className="glass-panel rounded-3xl p-4">
+             <div className=" glass-panel rounded-3xl p-4 ">
               <div className="flex items-center justify-between"><div><p className="font-mono text-[11px] uppercase tracking-[0.28em] text-lime-200">{t.timeline}</p><h3 className="mt-2 text-lg font-semibold text-lime-100">{activePlant.strainName}</h3></div><button onClick={() => setIsCalendarConfigOpen(true)} className="p-2 hover:bg-white/10 border border-lime-300/20 rounded-lg transition"><Settings className="h-5 w-5 text-lime-300" /></button></div>
               <div className="mt-4 gap-2 xl:flex md:grid md:grid-cols-2">
                 <MiniInfo label={t.stage} value={<EditableStage value={activePlant.stage} onSave={(s) => patchActivePlant({ stage: s })} />} />
                 <MiniInfo label={t.totalDays} value={<span className="text-sm font-semibold text-lime-100">{cycleDetailed.totalDays} days</span>} />
-                <MiniInfo label="Seedling Start" value={<EditableDate dateIso={activePlant.startedAt} locale={locale} onSave={(v) => patchActivePlant({ startedAt: `${v}T09:00:00.000Z` })} disabled={!!activePlant.vegStartedAt} />} />
-                <MiniInfo label="Veg Start" value={<EditableDate dateIso={activePlant.vegStartedAt || ""} locale={locale} onSave={(v) => patchActivePlant({ vegStartedAt: v ? `${v}T09:00:00.000Z` : undefined, stage: v ? "Veg" : "Seedling" })} disabled={!!activePlant.bloomStartedAt} />} />
-                <MiniInfo label="Bloom Start" value={<EditableDate dateIso={activePlant.bloomStartedAt || ""} locale={locale} onSave={(v) => patchActivePlant({ bloomStartedAt: v ? `${v}T09:00:00.000Z` : undefined, stage: v ? "Bloom" : (activePlant.vegStartedAt ? "Veg" : "Seedling") })} />} />
+                <MiniInfo
+                  label="Seedling Start"
+                  icon={<Sprout className="h-6 w-6 text-green-400" />}
+                  accentClass="border-l-4 border-green-400"
+                  value={<EditableDate dateIso={activePlant.startedAt} locale={locale} onSave={(v) => patchActivePlant({ startedAt: `${v}T09:00:00.000Z` })} disabled={!!activePlant.vegStartedAt} />}
+                  footer={`${cycleDetailed.daysInSeedling} days`}
+                />
+                <MiniInfo
+                  label="Vegging Start"
+                  icon={<Cannabis className="h-6 w-6 text-green-500" />}
+                  accentClass="border-l-4 border-green-500"
+                  value={<EditableDate dateIso={activePlant.vegStartedAt || ""} locale={locale} onSave={(v) => patchActivePlant({ vegStartedAt: v ? `${v}T09:00:00.000Z` : undefined, stage: v ? "Veg" : "Seedling" })} disabled={!!activePlant.bloomStartedAt} />}
+                  footer={activePlant.vegStartedAt ? `${cycleDetailed.daysInVeg} days` : "Not started"}
+                />
+                <MiniInfo
+                  label="Bloom Start"
+                  icon={<Wheat className="h-6 w-6 text-indigo-500" />}
+                  accentClass="border-l-4 border-indigo-500"
+                  value={<EditableDate dateIso={activePlant.bloomStartedAt || ""} locale={locale} onSave={(v) => patchActivePlant({ bloomStartedAt: v ? `${v}T09:00:00.000Z` : undefined, stage: v ? "Bloom" : (activePlant.vegStartedAt ? "Veg" : "Seedling") })} />}
+                  footer={activePlant.bloomStartedAt ? `${cycleDetailed.daysInBloom} days` : "Not started"}
+                />
               </div>
-              <div className="lg:col-span-1 shadow-2xl shadow-emerald-950/20 ">
+              <div className="lg:col-span-1 shadow-2xl shadow-emerald-950/20">
                 <MemoizedPlantTimelineCalendar plant={activePlant} onUpdate={updatePlant} onDeleteNote={handleDeleteNote} />
               </div>
+            </div>
             </div>
             <div className="glass-panel rounded-3xl p-4">
               <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-lime-200">Setup</p>
@@ -501,8 +520,6 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 ) : <MemoizedNutrientChecker plant={activePlant} config={calendarConfig || undefined} />}
               </div>
             </div>
-          </div>
-        </div>
       </section>
       <button type="button" onClick={() => setIsAiChatOpen(true)} className="md:hidden fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-lime-300/40 bg-gradient-to-br from-lime-300/25 via-emerald-400/20 to-teal-300/25 text-lime-100 shadow-[0_0_30px_8px_rgba(178,255,102,0.18),0_0_50px_16px_rgba(16,185,129,0.12)] transition-all hover:scale-105 active:scale-95"><MessageCircle className="h-6 w-6" /></button>
       <AiChatModal isOpen={isAiChatOpen} onClose={() => setIsAiChatOpen(false)} locale={locale} plant={activePlant} plants={plants} weather={weather} onPlantUpdate={updatePlant} onPatchPlant={patchActivePlant} onSelectPlant={setActivePlantId} onUpdateWateringData={patchWateringData} onUpdateClimateData={patchClimateData} onToggleNotification={handleToggleNotification} notificationsEnabled={notificationsEnabled} onAddNote={handleAddAiNote} />
@@ -536,10 +553,19 @@ const CompactMetric = memo(({
   </div>
 ));
 
-const MiniInfo = memo(({ label, value }: { label: React.ReactNode; value: React.ReactNode }) => (
-  <div className="rounded-2xl border border-white/8 bg-white/5 p-3">
-    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">{label}</p>
-    <div className="mt-2 text-sm font-semibold text-lime-100">{value}</div>
+const MiniInfo = memo(({ label, value, icon, accentClass, footer }: { label: React.ReactNode; value: React.ReactNode; icon?: React.ReactNode; accentClass?: string; footer?: React.ReactNode }) => (
+  <div className={`rounded-2xl border bg-white/5 p-3 ${accentClass ??  ""} border-white/8`}>
+    <div className=" items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        {icon && <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-lime-300/20 bg-lime-300/12 text-lime-200">{icon}</span>}
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">{label}</p>
+      </div>
+       <div className="flex items-center gap-2">
+       <div className="mt-2 text-sm font-semibold text-lime-100">{value}</div>
+    {footer && <div className="mt-2 text-sm font-semibold text-lime-100">{footer}</div>}
+    </div>
+    </div>
+   
   </div>
 ));
 

@@ -2,6 +2,7 @@
 
 import { Plus, Trash2, Minus, RotateCcw } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useCurrentTime } from "@/lib/time-context";
 import {
   Area,
   Bar,
@@ -61,6 +62,7 @@ export function GrowChart({
   config
 }: GrowChartProps) {
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("WEEK");
+  const { nowMs } = useCurrentTime();
 
   const measurementUnit = config?.measurementUnit || "EC";
   const hannaScale = config?.hannaScale || 700;
@@ -134,7 +136,7 @@ export function GrowChart({
   };
 
   const filteredClimate = useMemo(() => {
-    const now = Date.now();
+    const now = nowMs;
     let cutoffTime = now;
 
     switch (filterPeriod) {
@@ -157,7 +159,7 @@ export function GrowChart({
       const ts = new Date(entry.timestamp).getTime();
       return !isNaN(ts) && ts >= cutoffTime;
     });
-  }, [climateData, filterPeriod]);
+  }, [climateData, filterPeriod, nowMs]);
 
   const sortedClimate = [...filteredClimate].sort((a, b) => {
     const aTime = new Date(a.timestamp).getTime();
@@ -212,7 +214,7 @@ export function GrowChart({
         100,
         Math.max(
           0,
-          100 - ((Date.now() - new Date(latestWatering.timestamp).getTime()) /
+          100 - ((nowMs - new Date(latestWatering.timestamp).getTime()) /
             (new Date(projectedNextWatering.timestamp).getTime() - new Date(latestWatering.timestamp).getTime())) * 100
         )
       )
@@ -260,7 +262,7 @@ export function GrowChart({
                   ...climateData,
                   {
                     id: generateUUID(),
-                    timestamp: new Date().toISOString(),
+                    timestamp: new Date(nowMs).toISOString(),
                     tempC: climateData[0]?.tempC ?? 25,
                     humidity: climateData[0]?.humidity ?? 60
                   }
@@ -410,7 +412,7 @@ export function GrowChart({
                 ...wateringData,
                 {
                   id: generateUUID(),
-                  timestamp: new Date().toISOString(),
+                  timestamp: new Date(nowMs).toISOString(),
                   amountMl: latestWatering?.amountMl ?? 500,
                   ph: latestWatering?.ph ?? 6,
                   ec: latestWatering?.ec ?? 1

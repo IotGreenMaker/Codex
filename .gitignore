@@ -5,3 +5,7 @@ node_modules
 tsconfig.tsbuildinfo
 tests/
 playwright/tests/
+.claude
+.qwen
+docs/
+.vscode/

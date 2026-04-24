@@ -45,10 +45,10 @@ if !attempts! geq !max_attempts! (
 )
 
 echo Checking if server is ready... (attempt !attempts!)
-curl -s -o nul http://localhost:3000/dashboard
+curl -s -o nul http://localhost:3000
 if errorlevel 0 (
   echo Server is ready! Opening browser...
-  start "" http://localhost:3000/dashboard
+  start "" http://localhost:3000
   goto :done
 )
 
