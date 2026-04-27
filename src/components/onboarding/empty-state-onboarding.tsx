@@ -9,7 +9,7 @@ interface EmptyStateOnboardingProps {
 
 const steps = [
   {
-    icon: <Sprout className="h-10 w-10 text-lime-400" />,
+    icon: <img src="/public/g-icon.png" alt="G-Buddy Icon" className="h-10 w-10"/>,
     title: "Welcome to G-Buddy",
     subtitle: "Your AI-powered grow companion",
     features: [
@@ -26,7 +26,7 @@ const steps = [
     features: [
       { icon: <Shield className="h-4 w-4" />, text: "No cloud storage, no accounts needed" },
       { icon: <Shield className="h-4 w-4" />, text: "All data stays in your browser" },
-      { icon: <Shield className="h-4 w-4" />, text: "Export to Excel and record your grow journey" }
+      { icon: <Shield className="h-4 w-4" />, text: "Export and record your grow journey" }
     ],
     action: "Create New Plant"
   }

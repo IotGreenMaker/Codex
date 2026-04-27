@@ -11,6 +11,8 @@ export type CalendarConfig = {
   nutrientDelta: number;
   hannaScale: 500 | 700;
   measurementUnit: "EC" | "PPM";
+  wStandardpH: number;
+  wStandardUnit: number;
 };
 
 export type LightType = "blurple_40w" | "panel_100w" | "custom_led" | "custom_hps" | "other";

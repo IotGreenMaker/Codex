@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Calendar, Eye, Droplets, Sprout, Cannabis, Wheat } from "lucide-react";
-import { STAGE_TARGETS } from "@/lib/config";
+import { STAGE_TARGETS, WATER_STANDARDS } from "@/lib/config";
 import { getSetting, setSetting } from "@/lib/indexeddb-storage";
 import type { CalendarConfig } from "@/lib/types";
 
@@ -22,7 +22,9 @@ const DEFAULT_CONFIG: CalendarConfig = {
   showBloom: true,
   nutrientDelta: 5,
   hannaScale: 500,        // TODO #8: default to 500-scale (most common Hanna meter)
-  measurementUnit: "PPM"  // TODO #8: PPM is the most common grower preference
+  measurementUnit: "PPM", // TODO #8: PPM is the most common grower preference
+  wStandardpH: WATER_STANDARDS.wStandardpH,
+  wStandardUnit: WATER_STANDARDS.wStandardUnit,
 };
 
 
@@ -207,6 +209,32 @@ export function CalendarConfigModal({ isOpen, onClose, onSave }: CalendarConfigM
                 </div>
               </div>
             </div>
+
+             <div className="flex items-center justify-between gap-4 mt-2">
+                <label className="text-sm text-lime-100/80">Water Standard </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={50}
+                    value={config.wStandardpH}
+                    onChange={(e) => setConfig({ ...config, wStandardpH: Math.max(0, Number(e.target.value) || 0) })}
+                    className="w-16 rounded-lg border border-lime-300/15 bg-black/15 px-2 py-1.5 text-sm text-lime-100 outline-none text-center"
+                  />
+                  <span className="text-xs text-lime-100/40">pH</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={50000}
+                    value={config.wStandardUnit}
+                    onChange={(e) => setConfig({ ...config, wStandardUnit: Math.max(0, Number(e.target.value) || 0) })}
+                    className="w-16 rounded-lg border border-lime-300/15 bg-black/15 px-2 py-1.5 text-sm text-lime-100 outline-none text-center"
+                  />
+                  <span className="text-xs text-lime-100/40">CurrentScale</span>
+                </div>
+              </div>
           </div>
 
           {/* Feed Visibility */}

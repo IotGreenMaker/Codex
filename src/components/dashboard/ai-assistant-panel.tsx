@@ -361,7 +361,7 @@ export function AiAssistantPanel({
         currentPlants,
         currentNotificationsEnabled,
         (calendarConfig?.measurementUnit as 'EC' | 'PPM') || 'EC',
-        calendarConfig?.hannaScale || 700
+        calendarConfig?.hannaScale || 500
       );
 
       // Use Groq API for AI response
@@ -456,7 +456,7 @@ export function AiAssistantPanel({
 
           if (typeof rawNutrient === "number") {
             const isPpmMode = (calendarConfig?.measurementUnit === 'PPM');
-            const hannaScale = calendarConfig?.hannaScale || 700;
+            const hannaScale = calendarConfig?.hannaScale || 500;
 
             if (isPpmMode) {
               // User is in PPM mode, so we treat the raw AI value as PPM and convert to storage EC

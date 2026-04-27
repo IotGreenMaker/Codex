@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Sprout, Cannabis, Wheat, Droplets, Bell, Pencil, Plus } from "lucide-react";
 import type { PlantProfile, CalendarConfig } from "@/lib/types";
-import { STAGE_TARGETS } from "@/lib/config";
+import { STAGE_TARGETS, WATER_STANDARDS } from "@/lib/config";
 import { TimelineEventFeed } from "@/components/dashboard/timeline-event-feed";
 import { CalendarConfigModal, loadCalendarConfig } from "@/components/dashboard/calendar-config-modal";
 import { useCurrentTime, getStartOfDay } from "@/lib/time-context";
@@ -48,7 +48,9 @@ export function PlantTimelineCalendar({
     showBloom: true,
     nutrientDelta: 5,
     hannaScale: 700,
-    measurementUnit: "EC"
+    measurementUnit: "EC",
+    wStandardpH: WATER_STANDARDS.wStandardpH,
+    wStandardUnit: WATER_STANDARDS.wStandardUnit
   });
 
   // Load config on mount

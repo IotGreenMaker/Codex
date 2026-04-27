@@ -32,6 +32,12 @@ export const VALIDATION_RANGES = {
   waterAmount: { min: 10, max: 50000 },
 } as const;
 
+// Water standards (for nutrinet solution concentration)
+export const WATER_STANDARDS = {
+  wStandardpH: 7.8,
+  wStandardUnit: 238,
+} as const;
+
 // Weather refresh interval (5 minutes)
 export const WEATHER_REFRESH_INTERVAL = 300_000;
 

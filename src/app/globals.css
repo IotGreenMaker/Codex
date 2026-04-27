@@ -152,7 +152,7 @@ a {
 
 /* Replace white-ish borders with lime borders */
 [class*="border-white"] {
-  border-color: rgba(80, 253, 37, 0.425) !important;
+  border-color: #50fd256c !important;
 }
 
 /* Keep red warning/danger borders untouched */
@@ -261,4 +261,51 @@ option {
   background-color: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(158, 255, 102, 0.15);
   color: #f4ffe7;
+}
+.sh-glow {
+  animation: shadow-glow 10s ease-in-out infinite;
+   background:
+    linear-gradient(180deg, rgba(42, 0, 209, 0.363), rgba(153, 0, 255, 0.507)),
+    radial-gradient(circle at 18% 12%, rgba(68, 185, 1, 0.507), transparent 34%);
+}
+
+
+.sh-glow-2 {
+  animation: shadow-glow-2 10s ease-in-out infinite;
+   background:
+    linear-gradient(180deg, rgba(42, 0, 209, 0.363), rgba(153, 0, 255, 0.507)),
+    radial-gradient(circle at 8% 2%, rgba(68, 185, 1, 0.507), transparent 34%);
+ 
+}
+
+@keyframes shadow-glow
+{
+
+
+0% {box-shadow: 0 0 20px #9eff66,
+  10px -10px 30px #a615fa,
+  -20px -20px 40px #50fd256c, 
+  -20px 10px 50px #0000ff,
+  20px 20px 45px #00ff00;}
+
+100% {box-shadow: 0 0 20px #9eff66,
+  10px -10px 30px #a615fa,
+  -20px -20px 40px #50fd256c,
+  -20px 10px 50px #0000ff,
+  20px 20px 55px #00ff00;}
+}
+
+
+
+@keyframes shadow-glow-2
+{
+
+
+0% {box-shadow: 0 0 15px #0044ff56,
+  3px -3px 25px #a615fa56,
+  5px 2px 15px #00ff0056;}
+
+100% {box-shadow: 0 0 15px #1033ff56,
+  4px -4px 25px #a615fa56,
+  4px 2px 15px #00ff0056;}
 }

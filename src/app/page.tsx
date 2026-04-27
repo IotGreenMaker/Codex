@@ -26,9 +26,9 @@ export default function HomePage() {
         <section className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:py-32 lg:px-6">
           <div className="text-center">
             {/* Logo */}
-            <div className="flex justify-center mb-8">
-              <div className="rounded-3xl bg-lime-400/10 p-6 ring-1 ring-lime-400/20 shadow-[0_0_40px_rgba(132,204,22,0.15)]">
-                <Sprout className="h-16 w-16 text-lime-400" />
+            <div className="flex justify-center mb-8 ">
+              <div className="rounded-3xlbg-gradient-to-br sh-glow   from-lime-300/35 via-fuchsia-400/25 to-emerald-300/25 p-6 ring-1 ring-lime-400/20 ">
+               <img src="/g-icon.png" alt="G-Buddy Icon" className="h-20 w-20 "/>
               </div>
             </div>
 
@@ -41,7 +41,7 @@ export default function HomePage() {
             <p className="mt-6 max-w-2xl mx-auto text-base leading-relaxed text-slate-400">
               Track your grow, log watering with your voice, get AI-powered advice.
               <br />
-              <span className="text-lime-400/80">100% private. 100% offline. No account needed.</span>
+              <span className="text-lime-400/80">100% private. 100% local. No account needed.</span>
             </p>
 
             <div className="mt-10 flex items-center justify-center gap-4">
@@ -127,7 +127,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-lg font-semibold text-white">Export Data</h3>
             <p className="mt-2 text-sm text-slate-400">
-              Download your grow data as Excel spreadsheets for analysis or sharing.
+              Download your grow data for analysis or sharing.
             </p>
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/10 py-8">
         <div className="mx-auto max-w-7xl px-4 text-center text-sm text-slate-500 lg:px-6">
-          <p>G-Buddy — AI Grow Companion. Built with ❤️ for growers.</p>
+          <p>G-Buddy — AI Grow Companion. Built for growers.</p>
           <p className="mt-1">Open source. Privacy-first. No tracking.</p>
         </div>
       </footer>

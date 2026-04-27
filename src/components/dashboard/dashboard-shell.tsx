@@ -411,7 +411,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
               <div className="mt-3 flex flex-wrap gap-2">
                 {plants.sort((a,b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime()).map((entry) => (
                   <div key={entry.id} className="relative group">
-                    <button type="button" onClick={() => setActivePlantId(entry.id)} className={`rounded-full border px-3 py-1.5 text-xs transition ${entry.id === activePlantId ? "border-lime-300/28 bg-lime-300/16 text-lime-100" : "border-white/10 bg-black/25 text-slate-300 hover:bg-white/10"}`}><span className="inline-flex items-center gap-2">{getStageIcon(entry.stage)}{entry.strainName}</span></button>
+                    <button type="button" onClick={() => setActivePlantId(entry.id)} className={`rounded-full border px-3 py-1.5 text-xs transition ${entry.id === activePlantId ? "border-lime-300/28 bg-lime-300/16 sh-glow-2 font-bold text-green-500" : "border-white/10 bg-black/25 text-slate-300 hover:bg-white/10"}`}><span className="inline-flex items-center gap-2">{getStageIcon(entry.stage)}{entry.strainName}</span></button>
                     <button type="button" onClick={() => removePlant(entry.id)} className="absolute -top-2 -right-2 rounded-full bg-red-500/90 hover:bg-red-600 p-0.5 text-white opacity-0 group-hover:opacity-100 transition"><X className="h-3 w-3" /></button>
                   </div>
                 ))}
@@ -422,11 +422,14 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
               <CompactMetric label="VPD" icon={<Waves className="h-4 w-4" />} value={<span className="text-xl font-semibold text-lime-100">{liveVpd} kPa</span>} helper={<span className={`${vpdBand.tone} text-xs`}>{vpdBand.label} | {vpdBand.range}</span>} statusColor={null} />
               <CompactMetric label={t.water} icon={<Droplets className="h-4 w-4" />} value={<span className="text-xl font-semibold text-lime-100">{activePlant.waterInputMl} ml</span>} helper={<span className="text-xs leading-5 text-lime-100/70">pH {activePlant.waterPh} | {calendarConfig?.measurementUnit === 'PPM' ? 'PPM ' + formatNutrientValue(activePlant.waterEc, 'PPM', calendarConfig?.hannaScale || 700) : 'EC ' + activePlant.waterEc}</span>} statusColor={<div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10"><div className="h-1.5 rounded-full bg-gradient-to-r from-white/90 via-sky-300/70 to-sky-500/90 transition-all duration-700" style={{ width: `${wateringProgress}%` }} /></div>} />
             </div>
-            <div className="mt-4 grid gap-3">
-              <MiniInfo label={t.lightHours} value={
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-3 text-xs text-lime-100/80">
-                    <span className={`text-sm font-semibold ${scheduleDisplay.color}`}>{scheduleDisplay.text}</span>
+
+
+            <div className="mt-4 grid gap-3 w-full ">
+              <MiniInfo accentClass=" flex  w-full   " label={t.lightHours} value={
+                <div className="space-y-3 grid w-full   mr-0">
+                  {/* fix the element so it has full width  */}
+                  <div className="flex w-full items-center justify-between gap-3 text-xs text-lime-100/80">
+                    <span className={`text-sm  font-semibold ${scheduleDisplay.color}`}>{scheduleDisplay.text}</span>
                     <span>On <input type="time" value={activeLight?.lightsOn ?? activePlant.lightsOn} onChange={(e) => handleLightsOnChange(e.target.value, !!activeLight)} className="rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none" /></span>
                     <span>Off <input type="time" value={activeLight?.lightsOff ?? activePlant.lightsOff} onChange={(e) => { const v = e.target.value; if (activeLight) syncLightUpdate(activeLight.id, { lightsOff: v }); else patchActivePlant({ lightsOff: v }); }} className="rounded-lg border border-lime-300/20 bg-black/30 px-2 py-1 text-sm text-lime-100 outline-none" /></span>
                     <span className=" flex items-center gap-3">
@@ -441,6 +444,8 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
                 </div>
               } />
             </div>
+
+
           </div>
           <div className="hidden md:block">
             <MemoizedAiAssistantPanel locale={locale} plant={activePlant} plants={plants} weather={weather} onPlantUpdate={updatePlant} onPatchPlant={patchActivePlant} onSelectPlant={setActivePlantId} onUpdateWateringData={patchWateringData} onUpdateClimateData={patchClimateData} onToggleNotification={handleToggleNotification} notificationsEnabled={notificationsEnabled} onAddNote={handleAddAiNote} onCreatePlant={(v: { strainName: string; stage: GrowStage }) => _addPlant(v)} calendarConfig={calendarConfig} />
@@ -554,15 +559,15 @@ const CompactMetric = memo(({
 ));
 
 const MiniInfo = memo(({ label, value, icon, accentClass, footer }: { label: React.ReactNode; value: React.ReactNode; icon?: React.ReactNode; accentClass?: string; footer?: React.ReactNode }) => (
-  <div className={`rounded-2xl border bg-white/5 p-3 ${accentClass ??  ""} border-white/8`}>
-    <div className=" items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
+  <div className={`rounded-2xl border  p-3 ${accentClass ??  ""} border-white/8  w-full`}>
+    <div className=" items-center justify-between w-full gap-3">
+      <div className="flex   items-center  gap-2">
         {icon && <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-lime-300/20 bg-lime-300/12 text-lime-200">{icon}</span>}
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime-200">{label}</p>
       </div>
-       <div className="flex items-center gap-2">
-       <div className="mt-2 text-sm font-semibold text-lime-100">{value}</div>
-    {footer && <div className="mt-2 text-sm font-semibold text-lime-100">{footer}</div>}
+       <div className="flex items-center w-full gap-2">
+       <div className="mt-2 w-full text-sm font-semibold text-lime-100">{value}</div>
+      {footer && <div className="mt-2 text-sm font-semibold text-lime-100">{footer}</div>}
     </div>
     </div>
    
