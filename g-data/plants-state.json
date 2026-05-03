@@ -2,7 +2,7 @@
   "plants": [
     {
       "id": "17290ca7-e175-40ee-9979-2a26fb281f61",
-      "strainName": "Sour Diesel",
+      "strainName": "Sour Diesel TESTE",
       "startedAt": "2026-02-01T09:00:00.000Z",
       "stage": "Bloom",
       "vegStartedAt": "2026-02-18T09:00:00.000Z",
@@ -31,8 +31,8 @@
       "mediaType": "Soil",
       "outsideTempC": 22,
       "outsideHumidity": 55,
-      "growTempC": 22,
-      "growHumidity": 50,
+      "growTempC": 24.5,
+      "growHumidity": 55,
       "waterInputMl": 1000,
       "waterPh": 5.8,
       "waterEc": 1.40002,
@@ -233,6 +233,12 @@
           "timestamp": "2026-04-21T12:12:58.648Z",
           "tempC": 22,
           "humidity": 50
+        },
+        {
+          "id": "9e2fe79a-d03e-42af-aaa1-e7beb7648aad",
+          "timestamp": "2026-04-28T11:52:37.660Z",
+          "tempC": 24.5,
+          "humidity": 55
         }
       ],
       "notes": [
@@ -261,14 +267,14 @@
     },
     {
       "id": "b4820fe5-ecd6-44da-a9be-3a574765e12c",
-      "strainName": "Skunk number 1",
+      "strainName": "Skunk number 1 TESTE OG",
       "startedAt": "2026-04-01T09:00:00.000Z",
       "stage": "Veg",
       "vegStartedAt": "2026-04-17T09:00:00.000Z",
       "lightSchedule": "18 / 6",
       "lightsOn": "06:00",
       "lightsOff": "00:00",
-      "lightDimmerPercent": 13,
+      "lightDimmerPercent": 47,
       "lightLampWatts": 100,
       "lights": [
         {
@@ -276,7 +282,7 @@
           "type": "Lamp",
           "watts": 100,
           "hasDimmer": true,
-          "dimmerPercent": 13,
+          "dimmerPercent": 47,
           "ppfdMin": 200,
           "ppfdMax": 1200,
           "lightsOn": "06:00",
@@ -479,6 +485,11 @@
       ],
       "notes": [
         {
+          "id": "1c562b78-1653-4ed1-bd49-8da73c2fa00e",
+          "timestamp": "2026-04-28T12:27:55.000Z",
+          "text": "Last day ,lights off 48h \nand cut"
+        },
+        {
           "id": "fc5d8431-4f9d-41c8-ba4d-084401a86622",
           "timestamp": "2026-04-21T12:09:01.000Z",
           "text": "test note"
@@ -505,7 +516,259 @@
           }
         ]
       }
+    },
+    {
+      "id": "cb5baa48-e945-448c-8b0c-15368d0eb09b",
+      "strainName": "Skunk number 1 TESTE",
+      "startedAt": "2026-04-01T09:00:00.000Z",
+      "stage": "Veg",
+      "vegStartedAt": "2026-04-17T09:00:00.000Z",
+      "lightSchedule": "18 / 6",
+      "lightsOn": "06:00",
+      "lightsOff": "00:00",
+      "lightDimmerPercent": 47,
+      "lightLampWatts": 100,
+      "lights": [
+        {
+          "id": "0e041776-f556-4606-a180-e611e508aee7",
+          "type": "Lamp",
+          "watts": 100,
+          "hasDimmer": true,
+          "dimmerPercent": 47,
+          "ppfdMin": 200,
+          "ppfdMax": 1200,
+          "lightsOn": "06:00",
+          "lightsOff": "00:00"
+        }
+      ],
+      "activeLightId": "0e041776-f556-4606-a180-e611e508aee7",
+      "containerVolumeL": 11,
+      "mediaVolumeL": 10,
+      "mediaType": "Soil",
+      "outsideTempC": 22,
+      "outsideHumidity": 55,
+      "growTempC": 23,
+      "growHumidity": 55,
+      "waterInputMl": 0,
+      "waterPh": 6,
+      "waterEc": 1.40002,
+      "lastWateredAt": "2026-04-21T00:24:59.832Z",
+      "wateringIntervalDays": 2,
+      "stageDays": {
+        "seedling": 1,
+        "veg": 0,
+        "bloom": 0
+      },
+      "wateringData": [
+        {
+          "id": "da71412c-8db4-46a9-9416-917631e82231",
+          "timestamp": "2026-04-20T20:42:18.018Z",
+          "amountMl": 500,
+          "ph": 6,
+          "ec": 0.84,
+          "isFeed": true,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "0.7 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "0.7 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "0.6 ml"
+            },
+            {
+              "label": "Cannazym",
+              "value": "0.8 ml"
+            }
+          ]
+        },
+        {
+          "id": "0788b4e7-09d6-44f2-9cdd-5f045cd5c4b4",
+          "timestamp": "2026-04-20T20:42:18.210Z",
+          "amountMl": 500,
+          "ph": 6,
+          "ec": 1.316,
+          "isFeed": true,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "1.1 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "1.1 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "1.0 ml"
+            },
+            {
+              "label": "Cannazym",
+              "value": "1.3 ml"
+            }
+          ]
+        },
+        {
+          "id": "a8812a40-4abf-4a02-ad45-db049d7a3369",
+          "timestamp": "2026-04-20T20:43:22.870Z",
+          "amountMl": 1000,
+          "ph": 5.8,
+          "ec": 1.7,
+          "isFeed": true,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "2.9 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "2.9 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "2.6 ml"
+            },
+            {
+              "label": "Cannazym",
+              "value": "3.3 ml"
+            }
+          ]
+        },
+        {
+          "id": "4e76c046-fd13-40c9-a4b1-455441609fb0",
+          "timestamp": "2026-04-20T20:44:06.352Z",
+          "amountMl": 1000,
+          "ph": 6,
+          "ec": 1.936,
+          "isFeed": true,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "3.3 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "3.3 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "3.0 ml"
+            },
+            {
+              "label": "Cannazym",
+              "value": "3.7 ml"
+            }
+          ]
+        },
+        {
+          "id": "129373e2-418d-4763-aad1-610a81824343",
+          "timestamp": "2026-04-21T00:24:59.832Z",
+          "amountMl": 0,
+          "ph": 6,
+          "ec": 1.40002,
+          "isFeed": true,
+          "recipeSnapshot": [
+            {
+              "label": "Aqua Base A",
+              "value": "0.0 ml"
+            },
+            {
+              "label": "Aqua Base B",
+              "value": "0.0 ml"
+            },
+            {
+              "label": "Rhizotonic",
+              "value": "0.0 ml"
+            },
+            {
+              "label": "Cannazym",
+              "value": "0.0 ml"
+            }
+          ]
+        }
+      ],
+      "climateData": [
+        {
+          "id": "b32a8902-4ba0-4891-acd9-e322239d76b6",
+          "timestamp": "2026-04-20T21:18:57.248Z",
+          "tempC": 23,
+          "humidity": 55
+        },
+        {
+          "id": "ac54d076-5429-4862-9800-812c4ad72033",
+          "timestamp": "2026-04-20T21:18:57.421Z",
+          "tempC": 23,
+          "humidity": 55
+        },
+        {
+          "id": "a7d2ed85-7d18-49f7-bf44-cccb25867a6d",
+          "timestamp": "2026-04-21T09:53:51.372Z",
+          "tempC": 23,
+          "humidity": 55
+        },
+        {
+          "id": "b066cf7e-2569-4a20-b540-a49c82bef8ea",
+          "timestamp": "2026-04-26T13:45:18.422Z",
+          "tempC": 23,
+          "humidity": 55
+        },
+        {
+          "id": "7dc5e884-4b1c-41bd-8c10-388834f688ba",
+          "timestamp": "2026-04-26T13:45:18.422Z",
+          "tempC": 23,
+          "humidity": 55
+        },
+        {
+          "id": "b4e0a86c-38e4-40b2-899a-4fe81356b0e7",
+          "timestamp": "2026-04-26T13:45:18.422Z",
+          "tempC": 23,
+          "humidity": 55
+        },
+        {
+          "id": "86392f96-78c8-4cf9-bd81-a832f373c6e5",
+          "timestamp": "2026-04-26T13:45:18.422Z",
+          "tempC": 23,
+          "humidity": 55
+        }
+      ],
+      "notes": [
+        {
+          "id": "fecd3a17-a84f-4fd0-b954-832096e1d913",
+          "timestamp": "2026-04-28T12:27:55.000Z",
+          "text": "Last day ,lights off 48h \nand cut"
+        },
+        {
+          "id": "b20ba5a5-2745-41c1-9d1e-3c6ab62c19f1",
+          "timestamp": "2026-04-21T12:09:01.000Z",
+          "text": "test note"
+        },
+        {
+          "id": "07405de4-93c7-4567-a34c-18aab72e8ce7",
+          "timestamp": "2026-04-20T20:42:43.000Z",
+          "text": "I see yellow leaves probably nitrogen deficiencie"
+        }
+      ],
+      "feedRecipe": {
+        "title": "10 L veg mix",
+        "baseAMl": 24,
+        "baseBMl": 21,
+        "calMagMl": 6,
+        "targetEc": 1.45,
+        "targetPhLow": 5.8,
+        "targetPhHigh": 6.1,
+        "additives": [
+          {
+            "id": "7f0e78ca-5268-4207-be58-dee55a5b0b58",
+            "label": "Silica",
+            "amountMl": 5
+          }
+        ]
+      }
     }
   ],
-  "activePlantId": "17290ca7-e175-40ee-9979-2a26fb281f61"
+  "activePlantId": "cb5baa48-e945-448c-8b0c-15368d0eb09b"
 }

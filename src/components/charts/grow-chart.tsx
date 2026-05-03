@@ -61,11 +61,11 @@ export function GrowChart({
   labels,
   config
 }: GrowChartProps) {
-  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("WEEK");
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("ALL");
   const { nowMs } = useCurrentTime();
 
   const measurementUnit = config?.measurementUnit || "EC";
-  const hannaScale = config?.hannaScale || 700;
+  const hannaScale = config?.hannaScale || 500;
 
   const handleToggleEcMode = () => {
     // This is now global, we can either navigate to settings or just ignore since it's in the modal now

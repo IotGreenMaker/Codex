@@ -1,0 +1,271 @@
+{
+  "app": "gbuddy",
+  "schemaVersion": "1.0.0",
+  "theme": "gbuddy-glass-green-purple-holo",
+  "exportedAt": "2026-05-03T15:02:01.611Z",
+  "plant": {
+    "id": "17290ca7-e175-40ee-9979-2a26fb281f61",
+    "strainName": "Sour Diesel TESTE",
+    "startedAt": "2026-02-01T09:00:00.000Z",
+    "stage": "Bloom",
+    "vegStartedAt": "2026-02-18T09:00:00.000Z",
+    "bloomStartedAt": "2026-03-18T09:00:00.000Z",
+    "lightSchedule": "18 / 6",
+    "lightsOn": "06:00",
+    "lightsOff": "00:00",
+    "lightDimmerPercent": 50,
+    "lightLampWatts": 100,
+    "lights": [
+      {
+        "id": "0e041776-f556-4606-a180-e611e508aee7",
+        "type": "Lamp",
+        "watts": 100,
+        "hasDimmer": true,
+        "dimmerPercent": 50,
+        "ppfdMin": 200,
+        "ppfdMax": 1200,
+        "lightsOn": "06:00",
+        "lightsOff": "00:00"
+      }
+    ],
+    "activeLightId": "0e041776-f556-4606-a180-e611e508aee7",
+    "containerVolumeL": 11,
+    "mediaVolumeL": 10,
+    "mediaType": "Soil",
+    "outsideTempC": 22,
+    "outsideHumidity": 55,
+    "growTempC": 24.5,
+    "growHumidity": 55,
+    "waterInputMl": 1000,
+    "waterPh": 5.8,
+    "waterEc": 1.40002,
+    "lastWateredAt": "2026-04-21T23:50:47.159Z",
+    "wateringIntervalDays": 2,
+    "stageDays": {
+      "seedling": 1,
+      "veg": 0,
+      "bloom": 0
+    },
+    "wateringData": [
+      {
+        "id": "f75dda08-11cc-4a1b-966d-6b3e5e95af6b",
+        "timestamp": "2026-04-01T12:10:00.000Z",
+        "amountMl": 500,
+        "ph": 6,
+        "ec": 1,
+        "isFeed": true,
+        "recipeSnapshot": [
+          {
+            "label": "Aqua Base A",
+            "value": "0.9 ml"
+          },
+          {
+            "label": "Aqua Base B",
+            "value": "0.9 ml"
+          },
+          {
+            "label": "Rhizotonic",
+            "value": "0.2 ml"
+          },
+          {
+            "label": "Cannazym",
+            "value": "0.9 ml"
+          },
+          {
+            "label": "Cannaboost",
+            "value": "0.7–1.4 ml"
+          }
+        ],
+        "runoffPh": 5.8,
+        "runoffEc": 2
+      },
+      {
+        "id": "a125df0d-495c-4b7a-b453-a5ca11f18fef",
+        "timestamp": "2026-04-16T12:10:00.000Z",
+        "amountMl": 500,
+        "ph": 5.8,
+        "ec": 1,
+        "isFeed": true,
+        "recipeSnapshot": [
+          {
+            "label": "Aqua Base A",
+            "value": "0.9 ml"
+          },
+          {
+            "label": "Aqua Base B",
+            "value": "0.9 ml"
+          },
+          {
+            "label": "Rhizotonic",
+            "value": "0.2 ml"
+          },
+          {
+            "label": "Cannazym",
+            "value": "0.9 ml"
+          },
+          {
+            "label": "Cannaboost",
+            "value": "0.7–1.4 ml"
+          }
+        ]
+      },
+      {
+        "id": "509b4b27-e138-48d9-ba26-24dcb043202e",
+        "timestamp": "2026-04-21T12:12:16.852Z",
+        "amountMl": 1000,
+        "ph": 5.8,
+        "ec": 1.40002,
+        "runoffPh": 6,
+        "runoffEc": 1.8,
+        "isFeed": true,
+        "recipeSnapshot": [
+          {
+            "label": "Aqua Base A",
+            "value": "2.5 ml"
+          },
+          {
+            "label": "Aqua Base B",
+            "value": "2.5 ml"
+          },
+          {
+            "label": "Rhizotonic",
+            "value": "0.5 ml"
+          },
+          {
+            "label": "Cannazym",
+            "value": "2.5 ml"
+          },
+          {
+            "label": "Cannaboost",
+            "value": "2.0–4.0 ml"
+          }
+        ]
+      },
+      {
+        "id": "878d4123-b9b2-4cce-b49e-7b4961f59ed7",
+        "timestamp": "2026-04-21T12:27:27.960Z",
+        "amountMl": 1000,
+        "ph": 5.8,
+        "ec": 1.40002,
+        "runoffPh": 5.9,
+        "runoffEc": 1.4,
+        "isFeed": false
+      },
+      {
+        "id": "917b0d45-5407-4486-bf5d-93906dcb9548",
+        "timestamp": "2026-04-21T23:50:00.000Z",
+        "amountMl": 1000,
+        "ph": 5.8,
+        "ec": 1.40002,
+        "isFeed": false
+      },
+      {
+        "id": "c18c00bc-0bbd-42ae-bd60-3ba330ddb222",
+        "timestamp": "2026-04-21T23:50:46.727Z",
+        "amountMl": 1000,
+        "ph": 5.8,
+        "ec": 1.40002,
+        "isFeed": false
+      },
+      {
+        "id": "6c9646bb-74ac-47c2-8681-789918db92a6",
+        "timestamp": "2026-04-21T23:50:46.949Z",
+        "amountMl": 1000,
+        "ph": 5.8,
+        "ec": 1.40002,
+        "isFeed": true,
+        "recipeSnapshot": [
+          {
+            "label": "Aqua Base A",
+            "value": "2.5 ml"
+          },
+          {
+            "label": "Aqua Base B",
+            "value": "2.5 ml"
+          },
+          {
+            "label": "Rhizotonic",
+            "value": "0.5 ml"
+          },
+          {
+            "label": "Cannazym",
+            "value": "2.5 ml"
+          },
+          {
+            "label": "Cannaboost",
+            "value": "2.0–4.0 ml"
+          }
+        ]
+      },
+      {
+        "id": "a1646002-6e21-4cc3-90c4-7ec0cfef3fe3",
+        "timestamp": "2026-04-21T23:50:47.159Z",
+        "amountMl": 1000,
+        "ph": 5.8,
+        "ec": 1.40002,
+        "isFeed": false
+      }
+    ],
+    "climateData": [
+      {
+        "id": "8cf157f4-77ed-4152-9270-e93ab004adf1",
+        "timestamp": "2026-04-21T12:10:51.193Z",
+        "tempC": 25,
+        "humidity": 60
+      },
+      {
+        "id": "f188eaee-fca0-4785-8cc3-33bbec92efab",
+        "timestamp": "2026-04-21T12:10:51.374Z",
+        "tempC": 25,
+        "humidity": 60
+      },
+      {
+        "id": "ad3ccb08-77f5-4c69-8d66-f922b1548940",
+        "timestamp": "2026-04-21T12:10:51.530Z",
+        "tempC": 25,
+        "humidity": 60
+      },
+      {
+        "id": "d9e28b06-2bd4-46fc-91f7-8fb63b201a3c",
+        "timestamp": "2026-04-21T12:12:55.447Z",
+        "tempC": 24.4,
+        "humidity": 60
+      },
+      {
+        "id": "0748832e-9c5d-4aa8-9f3c-d24d5c6e8167",
+        "timestamp": "2026-04-21T12:12:58.648Z",
+        "tempC": 22,
+        "humidity": 50
+      },
+      {
+        "id": "9e2fe79a-d03e-42af-aaa1-e7beb7648aad",
+        "timestamp": "2026-04-28T11:52:37.660Z",
+        "tempC": 24.5,
+        "humidity": 55
+      }
+    ],
+    "notes": [
+      {
+        "id": "2024-03-20T10:00:00Z",
+        "timestamp": "2024-03-20T10:00:00Z",
+        "text": "The user's plant is looking really funny."
+      }
+    ],
+    "feedRecipe": {
+      "title": "Canna Nutrients",
+      "baseAMl": 24,
+      "baseBMl": 21,
+      "calMagMl": 6,
+      "targetEc": 1.45,
+      "targetPhLow": 5.8,
+      "targetPhHigh": 6.1,
+      "additives": [
+        {
+          "id": "f77ddfa9-624c-4967-bdbb-2fa51298e2fc",
+          "label": "Silica",
+          "amountMl": 5
+        }
+      ]
+    }
+  }
+}

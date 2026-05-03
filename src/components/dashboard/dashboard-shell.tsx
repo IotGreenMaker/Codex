@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef, useCallback, memo } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback, memo, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Download, Droplets, Flower, Info, Leaf, Lightbulb, Minus, Plus, RotateCcw, Settings, Sprout, Thermometer, Waves, X, Wheat, Cannabis } from "lucide-react";
+import { BookOpen, Download, Droplets, Flower, Info, Leaf, Lightbulb, Minus, Plus, RotateCcw, Settings, Sprout, Thermometer, Upload, Waves, X, Wheat, Cannabis } from "lucide-react";
 import { GrowChart } from "@/components/charts/grow-chart";
 import { AiAssistantPanel } from "@/components/dashboard/ai-assistant-panel";
 import { VPDChart } from "@/components/dashboard/vpd-chart";
@@ -33,7 +33,7 @@ import {
 import { STAGE_TARGETS } from "@/lib/config";
 import { Locale, translations } from "@/lib/i18n";
 import { generateUUID } from "@/lib/uuid";
-import { exportToExcel } from "@/lib/excel-export";
+import { buildThemedPlantExport, buildThemedPlantExportHtml, getExportFileName, parseImportedPlantJson } from "@/lib/plant-transfer";
 import type { GrowStage, PlantProfile, LightProfile, CalendarConfig } from "@/lib/types";
 import { AiChatModal } from "@/components/dashboard/ai-chat-modal";
 import { MessageCircle } from "lucide-react";
@@ -93,6 +93,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
     options: ConfirmationOptions | null;
     resolve: ((value: boolean) => void) | null;
   }>({ isOpen: false, options: null, resolve: null });
+  const importFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Confirmation dialog helper
   const showConfirmation = (options: ConfirmationOptions): Promise<boolean> => {
@@ -114,6 +115,69 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   // ─── Shared Actions ───────────────────────────────────────────────────────
 
   const addPlant = () => _addPlant();
+
+  const handleExportActivePlant = async () => {
+    if (!activePlant) return;
+    const payload = buildThemedPlantExport(activePlant);
+    let logoSrc = "/g-icon.png";
+    try {
+      const logoResponse = await fetch("/g-icon.png");
+      const logoBlob = await logoResponse.blob();
+      logoSrc = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(typeof reader.result === "string" ? reader.result : "/g-icon.png");
+        reader.onerror = () => reject(new Error("Logo read failed"));
+        reader.readAsDataURL(logoBlob);
+      });
+    } catch (error) {
+      console.error("Failed to embed logo in export:", error);
+    }
+    const content = buildThemedPlantExportHtml(payload, logoSrc);
+    const fileName = getExportFileName(activePlant);
+
+    try {
+      await fetch("/api/plants/archive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName, content })
+      });
+    } catch (error) {
+      console.error("Failed to archive export:", error);
+    }
+
+    const blob = new Blob([content], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportPlantClick = () => {
+    importFileInputRef.current?.click();
+  };
+
+  const handleImportPlantFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const importedPlant = parseImportedPlantJson(text);
+      const currentNames = new Set(plants.map((plant) => plant.strainName.trim().toLowerCase()));
+      if (currentNames.has(importedPlant.strainName.trim().toLowerCase())) {
+        importedPlant.strainName = `${importedPlant.strainName} (Imported ${new Date().toISOString().slice(0, 10)})`;
+      }
+      await _addPlant(importedPlant);
+    } catch (error) {
+      console.error("Failed to import plant:", error);
+      window.alert("Invalid Gbuddy export file. Please import an HTML or JSON file exported from this app.");
+    }
+  };
 
   const removePlant = async (plantId: string) => {
     const confirmed = await showConfirmation({
@@ -405,13 +469,15 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
             </div>
             <div className="mt-4 rounded-2xl border border-white/8 bg-white/5 p-3">
               <div className="flex items-center justify-between"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-lime-200">Plant list</p><div className="flex items-center gap-2">
-                <button type="button" onClick={() => exportToExcel({ plants, activePlantId })} className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"><Download className="h-4 w-4" /></button>
+                <input ref={importFileInputRef} type="file" accept="text/html,application/json,.html,.json" onChange={handleImportPlantFile} className="hidden" />
+                <button type="button" onClick={handleExportActivePlant} className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100" title="Export selected plant HTML"><Download className="h-4 w-4" /></button>
+                <button type="button" onClick={handleImportPlantClick} className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100" title="Import plant HTML or JSON"><Upload className="h-4 w-4" /></button>
                 <button type="button" onClick={addPlant} className="rounded-full border border-lime-300/20 bg-lime-300/12 p-1 text-lime-100"><Plus className="h-4 w-4" /></button>
               </div></div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {plants.sort((a,b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime()).map((entry) => (
                   <div key={entry.id} className="relative group">
-                    <button type="button" onClick={() => setActivePlantId(entry.id)} className={`rounded-full border px-3 py-1.5 text-xs transition ${entry.id === activePlantId ? "border-lime-300/28 bg-lime-300/16 sh-glow-2 font-bold text-green-500" : "border-white/10 bg-black/25 text-slate-300 hover:bg-white/10"}`}><span className="inline-flex items-center gap-2">{getStageIcon(entry.stage)}{entry.strainName}</span></button>
+                    <button type="button" onClick={() => setActivePlantId(entry.id)} className={`rounded-full border px-3 py-1.5 text-xs transition ${entry.id === activePlantId ? " border-lime-300/28 bg-lime-300/16 sh-glow-2 font-bold text-green-500" : "border-white/10 bg-black/25 text-slate-300 hover:bg-white/10"}`}><span className="inline-flex items-center gap-2">{getStageIcon(entry.stage)}{entry.strainName}</span></button>
                     <button type="button" onClick={() => removePlant(entry.id)} className="absolute -top-2 -right-2 rounded-full bg-red-500/90 hover:bg-red-600 p-0.5 text-white opacity-0 group-hover:opacity-100 transition"><X className="h-3 w-3" /></button>
                   </div>
                 ))}
