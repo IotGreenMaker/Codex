@@ -21,9 +21,9 @@
 3 - Watering table and Activity feed, The ligic on the FEED colunm from the table has faulty logic, It should ommit the feeding on the related watering event, not on the Suggested next feed recipe ,  
 4 - AI Config modal, need to be checked, the Inworld API key might not be included on the API call , add the view password button to the api inputs - save button can refresh the page -- OK 
 5 - New -  Fix move to the right and make it always visible, the AI voice Speaker Icon and make it function for muting the voice when clicked - OK
-6.1 - The Export, Change the Excel for a themed Json or CSV inside a Gbudyd Style template and relative just to the selected plant ,  
-6.2 - The Import,  Develop A button to "import" a new plant that will import data from a JSon or CSV (made from the app), and the logging will continue from there 
-7 - Better Format the tables and masks for easier manual input 
+6.1 - The Export, Change the Excel for a themed Json or CSV inside a Gbudyd Style template and relative just to the selected plant ,  -OK
+6.2 - The Import,  Develop A button to "import" a new plant that will import data from a JSon or CSV (made from the app), and the logging will continue from there -OK
+7 - Better Format the tables and masks for easier manual input -OK
 8 - Set the default measument units to PMM on 500 scale always-OK
 9 - Apply the logo on the header with a animated glow drop shadow 
 10 - Review the light hours dashboard card mobile layout 
