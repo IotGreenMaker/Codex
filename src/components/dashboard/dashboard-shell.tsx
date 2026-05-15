@@ -361,7 +361,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   useEffect(() => {
     if (loadedFromServer && plants.length === 0) {
       console.log('Dashboard loaded with no plants. Redirecting to home page for onboarding...');
-      router.push("/");
+      router.push(" ");
     }
   }, [loadedFromServer, plants.length, router]);
 
