@@ -41,6 +41,8 @@
 
 21- the AI context changing history  every time changes plant is breaking the fuintionality of swicth selkected plant , the AI context can be sahred in betewwn plants , só only one history is needed  
 
+22- On line 360 block of @file:dashboard-shell.tsx  I'm having an routing issue, that only seems to happen on the production server, It's probably linked to the routing logic that sends new users to the onboarding page. also check the block on line 12 of @file:page.tsx , and I also comment out the redundant logic at @empty-state-onboarding.tsx i belive it need to be removed ,  the main problem is a loop when routing to the ('/') when access made form https://gbuddy-six.vercel.app/dashboard nad even after deleting local data with dev tools and acessing by the main url https://gbuddy-six.vercel.app the app is still stuck in a loop with the skeleton lazy load 
+
 ## Current Tech Stack
 
 ### Frontend

@@ -11,6 +11,7 @@ export default function HomePage() {
 
   const handleGetStarted = async () => {
     if (plants.length === 0) {
+      
       await addPlant({ strainName: "My First Plant", stage: "Seedling" });
     }
     console.log("Navigating to dashboard...");
