@@ -360,6 +360,7 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
   // ─── Redirect to Home if no plants (Onboarding Hub) ───────────────────────
   useEffect(() => {
     if (loadedFromServer && plants.length === 0) {
+      console.log('Dashboard loaded with no plants. Redirecting to home page for onboarding...');
       router.push("/");
     }
   }, [loadedFromServer, plants.length, router]);
