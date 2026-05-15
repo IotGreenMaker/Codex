@@ -3,12 +3,7 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/"
-    }
-  ],
+ 
   "headers": [
     {
       "source": "/api/(.*)",
