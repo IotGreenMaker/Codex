@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Sprout, Mic, Bot, BarChart3, Shield, WifiOff, Download, ArrowRight } from "lucide-react";
 import { usePlants } from "@/hooks/use-plants";
+import { Analytics } from "@vercel/analytics/next"
 
 export default function HomePage() {
   const { plants, addPlant, loadedFromServer } = usePlants();
@@ -20,6 +21,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-hero-grid relative">
+        <Analytics />
       {/* Animated background orbs - behind all content */}
       <div className="bg-orb bg-orb--green" aria-hidden="true" />
       <div className="bg-orb bg-orb--purple" aria-hidden="true" />
