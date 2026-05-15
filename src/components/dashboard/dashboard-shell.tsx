@@ -38,7 +38,6 @@ import type { GrowStage, PlantProfile, LightProfile, CalendarConfig } from "@/li
 import { AiChatModal } from "@/components/dashboard/ai-chat-modal";
 import { MessageCircle } from "lucide-react";
 import { useCurrentTime } from "@/lib/time-context";
-import usePathname from "next/navigation";
 
 // Hooks
 import { usePlants } from "@/hooks/use-plants";
@@ -360,13 +359,13 @@ export function DashboardShell({ heading: _heading, subheading: _subheading, sho
 
   // ─── Redirect to Home if no plants (Onboarding Hub) ───────────────────────
   useEffect(() => {
-    if ( plants.length === 0) {
+    if (loadedFromServer && plants.length === 0) {
       console.log('Dashboard loaded with no plants. Redirecting to home page for onboarding...');
       router.push("/");
     }
   }, [loadedFromServer, plants.length, router]);
 
-  if (!loadedFromServer ) {
+  if (!loadedFromServer || plants.length === 0) {
     return (
       <main className="min-h-screen bg-hero-grid relative" aria-busy="true" aria-label="Loading your grow data...">
         <div className="bg-orb bg-orb--green" aria-hidden="true" />

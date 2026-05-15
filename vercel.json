@@ -6,7 +6,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/dashboard"
+      "destination": "/"
     }
   ],
   "headers": [
