@@ -1,4 +1,4 @@
-import type { PlantProfile, SpaceConfig, ClimateEntry, LightProfile } from "@/lib/types";
+import type { PlantProfile, SpaceConfig, ClimateEntry, LightProfile, LightSnapshotEntry } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
 
 export const GBUDDY_SCHEMA_VERSION = "1.3.0";
