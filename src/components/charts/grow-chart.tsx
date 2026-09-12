@@ -23,7 +23,7 @@ import { generateUUID } from "@/lib/uuid";
 import type { Locale } from "@/lib/i18n";
 import type { CalendarConfig } from "@/lib/types";
 import { Droplets, CheckCircle2, Circle } from "lucide-react";
-import { calculateVpd } from "@/lib/grow-math";
+//import { calculateVpd } from "@/lib/grow-math";
 
 type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
 
