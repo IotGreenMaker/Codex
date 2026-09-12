@@ -16,6 +16,7 @@ export function AiChatModal({
   onSelectPlant,
   onUpdateWateringData,
   onUpdateClimateData,
+  climateData,
   onToggleNotification,
   notificationsEnabled = false,
   onAddNote,
@@ -32,6 +33,7 @@ export function AiChatModal({
   onSelectPlant?: (plantId: string) => void;
   onUpdateWateringData?: (data: any[]) => void;
   onUpdateClimateData?: (data: any[]) => void;
+  climateData?: any[];
   onToggleNotification?: (enabled: boolean) => void;
   notificationsEnabled?: boolean;
   onAddNote?: (text: string, timestamp?: string) => void;
@@ -120,6 +122,7 @@ export function AiChatModal({
             onSelectPlant={onSelectPlant}
             onUpdateWateringData={onUpdateWateringData}
             onUpdateClimateData={onUpdateClimateData}
+            climateData={climateData}
             onToggleNotification={onToggleNotification}
             notificationsEnabled={notificationsEnabled}
             onAddNote={onAddNote}

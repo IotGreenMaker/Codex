@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Calendar, Eye, Droplets, Sprout, Cannabis, Wheat } from "lucide-react";
+import { X, Calendar, Eye, Droplets, Sprout, Cannabis, Wheat, Bell, BellOff } from "lucide-react";
 import { STAGE_TARGETS, WATER_STANDARDS } from "@/lib/config";
 import { getSetting, setSetting } from "@/lib/indexeddb-storage";
 import type { CalendarConfig } from "@/lib/types";
+import { useNotification } from "@/contexts/notification-context";
 
 type CalendarConfigModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave: (config: CalendarConfig) => void;
+  notificationsEnabled?: boolean;
+  onToggleNotification?: (enabled: boolean) => void;
 };
 
 const DEFAULT_CONFIG: CalendarConfig = {
@@ -46,8 +49,9 @@ export async function saveCalendarConfig(config: CalendarConfig): Promise<void> 
   await setSetting(SETTINGS_KEY, JSON.stringify(config));
 }
 
-export function CalendarConfigModal({ isOpen, onClose, onSave }: CalendarConfigModalProps) {
+export function CalendarConfigModal({ isOpen, onClose, onSave, notificationsEnabled = false, onToggleNotification }: CalendarConfigModalProps) {
   const [config, setConfig] = useState<CalendarConfig>(DEFAULT_CONFIG);
+  const { notify, ensurePermission } = useNotification();
 
   useEffect(() => {
     if (isOpen) {
@@ -63,6 +67,32 @@ export function CalendarConfigModal({ isOpen, onClose, onSave }: CalendarConfigM
 
   const handleCancel = () => {
     onClose();
+  };
+
+  const handleToggleNotification = async () => {
+    if (!onToggleNotification) return;
+    const next = !notificationsEnabled;
+    if (next) {
+      const ok = await ensurePermission();
+      if (!ok) {
+        await notify({
+          source: "calendar-config",
+          variant: "error",
+          title: "Permission Required",
+          message: "Enable notifications in your browser settings to receive app alerts."
+        });
+        return;
+      }
+    }
+    await notify({
+      source: "calendar-config",
+      variant: next ? "toggle-on" : "toggle-off",
+      title: next ? "App Notifications Enabled" : "App Notifications Disabled",
+      message: next
+        ? "Watering reminders and lighting alerts are active."
+        : "All app notifications are now muted."
+    });
+    onToggleNotification(next);
   };
 
   if (!isOpen) return null;
@@ -324,6 +354,42 @@ export function CalendarConfigModal({ isOpen, onClose, onSave }: CalendarConfigM
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Notification Toggle */}
+        <div className="px-6 py-4 border-t border-lime-500/10 bg-white/[0.03]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-300 ${
+                notificationsEnabled
+                  ? "border-lime-400/40 bg-lime-400/20 shadow-[0_0_12px_rgba(163,230,53,0.4)]"
+                  : "border-white/10 bg-black/20"
+              }`}>
+                {notificationsEnabled ? (
+                  <Bell className="h-5 w-5 text-lime-300" />
+                ) : (
+                  <BellOff className="h-5 w-5 text-slate-400" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-lime-100">App Notifications</p>
+                <p className="text-[11px] text-lime-100/60">
+                  {notificationsEnabled ? "Enabled - Get watering & lighting alerts" : "Disabled - No alerts"}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleToggleNotification}
+              className={`rounded-full px-4 py-2 text-[11px] font-mono uppercase tracking-wider transition-all duration-300 ${
+                notificationsEnabled
+                  ? "border border-lime-400/40 bg-lime-400/20 text-lime-200 hover:bg-lime-400/30"
+                  : "border border-white/10 bg-white/5 text-lime-100/70 hover:bg-white/10"
+              }`}
+            >
+              {notificationsEnabled ? "Disable" : "Enable"}
+            </button>
           </div>
         </div>
 

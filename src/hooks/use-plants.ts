@@ -32,19 +32,46 @@ export function usePlants() {
     let ignore = false;
     const loadState = async () => {
       try {
-        await initializeDB();
-        const loadedPlants = await getAllPlants();
-        const savedActivePlantId = await getSetting("activePlantId");
+        const dbReady = await initializeDB();
+        const loadedPlants = dbReady ? await getAllPlants() : [];
+        const savedActivePlantId = dbReady ? await getSetting("activePlantId") : null;
 
-        if (!ignore && loadedPlants.length > 0) {
-          setPlants(loadedPlants);
-          if (!savedActivePlantId) {
-            const sorted = [...loadedPlants].sort((a, b) => 
+        // IndexedDB is a cache, not the only source of truth. In particular,
+        // a failed schema upgrade must not leave the user trapped on the home
+        // page while the server still has a valid copy of their plants.
+        let plantsToUse = loadedPlants;
+        let activeIdToUse = savedActivePlantId;
+        if (loadedPlants.length === 0) {
+          const response = await fetch("/api/plants", { cache: "no-store" });
+          if (response.ok) {
+            const remote = (await response.json()) as {
+              ok?: boolean;
+              plants?: PlantProfile[];
+              activePlantId?: string;
+            };
+            if (remote.ok && Array.isArray(remote.plants) && remote.plants.length > 0) {
+              plantsToUse = remote.plants;
+              activeIdToUse = remote.activePlantId ?? null;
+
+              // Best-effort cache repair. This is deliberately non-blocking:
+              // an IndexedDB browser error must not affect navigation.
+              if (dbReady) {
+                void Promise.all(remote.plants.map((plant) => dbSavePlant(plant)));
+                if (remote.activePlantId) void setSetting("activePlantId", remote.activePlantId);
+              }
+            }
+          }
+        }
+
+        if (!ignore && plantsToUse.length > 0) {
+          setPlants(plantsToUse);
+          if (!activeIdToUse || !plantsToUse.some((plant) => plant.id === activeIdToUse)) {
+            const sorted = [...plantsToUse].sort((a, b) => 
               new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime()
             );
-            setActivePlantId(sorted[0]?.id || loadedPlants[0].id);
+            setActivePlantId(sorted[0]?.id || plantsToUse[0].id);
           } else {
-            setActivePlantId(savedActivePlantId);
+            setActivePlantId(activeIdToUse);
           }
         }
       } catch (error) {
@@ -118,10 +145,23 @@ export function usePlants() {
       ...override
     });
 
-    // Immediate persistence to prevent race conditions during navigation
+    // Persist to the server before navigation. IndexedDB can be unavailable
+    // (for example after a corrupted/blocked browser database upgrade), so it
+    // cannot be the only persistence step here.
     try {
       await dbSavePlant(next);
       await setSetting("activePlantId", next.id);
+      const response = await fetch("/api/plants", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plants: [...plantsRef.current, next],
+          activePlantId: next.id,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`Could not persist plant to server (${response.status})`);
+      }
     } catch (error) {
       console.error("Error persisting new plant:", error);
     }

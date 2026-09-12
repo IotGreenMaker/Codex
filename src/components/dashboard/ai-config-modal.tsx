@@ -76,7 +76,7 @@ export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModal
                 className="w-full rounded-xl border border-lime-300/15 bg-black/20 px-4 py-2.5 text-sm text-white outline-none focus:border-lime-500/50"
               >
                 <option value="groq" className="bg-slate-900">Groq (Llama 3)</option>
-                <option value="openai" disabled className="bg-slate-900">OpenAI (Coming Soon)</option>
+                <option value="openai"  className="bg-slate-900">Local (LM Studio)</option>
                 <option value="anthropic" disabled className="bg-slate-900">Anthropic (Coming Soon)</option>
               </select>
               
@@ -155,7 +155,12 @@ export function AiConfigModal({ isOpen, onClose, config, onSave }: AiConfigModal
           </div>
 
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-[11px] text-amber-200/70">
-            <p>Your API keys are stored locally in your browser (IndexedDB) and are never sent to our servers. They are only used to authenticate directly with the providers via the edge API.</p>
+            <p>Your API keys are stored locally and are never sent to our servers.</p>
+            
+            <p>Get your AI free API key at - <a href="https://groq.com/" target="_blank" rel="noopener noreferrer" className="text-lime-400 hover:text-lime-300 underline">https://groq.com/</a></p>
+            <p>Developers → Free API Key → Login → Create API Key </p>
+            <p>Get your voice free API key at - <a href="https://inworld.ai/" target="_blank" rel="noopener noreferrer" className="text-lime-400 hover:text-lime-300 underline">https://inworld.ai/</a></p>
+            <p>Get Started → Login → API Keys → Generate New Key</p> 
           </div>
         </div>
 

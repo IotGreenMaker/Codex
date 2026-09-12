@@ -398,3 +398,29 @@ export function formatAvgPpm(
   const fmt = (val: number | null) => (val !== null ? formatNutrientValue(val, unit, hannaScale) : "--");
   return `${fmt(inAvg)} in / ${fmt(runoffAvg)} runoff`;
 }
+
+export function calculateDLI(ppfd: number, hours: number): number {
+  if (!Number.isFinite(ppfd) || !Number.isFinite(hours) || hours <= 0) return 0;
+  return (ppfd * hours * 3600) / 1_000_000;
+}
+
+export function calculateDailyWattHours(actualWatts: number, hours: number, dimmerPercent: number): number {
+  if (!Number.isFinite(actualWatts) || !Number.isFinite(hours) || hours <= 0) return 0;
+  const watts = actualWatts * Math.max(0, Math.min(100, dimmerPercent)) / 100;
+  return watts * hours;
+}
+
+export function calculateDailyKwh(wattHours: number): number {
+  if (!Number.isFinite(wattHours)) return 0;
+  return wattHours / 1000;
+}
+
+export function calculateDailyCost(kwh: number, pricePerKwh: number): number {
+  if (!Number.isFinite(kwh) || !Number.isFinite(pricePerKwh)) return 0;
+  return kwh * pricePerKwh;
+}
+
+export function calculateMonthlyCost(dailyKwh: number, pricePerKwh: number): number {
+  if (!Number.isFinite(dailyKwh) || !Number.isFinite(pricePerKwh)) return 0;
+  return dailyKwh * 30 * pricePerKwh;
+}

@@ -14,27 +14,35 @@ type VPDChartProps = {
   isOpen: boolean;
   onClose: () => void;
   onStageChange?: (stage: GrowStage) => void;
+  compact?: boolean;
 };
 
-export function VPDChart({
+function VPDHeatmap({
   currentVpd,
   currentTemp,
   currentHumidity,
   currentStage,
-  isOpen,
-  onClose,
-  onStageChange
-}: VPDChartProps) {
-  const [displayStage, setDisplayStage] = useState<"Veg" | "Bloom">(currentStage === "Bloom" ? "Bloom" : "Veg");
-
+  displayStage,
+  onStageChange,
+  showHeader = true,
+  showStatus = true,
+}: {
+  currentVpd: number;
+  currentTemp: number;
+  currentHumidity: number;
+  currentStage: GrowStage;
+  displayStage: "Veg" | "Bloom";
+  onStageChange?: (stage: "Veg" | "Bloom") => void;
+  showHeader?: boolean;
+  showStatus?: boolean;
+}) {
   const vpdRanges = getVPDRanges();
   const vegRange = vpdRanges["Veg"];
   const bloomRange = vpdRanges["Bloom"];
   const currentInfo = getVPDStatus(currentVpd, currentStage);
 
   const handleStageToggle = (stage: "Veg" | "Bloom") => {
-    setDisplayStage(stage);
-    onStageChange?.(stage === "Bloom" ? "Bloom" : "Veg");
+    onStageChange?.(stage);
   };
 
   // Temperature and humidity ranges for the chart
@@ -80,20 +88,18 @@ export function VPDChart({
     };
   }, [currentTemp, currentHumidity, tempCount, humidityCount]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-2xl border border-green-300/70 bg-slate-900/45 p-6 shadow-2xl backdrop-blur">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+    <div className="w-full">
+      {/* Header */}
+      {/* {showHeader && ( 
+        <div className="flex items-center justify-between mb-4">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">VPD CHART</p>
             <p className="mt-1 text-sm text-lime-100/65">Vapour Pressure Deficit</p>
           </div>
           
           <div className="flex items-center gap-4">
-            {/* Stage Toggle */}
+            {/* Stage Toggle 
             <div className="flex gap-2">
               <button
                 onClick={() => handleStageToggle("Veg")}
@@ -118,122 +124,118 @@ export function VPDChart({
                 <span>Bloom</span>
               </button>
             </div>
-            
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-slate-400 hover:text-white"
-            >
-              <X className="h-5 w-5" />
-            </button>
           </div>
         </div>
+      )} */}
 
-        {/* Current Value Header */}
-        <div className="mb-6 text-center">
-          <p className="text-2xl font-bold text-white mb-1">
-            {currentVpd.toFixed(2)} <span className="text-lg font-normal text-slate-400">kPa</span>
-          </p>
-          <p className="text-sm text-slate-400">
-            {currentTemp}°C • {currentHumidity}% RH
-          </p>
-        </div>
+      {/* Current Value Header
+      <div className="mb-4 text-center">
+        <p className="text-xl font-bold text-white mb-1">
+          {currentVpd.toFixed(2)} <span className="text-lg font-normal text-slate-400">kPa</span>
+        </p>
+        <p className="text-sm text-slate-400">
+          {currentTemp}°C • {currentHumidity}% RH
+        </p>
+      </div> */}
 
-        {/* Heatmap Chart */}
-        <div className="relative rounded-xl overflow-hidden border border-white/10 bg-slate-800/50">
-          {/* Grid Container */}
+      {/* Heatmap Chart */}
+      <div className="relative rounded-xl overflow-hidden ">
+        {/* Grid Container */}
+        <div 
+          className="relative aspect-square w-full"
+          // style={{
+          //   background: `linear-gradient(135deg, rgba(30, 64, 175, 0.3) 0%, rgba(34, 197, 94, 0.3) 50%, rgba(153, 27, 27, 0.3) 100%)`
+          // }}
+        >
+          {/* Heatmap cells */}
+          <div className="absolute inset-0 grid" style={{
+            gridTemplateRows: `repeat(${tempCount}, 1fr)`,
+            gridTemplateColumns: `repeat(${humidityCount}, 1fr)`,
+            gap: "1px"
+          }}>
+            {Array.from({ length: tempCount }).map((_, tempIdx) => (
+              Array.from({ length: humidityCount }).map((_, humidityIdx) => {
+                const temp = tempRange.min + tempIdx * tempStep;
+                const humidity = humidityRange.min + humidityIdx * humidityStep;
+                const vpd = calculateVpd(temp, humidity);
+                
+                return (
+                  <div
+                    key={`${tempIdx}-${humidityIdx}`}
+                    className="w-full h-full"
+                    style={{ 
+                      backgroundColor: getGradientColor(vpd, displayStage),
+                      opacity: 0.85
+                    }}
+                  />
+                );
+              })
+            ))}
+          </div>
+          
+          {/* Crosshair lines */}
           <div 
-            className="relative aspect-[4/3] w-full"
-            style={{
-              background: `linear-gradient(135deg, rgba(30, 64, 175, 0.3) 0%, rgba(34, 197, 94, 0.3) 50%, rgba(153, 27, 27, 0.3) 100%)`
+            className="absolute left-0 right-0 h-px bg-white/80 z-10"
+            style={{ top: `${currentPos.tempPercent}%` }}
+          />
+          <div 
+            className="absolute top-0 bottom-0 w-px bg-white/80 z-10"
+            style={{ left: `${100 - currentPos.humidityPercent}%` }}
+          />
+          
+          {/* Current point marker */}
+          <div 
+            className="absolute z-20 w-5 h-5 rounded-full border-2 border-white bg-white/20 shadow-lg transform -translate-x-1/2 -translate-y-1/2 animate-pulse"
+            style={{ 
+              left: `${100 - currentPos.humidityPercent}%`,
+              top: `${currentPos.tempPercent}%`,
+              boxShadow: "0 0 20px rgba(255,255,255,0.5)"
             }}
-          >
-            {/* Heatmap cells */}
-            <div className="absolute inset-0 grid" style={{
-              gridTemplateRows: `repeat(${tempCount}, 1fr)`,
-              gridTemplateColumns: `repeat(${humidityCount}, 1fr)`,
-              gap: "1px"
-            }}>
-              {Array.from({ length: tempCount }).map((_, tempIdx) => (
-                Array.from({ length: humidityCount }).map((_, humidityIdx) => {
-                  const temp = tempRange.min + tempIdx * tempStep;
-                  const humidity = humidityRange.min + humidityIdx * humidityStep;
-                  const vpd = calculateVpd(temp, humidity);
-                  
-                  return (
-                    <div
-                      key={`${tempIdx}-${humidityIdx}`}
-                      className="w-full h-full"
-                      style={{ 
-                        backgroundColor: getGradientColor(vpd, displayStage),
-                        opacity: 0.85
-                      }}
-                    />
-                  );
-                })
-              ))}
-            </div>
-            
-            {/* Crosshair lines */}
-            <div 
-              className="absolute left-0 right-0 h-px bg-white/80 z-10"
-              style={{ top: `${currentPos.tempPercent}%` }}
-            />
-            <div 
-              className="absolute top-0 bottom-0 w-px bg-white/80 z-10"
-              style={{ left: `${100 - currentPos.humidityPercent}%` }}
-            />
-            
-            {/* Current point marker */}
-            <div 
-              className="absolute z-20 w-5 h-5 rounded-full border-2 border-white bg-white/20 shadow-lg transform -translate-x-1/2 -translate-y-1/2 animate-pulse"
-              style={{ 
-                left: `${100 - currentPos.humidityPercent}%`,
-                top: `${currentPos.tempPercent}%`,
-                boxShadow: "0 0 20px rgba(255,255,255,0.5)"
-              }}
-            />
+          />
 
-            {/* Axes labels */}
-            <div className="absolute -left-12 top-0 bottom-0 flex flex-col justify-between py-2">
-              {[40, 35, 30, 25, 20, 15, 10].map((t) => (
-                <span key={t} className="text-[10px] text-slate-400 font-mono w-10 text-right pr-2">
-                  {t}°C
-                </span>
-              ))}
-            </div>
-            
-            <div className="absolute -bottom-6 left-0 right-0 flex justify-between px-2">
-              {[10, 30, 50, 70, 90].map((h) => (
-                <span key={h} className="text-[10px] text-slate-400 font-mono">
-                  {h}% RH
-                </span>
-              ))}
-            </div>
+          {/* Axes labels - Temperature on left */}
+          <div className="absolute -left-12 top-0 bottom-0 flex flex-col justify-between py-2">
+            {[40, 35, 30, 25, 20, 15, 10].map((t) => (
+              <span key={t} className="text-[10px] text-slate-400 font-mono w-10 text-right pr-2">
+                {t}°C
+              </span>
+            ))}
+          </div>
+          
+          {/* Axes labels - Humidity on bottom */}
+          <div className="absolute -bottom-6 left-0 right-0 flex justify-between px-2">
+            {[10, 30, 50, 70, 90].map((h) => (
+              <span key={h} className="text-[10px] text-slate-400 font-mono">
+                {h}% RH
+              </span>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Legend */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded bg-blue-700" />
-            <span className="text-blue-400">Too Low</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded bg-green-500" />
-            <span className="text-green-400">Optimal</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded bg-yellow-500" />
-            <span className="text-yellow-400">Warning</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded bg-red-600" />
-            <span className="text-red-400">Too High</span>
-          </div>
+      {/* Legend
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded bg-blue-700" />
+          <span className="text-blue-400">Too Low</span>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded bg-green-500" />
+          <span className="text-green-400">Optimal</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded bg-yellow-500" />
+          <span className="text-yellow-400">Warning</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded bg-red-600" />
+          <span className="text-red-400">Too High</span>
+        </div>
+      </div> */}
 
-        {/* Current Status */}
-        <div className="mt-6">
+      {/* Current Status
+      {showStatus && (
+        <div className="mt-4">
           <div
             className={`rounded-xl border ${currentInfo.bgColor} border-l-4 p-4 ${
               currentInfo.status === "optimal"
@@ -258,7 +260,78 @@ export function VPDChart({
             <p className="mt-2 text-sm text-slate-300">{currentInfo.recommendation}</p>
           </div>
         </div>
+      )} */}
+    </div>
+  );
+}
+
+export function VPDChart({
+  currentVpd,
+  currentTemp,
+  currentHumidity,
+  currentStage,
+  isOpen,
+  onClose,
+  onStageChange,
+  compact = false
+}: VPDChartProps) {
+  const [displayStage, setDisplayStage] = useState<"Veg" | "Bloom">(currentStage === "Bloom" ? "Bloom" : "Veg");
+
+  const handleStageToggle = (stage: "Veg" | "Bloom") => {
+    setDisplayStage(stage);
+    onStageChange?.(stage === "Bloom" ? "Bloom" : "Veg");
+  };
+
+  // For compact mode, always render; for modal mode, check isOpen
+  if (!compact && !isOpen) return null;
+
+  // Modal mode
+  if (!compact) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="w-full max-w-2xl rounded-2xl border border-green-300/70 bg-slate-900/45 p-6 shadow-2xl backdrop-blur">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">VPD CHART</p>
+              <p className="mt-1 text-sm text-lime-100/65">Vapour Pressure Deficit</p>
+            </div>
+            
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-slate-400 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <VPDHeatmap
+            currentVpd={currentVpd}
+            currentTemp={currentTemp}
+            currentHumidity={currentHumidity}
+            currentStage={currentStage}
+            displayStage={displayStage}
+            onStageChange={handleStageToggle}
+            showHeader={false}
+            showStatus={true}
+          />
+        </div>
       </div>
+    );
+  }
+
+  // Compact/inline mode
+  return (
+    <div className="w-full  ">
+      <VPDHeatmap
+        currentVpd={currentVpd}
+        currentTemp={currentTemp}
+        currentHumidity={currentHumidity}
+        currentStage={currentStage}
+        displayStage={displayStage}
+        onStageChange={handleStageToggle}
+        showHeader={true}
+        showStatus={true}
+      />
     </div>
   );
 }

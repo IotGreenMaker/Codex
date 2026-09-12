@@ -1,5 +1,31 @@
 export type GrowStage = "Seedling" | "Veg" | "Bloom";
 
+export type LightSnapshotEntry = {
+  id: string;
+  timestamp: string;
+  lightId: string;
+  ppfd: number;
+  dli: number;
+  actualWatts: number;
+  dimmerPercent: number;
+  isOn: boolean;
+  onTime: string;
+  offTime: string;
+};
+
+export type SpaceConfig = {
+  id: string;
+  name: string;
+  color?: string;
+  createdAt: string;
+  plants: Array<{ id: string }>;
+  weatherData: ClimateEntry[];
+  lightData: LightProfile[];
+  activeLightId?: string;
+  lightHistory: LightSnapshotEntry[];
+  electricityPricePerKwh?: number;
+};
+
 export type CalendarConfig = {
   seedlingDuration: number;
   vegDuration: number;
@@ -112,6 +138,7 @@ export type PlantProfile = {
   climateData: ClimateEntry[];
   notes: NoteEntry[];
   feedRecipe: FeedRecipe;
+  notificationEnabled?: boolean;
 };
 
 export type GrowLogEntry = {
@@ -207,3 +234,4 @@ export type GrowCommand =
   | {
       action: "none";
     };
+

@@ -9,6 +9,7 @@ import { getNutrientPeriodKey, getRecipeSnapshotData, getDetailedCycleSummary } 
 import { STAGE_TARGETS } from "@/lib/config";
 import { useState, useEffect, useCallback } from "react";
 import { getSetting, setSetting } from "@/lib/indexeddb-storage";
+import { useNotification } from "@/contexts/notification-context";
 
 type TimelineEvent = {
   id: string;
@@ -192,6 +193,7 @@ function WateringReminder({ nextWateringDate, onToggleNotification, notification
 }
 
 export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, onUpdate, onDeleteNote }: TimelineEventFeedProps) {
+  const { notify, ensurePermission } = useNotification();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [noteDate, setNoteDate] = useState(new Date().toISOString().split("T")[0]);
@@ -402,20 +404,28 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
 
   const handleToggleNotification = useCallback(async (enabled: boolean) => {
     if (enabled) {
-      // Request permission
-      if (!("Notification" in window)) {
-        alert("This browser does not support notifications.");
-        return;
-      }
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        alert("Notification permission denied.");
+      const ok = await ensurePermission();
+      if (!ok) {
+        await notify({
+          source: "timeline",
+          variant: "error",
+          title: "Permission Required",
+          message: "Enable notifications in your browser settings to get watering reminders."
+        });
         return;
       }
     }
     setNotificationsEnabled(enabled);
     await setSetting("wateringNotification", String(enabled));
-  }, []);
+    await notify({
+      source: "timeline",
+      variant: enabled ? "toggle-on" : "toggle-off",
+      title: enabled ? "Watering Reminders Enabled" : "Watering Reminders Disabled",
+      message: enabled
+        ? `You'll get reminders when it's time to water ${plant.strainName}.`
+        : "Watering reminders are now muted."
+    });
+  }, [notify, ensurePermission, plant.strainName]);
 
   const handleAddNote = useCallback(async () => {
     if (!noteText.trim() || !onUpdate) return;
@@ -455,26 +465,26 @@ export function TimelineEventFeed({ plant, config, isAddingNote, onCancelNote, o
 
   // Schedule notification if enabled and we have a next watering date
   useEffect(() => {
-    if (notificationsEnabled && nextWateringDate && "Notification" in window) {
+    if (notificationsEnabled && nextWateringDate) {
       const now = new Date().getTime();
       const target = nextWateringDate.getTime();
       const delay = target - now;
 
       if (delay > 0 && delay < 2147483647) { // max setTimeout delay
         const timer = setTimeout(() => {
-          if (Notification.permission === "granted") {
-            new Notification("G-Buddy - Watering Reminder", {
-              body: `Time to water ${plant.strainName}!`,
-              icon: "/g-icon.png",
-              tag: "watering-reminder"
-            });
-          }
+          void notify({
+            source: "timeline",
+            variant: "watering",
+            title: `Time to water — ${plant.strainName}`,
+            message: `It's time to water your ${plant.strainName}! Check soil moisture and feed as needed.`,
+            durationMs: 8000
+          });
         }, delay);
 
         return () => clearTimeout(timer);
       }
     }
-  }, [notificationsEnabled, nextWateringDate, plant.strainName]);
+  }, [notificationsEnabled, nextWateringDate, plant.strainName, notify]);
 
   return (
     <div className="flex flex-col gap-3 max-h-[50vh] sm:max-h-[800px] overflow-y-auto overflow-x-hidden pl-1 pr-2 p-4 pt-0">

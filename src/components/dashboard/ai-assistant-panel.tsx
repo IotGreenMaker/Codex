@@ -10,7 +10,7 @@ import { translations } from "@/lib/i18n";
 import { speak } from "@/lib/tts";
 import { buildGrowContext } from "@/lib/buildGrowContext";
 import { generateUUID } from "@/lib/uuid";
-import type { PlantProfile, GrowStage } from "@/lib/types";
+import type { ClimateEntry, PlantProfile, GrowStage } from "@/lib/types";
 
 const VOICE_IDLE_TIMEOUT_MS = 2600;
 const SHARED_CONVERSATION_ID = "global_ai_conversation"; // Global conversation shared across all plants
@@ -34,6 +34,7 @@ export function AiAssistantPanel({
   onSelectPlant,
   onUpdateWateringData,
   onUpdateClimateData,
+  climateData,
   onToggleNotification,
   notificationsEnabled = false,
   onCreatePlant,
@@ -49,6 +50,7 @@ export function AiAssistantPanel({
   onSelectPlant?: (plantId: string) => void;
   onUpdateWateringData?: (data: PlantProfile["wateringData"]) => void;
   onUpdateClimateData?: (data: PlantProfile["climateData"]) => void;
+  climateData?: ClimateEntry[];
   onToggleNotification?: (enabled: boolean) => void;
   notificationsEnabled?: boolean;
   onCreatePlant?: (data: { strainName: string; stage: GrowStage }) => void;
@@ -124,7 +126,7 @@ export function AiAssistantPanel({
     await saveAiConfig(config).catch(() => {});
   };
 
-  // Initialize LiveKit connection and voice recognition
+  // Initialize Inworld connection and voice recognition
   useEffect(() => {
     const initializeVoice = async () => {
       try {
@@ -268,7 +270,8 @@ export function AiAssistantPanel({
         analyser.getByteTimeDomainData(samples);
 
         let sum = 0;
-        for (const sample of samples) {
+        for (let i = 0; i < samples.length; i++) {
+          const sample = samples[i];
           const normalized = (sample - 128) / 128;
           sum += normalized * normalized;
         }
@@ -487,7 +490,7 @@ export function AiAssistantPanel({
             tempC: parsedData.climate.tempC ?? plantRef.current.growTempC,
             humidity: parsedData.climate.humidity ?? plantRef.current.growHumidity
           };
-          onUpdateClimateData([...(plantRef.current.climateData ?? []), newClimate]);
+          onUpdateClimateData([...(climateData ?? []), newClimate]);
         }
 
         // Update plant profile (stage, strain, light settings, etc.)

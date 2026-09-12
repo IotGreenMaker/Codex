@@ -164,7 +164,6 @@ export function LightConfigModal({
                         </p>
                         <p className="text-xs text-lime-100/60">
                           {light.watts}W | {light.ppfdEstimated ? `${light.ppfdEstimated} PPFD` : "No PPFD"} | {light.lightsOn} - {light.lightsOff}
-                          {light.hasDimmer && ` | Dimmer: ${light.dimmerPercent}%`}
                         </p>
                       </div>
                     </div>

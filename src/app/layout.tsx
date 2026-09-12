@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { NotificationProvider } from "@/contexts/notification-context";
+import { Notifications } from "@/components/dashboard/notifications";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -34,7 +36,12 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/g-icon.png" />
         <link rel="icon" type="image/png" href="/g-icon.png" />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <NotificationProvider>
+          {children}
+          <Notifications />
+        </NotificationProvider>
+      </body>
     </html>
   );
 }

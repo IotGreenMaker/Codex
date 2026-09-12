@@ -12,11 +12,6 @@ export type PlantsState = {
 const dataDir = path.join(process.cwd(), "g-data");
 const stateFile = path.join(dataDir, "plants-state.json");
 
-const defaultState: PlantsState = {
-  plants: [],
-  activePlantId: ""
-};
-
 function isValidUUID(id: string): boolean {
   if (!id || typeof id !== "string") return false;
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -32,13 +27,11 @@ function validateTimestamp(ts: any): string | null {
 
 function sanitizePlantData(plant: any): PlantProfile | null {
   try {
-    // Validate and generate UUIDs for plant ID
     const plantId = isValidUUID(plant.id) ? plant.id : generateUUID();
     if (!isValidUUID(plant.id) && plant.id) {
       console.log(`[Plants] Regenerated invalid plant ID: ${plant.id} -> ${plantId}`);
     }
 
-    // Validate watering data and regenerate invalid IDs
     const wateringData = Array.isArray(plant.wateringData)
       ? plant.wateringData
           .map((w: any) => {
@@ -55,7 +48,6 @@ function sanitizePlantData(plant: any): PlantProfile | null {
           .filter((w: any) => w.timestamp)
       : [];
 
-    // Validate climate data and regenerate invalid IDs
     const climateData = Array.isArray(plant.climateData)
       ? plant.climateData
           .map((c: any) => {
@@ -72,7 +64,6 @@ function sanitizePlantData(plant: any): PlantProfile | null {
           .filter((c: any) => c.timestamp)
       : [];
 
-    // Validate notes data and regenerate invalid IDs
     const notes = Array.isArray(plant.notes)
       ? plant.notes
           .map((n: any) => {
@@ -86,7 +77,6 @@ function sanitizePlantData(plant: any): PlantProfile | null {
           .filter((n: any) => n.timestamp)
       : [];
 
-    // Return sanitized plant with valid UUIDs
     return {
       ...plant,
       id: plantId,
@@ -108,13 +98,14 @@ export async function readPlantsState(): Promise<PlantsState> {
 
   try {
     const raw = await readFile(stateFile, "utf-8");
-    const parsed = JSON.parse(raw) as Partial<any>;
+    const parsed = JSON.parse(raw) as Partial<PlantsState>;
 
     const plants = Array.isArray(parsed.plants) && parsed.plants.length > 0
       ? parsed.plants
           .map((p) => sanitizePlantData(p))
           .filter((p) => p !== null) as PlantProfile[]
       : [];
+
     const activePlantId = typeof parsed.activePlantId === "string" && parsed.activePlantId
       ? parsed.activePlantId
       : plants[0]?.id ?? "";
@@ -123,13 +114,15 @@ export async function readPlantsState(): Promise<PlantsState> {
       console.log("[Plants] Loaded from local storage:", plants.length, "plants");
     }
 
-    return { plants, activePlantId };
+    return {
+      plants,
+      activePlantId,
+    };
   } catch (error) {
-    // Missing file is normal on first run.
     if ((error as any)?.code !== "ENOENT") {
       console.error("Error reading plants state:", error);
     }
-    return defaultState;
+    return { plants: [], activePlantId: "" };
   }
 }
 
@@ -138,10 +131,9 @@ export async function writePlantsState(state: PlantsState) {
   
   const safeState: PlantsState = {
     plants: state.plants || [],
-    activePlantId: state.activePlantId || state.plants?.[0]?.id || ""
+    activePlantId: state.activePlantId || state.plants?.[0]?.id || "",
   };
 
-  // Save to local JSON
   try {
     await writeFile(stateFile, JSON.stringify(safeState, null, 2), "utf-8");
     console.log("[Plants] Saved to local storage JSON");
@@ -167,14 +159,12 @@ export async function deleteWateringLogById(
     const plant =
       state.plants.find((p) => p.id === plantId) ?? findPlantContainingWateringLog(state.plants, wateringId);
 
-    // If the plant (or entry) is missing on the server, treat as already deleted
     if (!plant) return { ok: true };
 
     const initialCount = plant.wateringData.length;
     plant.wateringData = plant.wateringData.filter(w => w.id !== wateringId);
     
     if (plant.wateringData.length === initialCount) {
-      // Treat as already deleted to avoid UI regressions when server is out-of-sync
       return { ok: true };
     }
 
@@ -192,13 +182,11 @@ export async function deleteClimateLogById(climateId: string, plantId: string): 
     const plant =
       state.plants.find((p) => p.id === plantId) ?? findPlantContainingClimateLog(state.plants, climateId);
 
-    // If the plant (or entry) is missing on the server, treat as already deleted
     if (!plant) return { ok: true };
 
     const initialCount = plant.climateData.length;
     plant.climateData = plant.climateData.filter((c) => c.id !== climateId);
     if (plant.climateData.length === initialCount) {
-      // Treat as already deleted to avoid UI regressions when server is out-of-sync
       return { ok: true };
     }
     await writePlantsState(state);
@@ -212,21 +200,17 @@ export async function deleteClimateLogById(climateId: string, plantId: string): 
 export async function deletePlantById(plantId: string): Promise<boolean> {
   try {
     const current = await readPlantsState();
-    
-    // Note: In a real server environment, you'd also delete associated 
-    // chat files here if they were stored on disk.
-    
+
     const updated = current.plants.filter((p) => p.id !== plantId);
+
     let newActivePlantId = current.activePlantId;
-    
-    // If the deleted plant was active, switch to the first remaining plant
     if (newActivePlantId === plantId) {
       newActivePlantId = updated[0]?.id || "";
     }
 
     await writePlantsState({
       plants: updated,
-      activePlantId: newActivePlantId
+      activePlantId: newActivePlantId,
     });
 
     console.log(`[Plants] Updated local storage: ${plantId}`);

@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, Trash2, Minus, RotateCcw } from "lucide-react";
+import { VPDChart } from "@/components/dashboard/vpd-chart";
 import { useState, useMemo } from "react";
 import { useCurrentTime } from "@/lib/time-context";
 import {
@@ -22,28 +23,32 @@ import { generateUUID } from "@/lib/uuid";
 import type { Locale } from "@/lib/i18n";
 import type { CalendarConfig } from "@/lib/types";
 import { Droplets, CheckCircle2, Circle } from "lucide-react";
+import { calculateVpd } from "@/lib/grow-math";
 
 type FilterPeriod = "DAY" | "WEEK" | "MONTH" | "ALL";
 
-  type GrowChartProps = {
-    plantId: string;
-    logs: GrowLogEntry[];
-    wateringData: WateringEntry[];
-    climateData: ClimateEntry[];
-    stage: GrowStage;
-    locale: Locale;
-    wateringIntervalDays: number;
-    config?: CalendarConfig;
-    onWateringDataChange: (next: WateringEntry[]) => void;
-    onClimateDataChange: (next: ClimateEntry[]) => void;
-    onUpdateInterval?: (intervalDays: number) => void;
-    onWaterNow?: () => void;
-    onOpenVpdChart?: () => void;
-    labels: {
-      progression: string;
-      tempHumidityVpd: string;
-    };
+type GrowChartProps = {
+  plantId: string;
+  logs: GrowLogEntry[];
+  wateringData: WateringEntry[];
+  climateData: ClimateEntry[];
+  stage: GrowStage;
+  locale: Locale;
+  wateringIntervalDays: number;
+  config?: CalendarConfig;
+  onWateringDataChange: (next: WateringEntry[]) => void;
+  onClimateDataChange: (next: ClimateEntry[]) => void;
+  onUpdateInterval?: (intervalDays: number) => void;
+  onWaterNow?: () => void;
+  onOpenVpdChart?: () => void;
+  currentVpd: number;
+  currentTemp: number;
+  currentHumidity: number;
+  labels: {
+    progression: string;
+    tempHumidityVpd: string;
   };
+};
 
 export function GrowChart({
   plantId,
@@ -58,6 +63,9 @@ export function GrowChart({
   onUpdateInterval,
   onWaterNow,
   onOpenVpdChart,
+  currentVpd,
+  currentTemp,
+  currentHumidity,
   labels,
   config
 }: GrowChartProps) {
@@ -276,36 +284,49 @@ export function GrowChart({
           </div>
         </div>
         <p className="mb-3 text-xs text-lime-100/70">{labels.tempHumidityVpd}</p>
-        <div className="h-40 sm:h-52">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={climateChartData}>
-              <defs>
-                <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#9eff66" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#9eff66" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="humidityGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2b7fff" stopOpacity={0.34} />
-                  <stop offset="100%" stopColor="#2b7fff" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-              <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-              <YAxis yAxisId="climate" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-              <YAxis yAxisId="vpd" orientation="right" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-              <ReferenceArea yAxisId="vpd" y1={idealVpd.min} y2={idealVpd.max} fill="rgba(158,255,102,0.8)" />
-              <Tooltip
-                contentStyle={{
-                  background: "#120f1c",
-                  border: "1px solid rgba(158, 255, 102, 0.18)",
-                  borderRadius: "16px"
-                }}
-              />
-              <Area yAxisId="climate" type="monotone" dataKey="temp" stroke="#9eff66" fill="url(#tempGradient)" strokeWidth={2.5} />
-              <Area yAxisId="climate" type="monotone" dataKey="humidity" stroke="#2b7fff" fill="url(#humidityGradient)" strokeWidth={2} />
-              <Line yAxisId="vpd" type="monotone" dataKey="vpd" stroke="#fe9a00" strokeWidth={2} dot={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
+        <div className="flex">
+          <div className="flex-1 h-50">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={climateChartData}>
+                <defs>
+                  <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#9eff66" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#9eff66" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="humidityGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2b7fff" stopOpacity={0.34} />
+                    <stop offset="100%" stopColor="#2b7fff" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+                <XAxis dataKey="tick" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                <YAxis yAxisId="climate" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                <YAxis yAxisId="vpd" orientation="right" stroke="#a8a2bb" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                <ReferenceArea yAxisId="vpd" y1={idealVpd.min} y2={idealVpd.max} fill="rgba(158,255,102,0.8)" />
+                <Tooltip
+                  contentStyle={{
+                    background: "#120f1c",
+                    border: "1px solid rgba(158, 255, 102, 0.18)",
+                    borderRadius: "16px"
+                  }}
+                />
+                <Area yAxisId="climate" type="monotone" dataKey="temp" stroke="#9eff66" fill="url(#tempGradient)" strokeWidth={2.5} />
+                <Area yAxisId="climate" type="monotone" dataKey="humidity" stroke="#2b7fff" fill="url(#humidityGradient)" strokeWidth={2} />
+                <Line yAxisId="vpd" type="monotone" dataKey="vpd" stroke="#fe9a00" strokeWidth={2} dot={false} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="w-1/3 h-50 ">
+            <VPDChart
+              currentVpd={currentVpd}
+              currentTemp={currentTemp}
+              currentHumidity={currentHumidity}
+              currentStage={stage}
+              isOpen={true}
+              onClose={() => {}}
+              compact
+            />
+          </div>
         </div>
 
         <div className="mt-4 rounded-2xl bg-black/20 overflow-x-auto max-h-[30vh]">

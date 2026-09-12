@@ -1,24 +1,24 @@
 // lib/indexeddb-storage.ts
-// Real IndexedDB implementation — all data stored locally in the browser.
+// Real IndexedDB implementation â€” all data stored locally in the browser.
 // No server, no accounts, no cloud. Works completely offline.
 
 import type { AiConfig } from "@/components/dashboard/ai-config-modal";
-import type { PlantProfile } from "@/lib/types";
+import type { PlantProfile, SpaceConfig } from "@/lib/types";
 
-// ─── Schema ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const DB_NAME = "g-buddy";
-const DB_VERSION = 1;
+const DB_VERSION = 3; // Consolidated spaces schema
 
-// Stores
 const STORE_PLANTS = "plants";
 const STORE_SETTINGS = "settings";
 const STORE_CHAT = "chat_messages";
+const STORE_SPACES = "spaces";
 
-// ─── Types ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type ChatMessageEntry = {
   id: string;
   plantId: string;
-  /** ISO timestamp — prefer this field */
+  /** ISO timestamp â€” prefer this field */
   timestamp?: string;
   /** Legacy alias kept for backward compatibility */
   createdAt?: string;
@@ -48,20 +48,26 @@ export function openDB(): Promise<IDBDatabase> {
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
 
-      // Plants — keyed by id
+      // Plants â€” keyed by id
       if (!db.objectStoreNames.contains(STORE_PLANTS)) {
         db.createObjectStore(STORE_PLANTS, { keyPath: "id" });
       }
 
-      // Settings — simple key-value store
+      // Settings â€” simple key-value store
       if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
         db.createObjectStore(STORE_SETTINGS);
       }
 
-      // Chat messages — keyed by id, indexed by plantId for fast lookup
+      // Chat messages â€” keyed by id, indexed by plantId for fast lookup
       if (!db.objectStoreNames.contains(STORE_CHAT)) {
         const chatStore = db.createObjectStore(STORE_CHAT, { keyPath: "id" });
         chatStore.createIndex("plantId", "plantId", { unique: false });
+      }
+
+      // Spaces â€” keyed by id, stores space configurations with isolated VPD data
+      if (!db.objectStoreNames.contains(STORE_SPACES)) {
+        const spacesStore = db.createObjectStore(STORE_SPACES, { keyPath: "id" });
+        spacesStore.createIndex("name", "name", { unique: false });
       }
     };
 
@@ -76,7 +82,7 @@ export function openDB(): Promise<IDBDatabase> {
 }
 
 
-// ─── Low-level helpers ─────────────────────────────────────────────────────
+// â”€â”€â”€ Low-level helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function storeGetAll<T>(db: IDBDatabase, storeName: string): Promise<T[]> {
   return new Promise((resolve, reject) => {
@@ -144,7 +150,7 @@ function storeGetByIndex<T>(
   });
 }
 
-// ─── Database initialisation ───────────────────────────────────────────────
+// â”€â”€â”€ Database initialisation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Call once on app startup to ensure the DB schema exists. */
 export async function initializeDB(): Promise<boolean> {
@@ -158,7 +164,7 @@ export async function initializeDB(): Promise<boolean> {
   }
 }
 
-// ─── Plants ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Plants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Retrieve all plant profiles stored in IndexedDB. */
 export async function getAllPlants(): Promise<PlantProfile[]> {
@@ -195,7 +201,7 @@ export async function deletePlant(id: string): Promise<boolean> {
   }
 }
 
-// ─── Settings (key-value) ──────────────────────────────────────────────────
+// â”€â”€â”€ Settings (key-value) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Retrieve a setting by key. Returns null if not found. */
 export async function getSetting(key: string): Promise<string | null> {
@@ -224,7 +230,7 @@ export async function setSetting(
   }
 }
 
-// ─── AI Configuration ──────────────────────────────────────────────────────
+// â”€â”€â”€ AI Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const AI_CONFIG_KEY = "aiConfig";
 
@@ -260,7 +266,7 @@ export async function saveAiConfig(config: AiConfig): Promise<boolean> {
   }
 }
 
-// ─── Chat messages ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Chat messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Retrieve the last `limit` chat messages for a given plant, oldest first. */
 export async function getChatMessages(
@@ -362,4 +368,53 @@ export async function deleteChatMessagesForPlant(
   }
 }
 
-
+// â”€â”€â”€ Spaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+/** Retrieve all spaces stored in IndexedDB. */
+export async function getAllSpaces(): Promise<SpaceConfig[]> {
+  try {
+    const db = await openDB();
+    return await storeGetAll<SpaceConfig>(db, STORE_SPACES);
+  } catch (err) {
+    console.error("[IndexedDB] getAllSpaces failed:", err);
+    return [];
+  }
+}
+
+/** Get a single space by ID. */
+export async function getSpace(id: string): Promise<SpaceConfig | null> {
+  try {
+    const db = await openDB();
+    const space = await storeGet<SpaceConfig>(db, STORE_SPACES, id);
+    return space || null;
+  } catch (err) {
+    console.error("[IndexedDB] getSpace failed:", err);
+    return null;
+  }
+}
+
+/** Save (insert or update) a space. */
+export async function saveSpace(space: SpaceConfig): Promise<boolean> {
+  try {
+    const db = await openDB();
+    await storePut(db, STORE_SPACES, space);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] saveSpace failed:", err);
+    return false;
+  }
+}
+
+/** Permanently delete a space by ID. */
+export async function deleteSpace(id: string): Promise<boolean> {
+  try {
+    const db = await openDB();
+    await storeDelete(db, STORE_SPACES, id);
+    console.log(`[IndexedDB] Deleted space ${id}`);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] deleteSpace failed:", err);
+    return false;
+  }
+}
+

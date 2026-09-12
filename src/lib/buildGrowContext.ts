@@ -119,10 +119,13 @@ export function buildGrowContext(
 
   let currentPpfd = 0;
   if (activeLight) {
-    lightDesc = `${activeLight.type} (${activeLight.watts}W)`;
+    const effectiveWatts = activeLight.hasDimmer && activeLight.dimmerPercent !== undefined
+      ? Math.round(activeLight.watts * activeLight.dimmerPercent / 100)
+      : activeLight.watts;
+    lightDesc = `${activeLight.type} (${effectiveWatts}W)`;
     currentPpfd = activeLight.ppfdEstimated || 0;
     if (activeLight.hasDimmer && activeLight.dimmerPercent !== undefined) {
-      lightDesc += ` at ${activeLight.dimmerPercent}%`;
+      lightDesc += ` @ ${activeLight.dimmerPercent}%`;
       currentPpfd = (currentPpfd * activeLight.dimmerPercent) / 100;
     }
     scheduleDesc = `${activeLight.lightsOn}-${activeLight.lightsOff}`;
@@ -185,9 +188,9 @@ export function buildGrowContext(
 - NEXT ESTIMATED WATERING: ${nextWateringEstimate}
 
 ## MEASUREMENT UNIT
-- Using ${measurementUnit} for nutrient values ${measurementUnit === 'PPM' ? `(${hannaScale}-scale)` : '(direct EC readings)'}
+- Using ${measurementUnit} for nutrient values ${measurementUnit === 'PPM' ? `(${hannaScale}-scale conversion)` : '(direct EC readings)'}
+- When user provides feed/nutrient data in either EC or PPM format, convert to their preferred unit
 - When responding about nutrients, always use ${measurementUnit} ${measurementUnit === 'PPM' ? `with ${hannaScale}-scale` : 'format'}
-- When logging in JSON, just pass the raw number the user provided in the 'nutrientValue' field.
 
 ## RECENT HISTORY & NOTES (Showing last 10)
 ${(plant.notes || [])

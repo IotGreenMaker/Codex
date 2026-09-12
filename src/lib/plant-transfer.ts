@@ -1,13 +1,29 @@
-import type { PlantProfile } from "@/lib/types";
+import type { PlantProfile, SpaceConfig, ClimateEntry, LightProfile } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
 
-export const GBUDDY_SCHEMA_VERSION = "1.2.0";
+export const GBUDDY_SCHEMA_VERSION = "1.3.0";
 
 export type GbuddyPlantExport = {
   app: "gbuddy";
   schemaVersion: string;
   exportedAt: string;
   plant: PlantProfile;
+};
+
+export type GbuddySpacesExport = {
+  app: "gbuddy";
+  schemaVersion: string;
+  exportedAt: string;
+  spaces: SpaceConfig[];
+};
+
+export type GbuddyFullExport = {
+  app: "gbuddy";
+  schemaVersion: string;
+  exportedAt: string;
+  plants: PlantProfile[];
+  spaces: SpaceConfig[];
+  activePlantId: string;
 };
 
 function toIsoOrNow(value: unknown): string {
@@ -39,6 +55,26 @@ export function buildThemedPlantExport(plant: PlantProfile): GbuddyPlantExport {
     schemaVersion: GBUDDY_SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     plant
+  };
+}
+
+export function buildSpacesExport(spaces: SpaceConfig[]): GbuddySpacesExport {
+  return {
+    app: "gbuddy",
+    schemaVersion: GBUDDY_SCHEMA_VERSION,
+    exportedAt: new Date().toISOString(),
+    spaces
+  };
+}
+
+export function buildFullExport( plants: PlantProfile[], spaces: SpaceConfig[], activePlantId: string): GbuddyFullExport {
+  return {
+    app: "gbuddy",
+    schemaVersion: GBUDDY_SCHEMA_VERSION,
+    exportedAt: new Date().toISOString(),
+    plants,
+    spaces,
+    activePlantId
   };
 }
 
@@ -166,13 +202,61 @@ function normalizeImportedPlant(rawPlant: any): PlantProfile {
   return normalizedPlant;
 }
 
-function isValidGbuddyExport(payload: any): payload is GbuddyPlantExport {
+function normalizeImportedSpace(rawSpace: any): SpaceConfig {
+  const normalizedSpace: SpaceConfig = {
+    ...rawSpace,
+    id: typeof rawSpace?.id === "string" ? rawSpace.id : generateUUID(),
+    name: typeof rawSpace?.name === "string" ? rawSpace.name : "Space",
+    color: typeof rawSpace?.color === "string" ? rawSpace.color : `hsl(${(Math.random() * 360) | 0}, 70%, 50%)`,
+    createdAt: toIsoOrNow(rawSpace?.createdAt),
+    plants: ensureArray<any>(rawSpace?.plants),
+    weatherData: ensureArray<ClimateEntry>(rawSpace?.weatherData),
+    lightData: ensureArray<LightProfile>(rawSpace?.lightData),
+    activeLightId: typeof rawSpace?.activeLightId === "string" ? rawSpace.activeLightId : undefined,
+    lightHistory: ensureArray<LightSnapshotEntry>(rawSpace?.lightHistory).map((e: any) => ({
+      id: e.id || generateUUID(),
+      timestamp: e.timestamp || toIsoOrNow(e?.timestamp),
+      lightId: e.lightId || "",
+      ppfd: e.ppfd ?? 0,
+      dli: e.dli ?? 0,
+      actualWatts: e.actualWatts ?? 0,
+      dimmerPercent: e.dimmerPercent ?? 0,
+      isOn: !!e.isOn,
+      onTime: e.onTime || "",
+      offTime: e.offTime || ""
+    })),
+    electricityPricePerKwh: typeof rawSpace?.electricityPricePerKwh === "number" ? rawSpace.electricityPricePerKwh : 0
+  };
+
+  return normalizedSpace;
+}
+
+function isValidGbuddyPlantExport(payload: any): payload is GbuddyPlantExport {
   return (
     payload &&
     payload.app === "gbuddy" &&
     typeof payload.schemaVersion === "string" &&
     payload.plant &&
     typeof payload.plant === "object"
+  );
+}
+
+function isValidGbuddySpacesExport(payload: any): payload is GbuddySpacesExport {
+  return (
+    payload &&
+    payload.app === "gbuddy" &&
+    typeof payload.schemaVersion === "string" &&
+    Array.isArray(payload.spaces)
+  );
+}
+
+function isValidGbuddyFullExport(payload: any): payload is GbuddyFullExport {
+  return (
+    payload &&
+    payload.app === "gbuddy" &&
+    typeof payload.schemaVersion === "string" &&
+    Array.isArray(payload.plants) &&
+    Array.isArray(payload.spaces)
   );
 }
 
@@ -196,8 +280,72 @@ export function parseImportedPlantJson(jsonText: string): PlantProfile {
   } else {
     parsed = JSON.parse(jsonText) as unknown;
   }
-  if (!isValidGbuddyExport(parsed)) {
+  if (!isValidGbuddyPlantExport(parsed)) {
     throw new Error("Invalid Gbuddy JSON file.");
   }
   return normalizeImportedPlant(parsed.plant);
+}
+
+export function parseImportedSpaces(jsonText: string): SpaceConfig[] {
+  const trimmed = jsonText.trim();
+  let parsed: unknown;
+  if (trimmed.startsWith("<")) {
+    const match = trimmed.match(
+      /<script[^>]*id=["']gbuddy-export-data["'][^>]*>([\s\S]*?)<\/script>/i
+    );
+    if (!match?.[1]) {
+      throw new Error("Invalid Gbuddy spaces HTML file.");
+    }
+    const jsonPayload = match[1]
+      .replace(/&quot;/g, "\"")
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+    parsed = JSON.parse(jsonPayload) as unknown;
+  } else {
+    parsed = JSON.parse(jsonText) as unknown;
+  }
+  
+  if (isValidGbuddySpacesExport(parsed)) {
+    return parsed.spaces.map(s => normalizeImportedSpace(s));
+  }
+  
+  if (isValidGbuddyFullExport(parsed)) {
+    return parsed.spaces.map(s => normalizeImportedSpace(s));
+  }
+  
+  throw new Error("Invalid Gbuddy spaces JSON file.");
+}
+
+export function parseImportedFull(jsonText: string): { plants: PlantProfile[]; spaces: SpaceConfig[]; activePlantId: string } {
+  const trimmed = jsonText.trim();
+  let parsed: unknown;
+  if (trimmed.startsWith("<")) {
+    const match = trimmed.match(
+      /<script[^>]*id=["']gbuddy-export-data["'][^>]*>([\s\S]*?)<\/script>/i
+    );
+    if (!match?.[1]) {
+      throw new Error("Invalid Gbuddy full export HTML file.");
+    }
+    const jsonPayload = match[1]
+      .replace(/&quot;/g, "\"")
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+    parsed = JSON.parse(jsonPayload) as unknown;
+  } else {
+    parsed = JSON.parse(jsonText) as unknown;
+  }
+  
+  if (!isValidGbuddyFullExport(parsed)) {
+    throw new Error("Invalid Gbuddy full export JSON file.");
+  }
+  
+  const plants = parsed.plants.map(p => normalizeImportedPlant(p));
+  const spaces = parsed.spaces.map(s => normalizeImportedSpace(s));
+  const activePlantId = typeof parsed.activePlantId === "string" ? parsed.activePlantId : "";
+  
+  return { plants, spaces, activePlantId };
 }

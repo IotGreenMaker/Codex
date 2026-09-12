@@ -39,9 +39,17 @@
 19 - when asking the AI assitant about the last watering event it is creating a new occourance on the table, wich is not the desired behaviour - he should only read and inform the data when asked and only creater and told its a new watering event  - it's also mismaching the context of the selected plant, not navegating correctly when asked to swich plants, it might work visually changin the selected plant, but when asket about name or data ir refers to the previuos plant in context, so I belive it is a context refresh problem -OK 
 20 - Some AI responses are shoing duplicated and unfformatted on the chat - Watering logged with 1L of water, pH 5.8, and EC 1.4 (700 PPM). { "message": "Watering logged.", "watering": { "amountMl": 1000, "ph": 5.8, "ec": 1.4 } } -OK
 
-21- the AI context changing history  every time changes plant is breaking the fuintionality of swicth selkected plant , the AI context can be sahred in betewwn plants , só only one history is needed  
+21- the AI context changing history  every time changes plant is breaking the fuintionality of swicth selected plant , the AI context can be sahred in betewwn plants , s only one history is needed  OK test -15/08/26
 
 22- On line 360 block of @file:dashboard-shell.tsx  I'm having an routing issue, that only seems to happen on the production server, It's probably linked to the routing logic that sends new users to the onboarding page. also check the block on line 12 of @file:page.tsx , and I also comment out the redundant logic at @empty-state-onboarding.tsx i belive it need to be removed ,  the main problem is a loop when routing to the ('/') when access made form https://gbuddy-six.vercel.app/dashboard nad even after deleting local data with dev tools and acessing by the main url https://gbuddy-six.vercel.app the app is still stuck in a loop with the skeleton lazy load -OK
+
+23 - Add a level on the plant list with a New icon and editable name to be called "Space" as deafut and will agregate the plants and the weather data also the light data -OK 
+
+24- Light graph with DLI coloured estimates and wattage consumption, keeping and showing a history timeline, that will be linked with the space data and later exported, need a field to put price er kw/h to espimate cost
+
+25-progression panel , temp Humidity and VPD graph, the actual vpd graph sould be reduced to a small graph to fit in the last third of a column on the panel, avoiding the need of the modal, it will keep the reconmedation according to the plant stage, but the square coloured graph following the style of the actual, will have temp and humidity as side legends so it shows the range better   
+
+
 
 ## Current Tech Stack
 
