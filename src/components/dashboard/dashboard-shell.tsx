@@ -33,7 +33,8 @@ import {
 import { STAGE_TARGETS } from "@/lib/config";
 import { Locale, translations } from "@/lib/i18n";
 import { generateUUID } from "@/lib/uuid";
-import { buildThemedPlantExport, buildThemedPlantExportHtml, getExportFileName, parseImportedPlantJson } from "@/lib/plant-transfer";
+import { buildSpaceExport, buildThemedPlantExport, buildThemedPlantExportHtml, getExportFileName, getSpaceExportFileName, parseImportedPlantJson, parseImportedSpace } from "@/lib/plant-transfer";
+import { saveBackupSnapshot, savePlant, saveSpace, setSetting } from "@/lib/indexeddb-storage";
 import type { GrowStage, PlantProfile, LightProfile, CalendarConfig, ClimateEntry } from "@/lib/types";
 import { AiChatModal } from "@/components/dashboard/ai-chat-modal";
 import { MessageCircle } from "lucide-react";
@@ -72,7 +73,7 @@ const {
     activePlant, 
     activePlantId, 
     setActivePlantId, 
-    loadedFromServer, 
+    loadedFromServer,
     addPlant: _addPlant, 
     removePlant: _removePlant, 
     updatePlant, 
@@ -93,8 +94,9 @@ const {
     movePlantToSpace,
     removePlantFromAllSpaces,
     pruneDanglingPlantRefs,
-    getCurrentSpacePlantsSync
-  } = useSpaces(plants);
+    getCurrentSpacePlantsSync,
+    loadedFromServer: spacesLoaded
+  } = useSpaces(plants, loadedFromServer);
   const spacePlants = getCurrentSpacePlantsSync();
   const spaceClimateData = activeSpace?.weatherData ?? [];
 
@@ -145,6 +147,9 @@ const {
   const [nutrientView, setNutrientView] = useState<"classic" | "checker">("classic");
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement | null>(null);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement | null>(null);
+  const flushQueueRef = useRef(Promise.resolve());
   const [plantDetailId, setPlantDetailId] = useState<string | null>(null);
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
@@ -167,6 +172,76 @@ const {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isAddMenuOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setIsExportMenuOpen(false);
+      }
+    };
+    if (isExportMenuOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isExportMenuOpen]);
+
+  useEffect(() => {
+    if (!loadedFromServer || !spacesLoaded || plants.length === 0 || spaces.length === 0) return;
+
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    const flushState = async () => {
+      const writesSucceeded = (await Promise.all([
+        ...plants.map((plant) => savePlant(plant)),
+        ...spaces.map((space) => saveSpace(space)),
+        setSetting("activePlantId", activePlantId),
+        setSetting("activeSpaceId", activeSpaceId)
+      ])).every(Boolean);
+
+      if (!writesSucceeded) {
+        console.error("[Backup] IndexedDB persistence failed; server fallback was not updated.");
+        return;
+      }
+
+      await saveBackupSnapshot({
+        id: "latest",
+        savedAt: new Date().toISOString(),
+        plants,
+        spaces,
+        activePlantId,
+        activeSpaceId
+      });
+
+      const response = await fetch("/api/plants", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plants, activePlantId, spaces, activeSpaceId })
+      });
+      if (!response.ok) {
+        throw new Error(`Server fallback save failed (${response.status})`);
+      }
+    };
+
+    const queueFlush = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        flushQueueRef.current = flushQueueRef.current
+          .then(flushState)
+          .catch((error) => console.error("[Backup] Flush failed:", error));
+      }, 1500);
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      if (timeout) clearTimeout(timeout);
+      flushQueueRef.current = flushQueueRef.current
+        .then(flushState)
+        .catch((error) => console.error("[Backup] Visibility flush failed:", error));
+    };
+
+    queueFlush();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [activePlantId, activeSpaceId, loadedFromServer, plants, spaces, spacesLoaded]);
 
   // Confirmation dialog helper
   const showConfirmation = (options: ConfirmationOptions): Promise<boolean> => {
@@ -234,6 +309,21 @@ const {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportActiveSpace = () => {
+    if (!activeSpace) return;
+    const payload = buildSpaceExport(activeSpace, plants);
+    const content = JSON.stringify(payload, null, 2);
+    const blob = new Blob([content], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = getSpaceExportFileName(activeSpace, new Date(payload.exportedAt));
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  };
+
   const handleImportPlantClick = () => {
     importFileInputRef.current?.click();
   };
@@ -245,6 +335,23 @@ const {
 
 try {
       const text = await file.text();
+      let importedSpace: ReturnType<typeof parseImportedSpace> | null = null;
+      try {
+        importedSpace = parseImportedSpace(text);
+      } catch {
+        importedSpace = null;
+      }
+
+      if (importedSpace) {
+        const importedPlantIds: Array<{ id: string }> = [];
+        for (const plant of importedSpace.plants) {
+          const added = await _addPlant(plant);
+          if (added) importedPlantIds.push({ id: added.id });
+        }
+        await addSpace({ ...importedSpace.space, plants: importedPlantIds });
+        return;
+      }
+
       const importedPlant = parseImportedPlantJson(text);
       const currentNames = new Set(plants.map((plant) => plant.strainName.trim().toLowerCase()));
       if (currentNames.has(importedPlant.strainName.trim().toLowerCase())) {
@@ -641,7 +748,21 @@ try {
                 {/* Actions */}
                 <div className="flex items-center gap-2">
                   <input ref={importFileInputRef} type="file" accept="text/html,application/json,.html,.json" onChange={handleImportPlantFile} className="hidden" />
-                  <button type="button" onClick={handleExportActivePlant} className="rounded-full border border-lime-300/20 bg-lime-300/12 p-2 text-lime-100 hover:bg-lime-300/22 transition" title="Export selected plant HTML"><Download className="h-4 w-4" /></button>
+                  <div className="relative" ref={exportMenuRef}>
+                    <button type="button" onClick={() => setIsExportMenuOpen((previous) => !previous)} className="rounded-full border border-lime-300/20 bg-lime-300/12 p-2 text-lime-100 hover:bg-lime-300/22 transition" title="Export plant or space">
+                      <Download className="h-4 w-4" />
+                    </button>
+                    {isExportMenuOpen && (
+                      <div className="absolute right-0 top-full z-50 mt-2 w-44 rounded-2xl border border-lime-300/20 bg-slate-900/95 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+                        <button type="button" onClick={() => { setIsExportMenuOpen(false); void handleExportActivePlant(); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-lime-100 hover:bg-lime-300/15 hover:text-white transition">
+                          <Sprout className="h-3.5 w-3.5 text-lime-300" /> Export plant
+                        </button>
+                        <button type="button" onClick={() => { setIsExportMenuOpen(false); handleExportActiveSpace(); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-lime-100 hover:bg-lime-300/15 hover:text-white transition">
+                          <Layers className="h-3.5 w-3.5 text-lime-300" /> Export space
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <button type="button" onClick={handleImportPlantClick} className="rounded-full border border-lime-300/20 bg-lime-300/12 p-2 text-lime-100 hover:bg-lime-300/22 transition" title="Import plant HTML or JSON"><Upload className="h-4 w-4" /></button>
 
                   {/* Combined Add Button with Dropdown Tooltip */}

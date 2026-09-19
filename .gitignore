@@ -7,6 +7,6 @@ tests/
 playwright/tests/
 .claude
 .qwen
-docs/
+.docs/
 .vscode/
 .opencodeconfig/

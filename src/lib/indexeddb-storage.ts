@@ -7,12 +7,13 @@ import type { PlantProfile, SpaceConfig } from "@/lib/types";
 
 // â”€â”€â”€ Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const DB_NAME = "g-buddy";
-const DB_VERSION = 3; // Consolidated spaces schema
+const DB_VERSION = 4; // Consolidated spaces schema and recovery snapshots
 
 const STORE_PLANTS = "plants";
 const STORE_SETTINGS = "settings";
 const STORE_CHAT = "chat_messages";
 const STORE_SPACES = "spaces";
+const STORE_BACKUP = "backup_snapshots";
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type ChatMessageEntry = {
@@ -26,6 +27,15 @@ export type ChatMessageEntry = {
   content: string;
   source?: string;
   model?: string;
+};
+
+export type BackupSnapshot = {
+  id: "latest";
+  savedAt: string;
+  plants: PlantProfile[];
+  spaces: SpaceConfig[];
+  activePlantId: string;
+  activeSpaceId: string;
 };
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -68,6 +78,10 @@ export function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE_SPACES)) {
         const spacesStore = db.createObjectStore(STORE_SPACES, { keyPath: "id" });
         spacesStore.createIndex("name", "name", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains(STORE_BACKUP)) {
+        db.createObjectStore(STORE_BACKUP, { keyPath: "id" });
       }
     };
 
@@ -415,6 +429,29 @@ export async function deleteSpace(id: string): Promise<boolean> {
   } catch (err) {
     console.error("[IndexedDB] deleteSpace failed:", err);
     return false;
+  }
+}
+
+/** Save the latest local recovery snapshot without creating a browser download. */
+export async function saveBackupSnapshot(snapshot: BackupSnapshot): Promise<boolean> {
+  try {
+    const db = await openDB();
+    await storePut(db, STORE_BACKUP, snapshot);
+    return true;
+  } catch (err) {
+    console.error("[IndexedDB] saveBackupSnapshot failed:", err);
+    return false;
+  }
+}
+
+/** Retrieve the latest recovery snapshot, if one exists. */
+export async function getBackupSnapshot(): Promise<BackupSnapshot | null> {
+  try {
+    const db = await openDB();
+    return (await storeGet<BackupSnapshot>(db, STORE_BACKUP, "latest")) ?? null;
+  } catch (err) {
+    console.error("[IndexedDB] getBackupSnapshot failed:", err);
+    return null;
   }
 }
 

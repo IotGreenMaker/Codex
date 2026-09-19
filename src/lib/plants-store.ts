@@ -1,16 +1,20 @@
 // src/lib/plants-store.ts
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { PlantProfile } from "@/lib/types";
+import type { PlantProfile, SpaceConfig } from "@/lib/types";
 import { generateUUID } from "@/lib/uuid";
 
 export type PlantsState = {
   plants: PlantProfile[];
   activePlantId: string;
+  spaces: SpaceConfig[];
+  activeSpaceId: string;
+  savedAt: string;
 };
 
 const dataDir = path.join(process.cwd(), "g-data");
 const stateFile = path.join(dataDir, "plants-state.json");
+let stateWriteQueue = Promise.resolve();
 
 function isValidUUID(id: string): boolean {
   if (!id || typeof id !== "string") return false;
@@ -93,6 +97,39 @@ function sanitizePlantData(plant: any): PlantProfile | null {
   }
 }
 
+function sanitizeSpaceData(space: any): SpaceConfig | null {
+  if (!space || typeof space !== "object") return null;
+  const weatherData = Array.isArray(space.weatherData)
+    ? space.weatherData.filter((entry: any) => validateTimestamp(entry?.timestamp)).map((entry: any) => ({
+        ...entry,
+        timestamp: validateTimestamp(entry.timestamp) || new Date().toISOString()
+      }))
+    : [];
+  const lightHistory = Array.isArray(space.lightHistory)
+    ? space.lightHistory.filter((entry: any) => validateTimestamp(entry?.timestamp)).map((entry: any) => ({
+        ...entry,
+        timestamp: validateTimestamp(entry.timestamp) || new Date().toISOString()
+      }))
+    : [];
+
+  return {
+    ...space,
+    id: typeof space.id === "string" && space.id ? space.id : generateUUID(),
+    name: typeof space.name === "string" && space.name ? space.name : "Space",
+    createdAt: validateTimestamp(space.createdAt) || new Date().toISOString(),
+    plants: Array.isArray(space.plants)
+      ? space.plants.filter((reference: any) => typeof reference?.id === "string")
+      : [],
+    weatherData,
+    lightData: Array.isArray(space.lightData) ? space.lightData : [],
+    activeLightId: typeof space.activeLightId === "string" ? space.activeLightId : undefined,
+    lightHistory,
+    electricityPricePerKwh: typeof space.electricityPricePerKwh === "number"
+      ? space.electricityPricePerKwh
+      : 0
+  } as SpaceConfig;
+}
+
 export async function readPlantsState(): Promise<PlantsState> {
   await mkdir(dataDir, { recursive: true });
 
@@ -106,9 +143,15 @@ export async function readPlantsState(): Promise<PlantsState> {
           .filter((p) => p !== null) as PlantProfile[]
       : [];
 
+    const spaces = Array.isArray(parsed.spaces)
+      ? parsed.spaces.map((space) => sanitizeSpaceData(space)).filter((space) => space !== null) as SpaceConfig[]
+      : [];
     const activePlantId = typeof parsed.activePlantId === "string" && parsed.activePlantId
       ? parsed.activePlantId
       : plants[0]?.id ?? "";
+    const activeSpaceId = typeof parsed.activeSpaceId === "string" && parsed.activeSpaceId
+      ? parsed.activeSpaceId
+      : spaces[0]?.id ?? "";
 
     if (plants.length > 0) {
       console.log("[Plants] Loaded from local storage:", plants.length, "plants");
@@ -117,29 +160,61 @@ export async function readPlantsState(): Promise<PlantsState> {
     return {
       plants,
       activePlantId,
+      spaces,
+      activeSpaceId,
+      savedAt: typeof parsed.savedAt === "string" ? parsed.savedAt : ""
     };
   } catch (error) {
     if ((error as any)?.code !== "ENOENT") {
       console.error("Error reading plants state:", error);
     }
-    return { plants: [], activePlantId: "" };
+    return { plants: [], activePlantId: "", spaces: [], activeSpaceId: "", savedAt: "" };
   }
 }
 
-export async function writePlantsState(state: PlantsState) {
+async function writePlantsStateFile(state: Partial<PlantsState>): Promise<boolean> {
   await mkdir(dataDir, { recursive: true });
   
   const safeState: PlantsState = {
     plants: state.plants || [],
     activePlantId: state.activePlantId || state.plants?.[0]?.id || "",
+    spaces: state.spaces || [],
+    activeSpaceId: state.activeSpaceId || state.spaces?.[0]?.id || "",
+    savedAt: new Date().toISOString()
   };
 
   try {
-    await writeFile(stateFile, JSON.stringify(safeState, null, 2), "utf-8");
+    const temporaryStateFile = path.join(
+      dataDir,
+      `plants-state.json.${process.pid}.${Date.now()}.${generateUUID()}.tmp`
+    );
+    await writeFile(temporaryStateFile, JSON.stringify(safeState, null, 2), "utf-8");
+    await rename(temporaryStateFile, stateFile);
     console.log("[Plants] Saved to local storage JSON");
+    return true;
   } catch (err) {
     console.error("[Plants] Failed to save local:", err);
+    return false;
   }
+}
+
+function serializeStateWrite<T>(operation: () => Promise<T>): Promise<T> {
+  const result = stateWriteQueue.then(operation);
+  stateWriteQueue = result.then(() => undefined, () => undefined);
+  return result;
+}
+
+export function writePlantsState(state: Partial<PlantsState>): Promise<boolean> {
+  return serializeStateWrite(() => writePlantsStateFile(state));
+}
+
+export function updatePlantsState(
+  update: (state: PlantsState) => Partial<PlantsState> | Promise<Partial<PlantsState>>
+): Promise<boolean> {
+  return serializeStateWrite(async () => {
+    const current = await readPlantsState();
+    return writePlantsStateFile(await update(current));
+  });
 }
 
 function findPlantContainingWateringLog(plants: PlantProfile[], wateringId: string): PlantProfile | undefined {
@@ -155,21 +230,12 @@ export async function deleteWateringLogById(
   plantId: string
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    const state = await readPlantsState();
-    const plant =
-      state.plants.find((p) => p.id === plantId) ?? findPlantContainingWateringLog(state.plants, wateringId);
-
-    if (!plant) return { ok: true };
-
-    const initialCount = plant.wateringData.length;
-    plant.wateringData = plant.wateringData.filter(w => w.id !== wateringId);
-    
-    if (plant.wateringData.length === initialCount) {
-      return { ok: true };
-    }
-
-    await writePlantsState(state);
-    return { ok: true };
+    return await updatePlantsState((state) => {
+      const plant = state.plants.find((p) => p.id === plantId) ?? findPlantContainingWateringLog(state.plants, wateringId);
+      if (!plant) return state;
+      plant.wateringData = plant.wateringData.filter((w) => w.id !== wateringId);
+      return state;
+    }).then((ok) => ({ ok }));
   } catch (err) {
     console.error("Error deleting watering log:", err);
     return { ok: false, error: err instanceof Error ? err.message : "Internal error" };
@@ -178,19 +244,12 @@ export async function deleteWateringLogById(
 
 export async function deleteClimateLogById(climateId: string, plantId: string): Promise<{ ok: boolean; error?: string }> {
   try {
-    const state = await readPlantsState();
-    const plant =
-      state.plants.find((p) => p.id === plantId) ?? findPlantContainingClimateLog(state.plants, climateId);
-
-    if (!plant) return { ok: true };
-
-    const initialCount = plant.climateData.length;
-    plant.climateData = plant.climateData.filter((c) => c.id !== climateId);
-    if (plant.climateData.length === initialCount) {
-      return { ok: true };
-    }
-    await writePlantsState(state);
-    return { ok: true };
+    return await updatePlantsState((state) => {
+      const plant = state.plants.find((p) => p.id === plantId) ?? findPlantContainingClimateLog(state.plants, climateId);
+      if (!plant) return state;
+      plant.climateData = plant.climateData.filter((c) => c.id !== climateId);
+      return state;
+    }).then((ok) => ({ ok }));
   } catch (err) {
     console.error("Error deleting climate log:", err);
     return { ok: false, error: err instanceof Error ? err.message : "Internal error" };
@@ -199,22 +258,16 @@ export async function deleteClimateLogById(climateId: string, plantId: string): 
 
 export async function deletePlantById(plantId: string): Promise<boolean> {
   try {
-    const current = await readPlantsState();
-
-    const updated = current.plants.filter((p) => p.id !== plantId);
-
-    let newActivePlantId = current.activePlantId;
-    if (newActivePlantId === plantId) {
-      newActivePlantId = updated[0]?.id || "";
-    }
-
-    await writePlantsState({
-      plants: updated,
-      activePlantId: newActivePlantId,
+    const success = await updatePlantsState((current) => {
+      const updated = current.plants.filter((p) => p.id !== plantId);
+      return {
+        ...current,
+        plants: updated,
+        activePlantId: current.activePlantId === plantId ? updated[0]?.id || "" : current.activePlantId
+      };
     });
-
-    console.log(`[Plants] Updated local storage: ${plantId}`);
-    return true;
+    if (success) console.log(`[Plants] Updated local storage: ${plantId}`);
+    return success;
   } catch (error) {
     console.error("Error deleting plant:", error);
     return false;

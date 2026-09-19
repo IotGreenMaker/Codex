@@ -3,6 +3,14 @@ import { generateUUID } from "@/lib/uuid";
 
 export const GBUDDY_SCHEMA_VERSION = "1.3.0";
 
+export type GbuddySpaceExport = {
+  app: "gbuddy";
+  schemaVersion: string;
+  exportedAt: string;
+  space: SpaceConfig;
+  plants: PlantProfile[];
+};
+
 export type GbuddyPlantExport = {
   app: "gbuddy";
   schemaVersion: string;
@@ -49,12 +57,36 @@ export function getExportFileName(plant: PlantProfile): string {
   return `gbuddy-${plantName}-${startedDate}.html`;
 }
 
+function sanitizeSpaceName(name: string): string {
+  return (name || "space")
+    .trim()
+    .replace(/[^a-z0-9-_]+/gi, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "space";
+}
+
+export function getSpaceExportFileName(space: SpaceConfig, exportedAt = new Date()): string {
+  const timestamp = exportedAt.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  return `Space_${timestamp}_${sanitizeSpaceName(space.name)}.json`;
+}
+
 export function buildThemedPlantExport(plant: PlantProfile): GbuddyPlantExport {
   return {
     app: "gbuddy",
     schemaVersion: GBUDDY_SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     plant
+  };
+}
+
+export function buildSpaceExport(space: SpaceConfig, plants: PlantProfile[]): GbuddySpaceExport {
+  const plantIds = new Set((space.plants ?? []).map((reference) => reference.id));
+  return {
+    app: "gbuddy",
+    schemaVersion: GBUDDY_SCHEMA_VERSION,
+    exportedAt: new Date().toISOString(),
+    space,
+    plants: plants.filter((plant) => plantIds.has(plant.id))
   };
 }
 
@@ -258,6 +290,52 @@ function isValidGbuddyFullExport(payload: any): payload is GbuddyFullExport {
     Array.isArray(payload.plants) &&
     Array.isArray(payload.spaces)
   );
+}
+
+function isValidGbuddySpaceExport(payload: any): payload is GbuddySpaceExport {
+  return (
+    payload &&
+    payload.app === "gbuddy" &&
+    typeof payload.schemaVersion === "string" &&
+    payload.space &&
+    typeof payload.space === "object" &&
+    Array.isArray(payload.plants)
+  );
+}
+
+function parseJsonExport(jsonText: string): unknown {
+  const trimmed = jsonText.trim();
+  if (trimmed.startsWith("<")) {
+    const match = trimmed.match(
+      /<script[^>]*id=["']gbuddy-export-data["'][^>]*>([\s\S]*?)<\/script>/i
+    );
+    if (!match?.[1]) {
+      throw new Error("Invalid Gbuddy export HTML file.");
+    }
+    const jsonPayload = match[1]
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+    return JSON.parse(jsonPayload) as unknown;
+  }
+  return JSON.parse(jsonText) as unknown;
+}
+
+export function parseImportedSpace(jsonText: string): { space: SpaceConfig; plants: PlantProfile[] } {
+  const parsed = parseJsonExport(jsonText);
+  if (!isValidGbuddySpaceExport(parsed)) {
+    throw new Error("Invalid Gbuddy space JSON file.");
+  }
+
+  const plants = parsed.plants.map((plant) => normalizeImportedPlant(plant));
+  const space = normalizeImportedSpace(parsed.space);
+  space.id = generateUUID();
+  space.name = `${space.name} (Imported)`;
+  space.plants = plants.map((plant) => ({ id: plant.id }));
+
+  return { space, plants };
 }
 
 export function parseImportedPlantJson(jsonText: string): PlantProfile {

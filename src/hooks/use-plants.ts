@@ -98,12 +98,6 @@ export function usePlants() {
         }
         await setSetting("activePlantId", activePlantId);
 
-        // Sync to server API
-        await fetch("/api/plants", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plants, activePlantId })
-        });
       } catch (error) {
         console.error("Error saving to IndexedDB:", error);
       }
@@ -145,25 +139,13 @@ export function usePlants() {
       ...override
     });
 
-    // Persist to the server before navigation. IndexedDB can be unavailable
-    // (for example after a corrupted/blocked browser database upgrade), so it
-    // cannot be the only persistence step here.
+    // IndexedDB is persisted immediately. The dashboard's complete-state
+    // flush sends plants and spaces together after React state is updated.
     try {
       await dbSavePlant(next);
       await setSetting("activePlantId", next.id);
-      const response = await fetch("/api/plants", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plants: [...plantsRef.current, next],
-          activePlantId: next.id,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`Could not persist plant to server (${response.status})`);
-      }
     } catch (error) {
-      console.error("Error persisting new plant:", error);
+      console.error("Error persisting new plant to IndexedDB:", error);
     }
 
     setPlants((current) => [...current, next]);

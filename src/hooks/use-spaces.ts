@@ -6,7 +6,7 @@ import { initializeDB, getAllSpaces, getSetting, setSetting, saveSpace as dbSave
 import { generateUUID } from "@/lib/uuid";
 import { SAVE_DEBOUNCE_DELAY } from "@/lib/config";
 
-export function useSpaces(plants?: PlantProfile[]) {
+export function useSpaces(plants?: PlantProfile[], plantsLoaded = false) {
   const [spaces, setSpaces] = useState<SpaceConfig[]>([]);
   const [activeSpaceId, setActiveSpaceId] = useState<string>("");
   const [loadedFromServer, setLoadedFromServer] = useState(false);
@@ -32,9 +32,28 @@ export function useSpaces(plants?: PlantProfile[]) {
     let ignore = false;
     const loadState = async () => {
       try {
+        if (!plantsLoaded) return;
         await initializeDB();
-        const loadedSpaces = await getAllSpaces();
+        let loadedSpaces = await getAllSpaces();
         const savedActiveSpaceId = await getSetting("activeSpaceId");
+
+        let activeIdToUse = savedActiveSpaceId;
+        if (loadedSpaces.length === 0) {
+          const response = await fetch("/api/plants", { cache: "no-store" });
+          if (response.ok) {
+            const remote = (await response.json()) as {
+              ok?: boolean;
+              spaces?: SpaceConfig[];
+              activeSpaceId?: string;
+            };
+            if (remote.ok && Array.isArray(remote.spaces) && remote.spaces.length > 0) {
+              loadedSpaces = remote.spaces;
+              activeIdToUse = remote.activeSpaceId ?? null;
+              await Promise.all(loadedSpaces.map((space) => dbSaveSpace(space)));
+              if (activeIdToUse) await setSetting("activeSpaceId", activeIdToUse);
+            }
+          }
+        }
 
         if (!ignore && loadedSpaces.length > 0) {
           // Note: plants may load after spaces, so dangling-ref pruning
@@ -44,14 +63,21 @@ export function useSpaces(plants?: PlantProfile[]) {
             lightHistory: s.lightHistory || [],
             electricityPricePerKwh: s.electricityPricePerKwh ?? 0
           }));
+          if (normalized.length === 1 && normalized[0].plants.length === 0 && plantsRef.current.length > 0) {
+            normalized[0] = {
+              ...normalized[0],
+              plants: plantsRef.current.map((plant) => ({ id: plant.id }))
+            };
+            await dbSaveSpace(normalized[0]);
+          }
           setSpaces(normalized);
-          if (!savedActiveSpaceId) {
+          if (!activeIdToUse) {
             const sorted = [...normalized].sort((a, b) =>
               new Date(a.createdAt || (a as any).created_at).getTime() - new Date(b.createdAt || (b as any).created_at).getTime()
             );
             setActiveSpaceId(sorted[0]?.id || normalized[0].id);
           } else {
-            setActiveSpaceId(savedActiveSpaceId);
+            setActiveSpaceId(activeIdToUse);
           }
         } else if (!ignore) {
           // Initialize default "Space"
@@ -79,7 +105,7 @@ export function useSpaces(plants?: PlantProfile[]) {
     };
     void loadState();
     return () => { ignore = true; };
-  }, []);
+  }, [plantsLoaded]);
 
   // Debounced Persistence
   useEffect(() => {

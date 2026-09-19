@@ -128,18 +128,18 @@ function VPDHeatmap({
         </div>
       )} */}
 
-      {/* Current Value Header
-      <div className="mb-4 text-center">
-        <p className="text-xl font-bold text-white mb-1">
-          {currentVpd.toFixed(2)} <span className="text-lg font-normal text-slate-400">kPa</span>
+      {/* Current Value Header */}
+      <div className=" text-center">
+        <p className="text-sm font-bold text-white ">
+          {currentVpd.toFixed(2)} <span className="text-sm font-normal text-slate-400">kPa</span>
         </p>
         <p className="text-sm text-slate-400">
           {currentTemp}°C • {currentHumidity}% RH
         </p>
-      </div> */}
+      </div>
 
       {/* Heatmap Chart */}
-      <div className="relative rounded-xl overflow-hidden ">
+      <div className="relative rounded overflow-hidden p-5 ">
         {/* Grid Container */}
         <div 
           className="relative aspect-square w-full"
@@ -194,19 +194,19 @@ function VPDHeatmap({
           />
 
           {/* Axes labels - Temperature on left */}
-          <div className="absolute -left-12 top-0 bottom-0 flex flex-col justify-between py-2">
+          <div className="absolute -left-8 top-0 bottom-0 flex flex-col justify-between py-2">
             {[40, 35, 30, 25, 20, 15, 10].map((t) => (
               <span key={t} className="text-[10px] text-slate-400 font-mono w-10 text-right pr-2">
-                {t}°C
+                {t}°
               </span>
             ))}
           </div>
           
           {/* Axes labels - Humidity on bottom */}
-          <div className="absolute -bottom-6 left-0 right-0 flex justify-between px-2">
+          <div className="absolute -bottom-3 left-0 right-0 flex justify-between px-2">
             {[10, 30, 50, 70, 90].map((h) => (
               <span key={h} className="text-[10px] text-slate-400 font-mono">
-                {h}% RH
+                {h}% 
               </span>
             ))}
           </div>
@@ -289,7 +289,7 @@ export function VPDChart({
   if (!compact) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-        <div className="w-full max-w-2xl rounded-2xl border border-green-300/70 bg-slate-900/45 p-6 shadow-2xl backdrop-blur">
+        <div className="gbuddy-vpd-modal w-full max-w-lg rounded-lg border border-green-300/70 bg-slate-900/45 p-4 shadow-2xl backdrop-blur">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.28em] text-lime-300/70">VPD CHART</p>
@@ -304,6 +304,7 @@ export function VPDChart({
             </button>
           </div>
 
+          <div className="mx-auto w-full max-w-[28rem]">
           <VPDHeatmap
             currentVpd={currentVpd}
             currentTemp={currentTemp}
@@ -314,6 +315,7 @@ export function VPDChart({
             showHeader={false}
             showStatus={true}
           />
+          </div>
         </div>
       </div>
     );

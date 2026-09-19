@@ -4,13 +4,15 @@ import {
   deletePlantById,
   deleteWateringLogById,
   readPlantsState,
-  writePlantsState
+  updatePlantsState
 } from "@/lib/plants-store";
-import type { PlantProfile, GrowStage, WateringEntry, ClimateEntry, NoteEntry, FeedRecipe } from "@/lib/types";
+import type { PlantProfile, SpaceConfig, GrowStage, WateringEntry, ClimateEntry, NoteEntry, FeedRecipe } from "@/lib/types";
 
 type Body = {
   plants?: PlantProfile[];
   activePlantId?: string;
+  spaces?: SpaceConfig[];
+  activeSpaceId?: string;
   plantId: string;
   wateringId?: string;
   climateId?: string;
@@ -59,7 +61,10 @@ export async function GET() {
     return NextResponse.json({ 
       ok: true, 
       plants, 
-      activePlantId
+      activePlantId,
+      spaces: state.spaces,
+      activeSpaceId: state.activeSpaceId,
+      savedAt: state.savedAt
     });
   } catch (error) {
     console.error("API GET /plants failed:", error);
@@ -172,15 +177,18 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const result = await writePlantsState({ 
-      plants, 
-      activePlantId
-    });
+    const result = await updatePlantsState((currentState) => ({
+      ...currentState,
+      plants,
+      activePlantId,
+      spaces: Array.isArray(body.spaces) ? body.spaces : currentState.spaces,
+      activeSpaceId: body.activeSpaceId || currentState.activeSpaceId
+    }));
 
     return NextResponse.json({ 
-      ok: true, 
+      ok: result,
       message: "Plants persisted successfully" 
-    });
+    }, { status: result ? 200 : 500 });
   } catch (error) {
     console.error("API PUT /plants failed:", error);
     return NextResponse.json(

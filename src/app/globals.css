@@ -150,6 +150,11 @@ a {
   border-radius: 20px !important;
 }
 
+.gbuddy-vpd-modal,
+.gbuddy-vpd-modal [class*="rounded-"] {
+  border-radius: 8px !important;
+}
+
 /* Replace white-ish borders with lime borders */
 [class*="border-white"] {
   border-color: #50fd256c !important;
